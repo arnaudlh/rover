@@ -44,19 +44,19 @@ jobs:
           sed -i "s/versionPacker=\"[^\"]*\"/versionPacker=\"$versionPacker\"/g" docker-bake.override.hcl
           sed -i "s/versionGithubRunner=\"[^\"]*\"/versionGithubRunner=\"$versionGithubRunner\"/g" docker-bake.override.hcl
 
-      # - name: Commit Changes
-      #   run: |
-      #     git config --local user.email "action@github.com"
-      #     git config --local user.name "GitHub Action"
-      #     git add docker-bake.override.hcl
-      #     git commit -m "Update docker-bake.override.hcl file with latest version"
+      - name: Commit Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docker-bake.override.hcl
+          git commit -m "Update docker-bake.override.hcl file with latest version"
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3.12.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Update components versions
-          branch: update-docker-bake-override-file
-          title: Update docker-bake.override.hcl file with latest versions
-          body: This pull request updates the `docker-bake.override.hcl` file with the latest PowerShell versions obtained from the GitHub API.
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v3.12.0
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     commit-message: Update components versions
+      #     branch: update-docker-bake-override-file
+      #     title: Update docker-bake.override.hcl file with latest versions
+      #     body: This pull request updates the `docker-bake.override.hcl` file with the latest PowerShell versions obtained from the GitHub API.
 
