@@ -1,0 +1,70 @@
+name: Update Docker Bake Override HCL File
+
+on:
+  schedule:
+    - cron: '0 18 * * 0' # 6:00 PM UTC every Sunday (2:00 AM Singapore Time)
+  workflow_dispatch:
+
+jobs:
+  update-docker-bake-override:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Get Latest PowerShell Version
+        id: get-latest-powershell-version
+        run: |
+          version=$(curl -s "https://api.github.com/repos/PowerShell/PowerShell/releases" | jq -r '.[1] | select(.prerelease == false) | .tag_name' | sed 's/^v//')
+          echo "::set-output name=versionPowershell::versionPowershell=\"$version\""
+
+      - name: Get Latest Packer Version
+        id: get-latest-packer-version
+        run: |
+          version=$(curl -s "https://api.github.com/repos/hashicorp/packer/releases" | jq -r '.[1] | select(.prerelease == false) | .tag_name' | sed 's/^v//')
+          echo "::set-output name=versionPacker::versionPacker=\"$version\""
+
+      - name: Get Latest Docker Compose Version
+        id: get-latest-docker-compose-version
+        run: |
+          version=$(curl -s "https://api.github.com/repos/docker/compose/releases" | jq -r '.[1] | select(.prerelease == false) | .tag_name' | sed 's/^v//')
+          echo "::set-output name=versionDockerCompose::versionDockerCompose=\"$version\""
+
+      - name: Get Latest GitHub Runner Version
+        id: get-latest-github-runner-version
+        run: |
+          version=$(curl -s "https://api.github.com/repos/actions/runner/releases" | jq -r '.[1] | select(.prerelease == false) | .tag_name' | head -n1 | sed 's/^v//')
+          echo "::set-output name=versionGithubRunner::versionGithubRunner=\"$version\""
+
+      - name: Update Docker Bake Override HCL File
+        run: |
+          versionPowershell=${{ steps.get-latest-powershell-version.outputs.versionPowershell }}
+          versionPacker=${{ steps.get-latest-packer-version.outputs.versionPacker }}
+          versionDockerCompose=${{ steps.get-latest-docker-compose-version.outputs.versionDockerCompose }}
+          versionGithubRunner=${{ steps.get-latest-github-runner-version.outputs.versionGithubRunner }}
+          sed -i "s/^versionPowershell = \".*\"/$versionPowershell/" docker-bake.override.hcl
+          sed -i "s/^versionPacker = \".*\"/$versionPacker/" docker-bake.override.hcl
+          sed -i "s/^versionDockerCompose = \".*\"/$versionDockerCompose/" docker-bake.override.hcl
+          sed -i "s/^versionGithubRunner = \".*\"/$versionGithubRunner/" docker-bake.override.hcl
+
+      # - name: Commit Changes
+      #   run: |
+      #     git config --local user.email "action@github.com"
+      #     git config --local user.name "GitHub Action"
+      #     git add docker-bake.override.hcl
+      #     git commit -m "Update docker-bake.override.hcl file with latest version"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update components versions
+          branch: update-docker-bake-override-file
+          title: Update docker-bake.override.hcl file with latest versions
+          body: This pull request updates the `docker-bake.override.hcl` file with the latest PowerShell versions obtained from the GitHub API.
+
