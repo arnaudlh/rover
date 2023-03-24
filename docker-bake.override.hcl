@@ -4,7 +4,7 @@ versionDockerCompose="2.9.0"
 versionGolang="1.19.1"
 versionKubectl="1.25.2"
 versionPacker="1.8.3"
-versionPowershell="7.2.6"
+versionPowershell="7.3.3"
 versionTerraformDocs="0.16.0"
 versionVault="1.11.4"
 
