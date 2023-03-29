@@ -65,11 +65,11 @@ jobs:
           version=$(curl -s "https://api.github.com/repos/actions/runner/releases" | jq -r '.[1] | select(.prerelease == false) | .tag_name' | head -n1 | sed 's/^v//')
           echo "versionGithubRunner=$version" >> $GITHUB_OUTPUT
 
-      - name: Get Latest Terraform Versions
+      - name: Update latest Terraform Versions
         id: get-latest-terraform-versions
         run: |
           version=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases | jq -r '.[] | select(.draft == false) | .tag_name' | sort -rV | awk -F. '!a[$1"."$2]++{print substr($0,2)}' | tr '\n' '\r\n')
-          echo $version > .env.terraform
+          echo "$version" > .env.terraform
 
       - name: Update Docker Bake Override HCL File
         run: |
