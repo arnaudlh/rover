@@ -68,7 +68,7 @@ jobs:
       - name: Get Latest Terraform Versions
         id: get-latest-terraform-versions
         run: |
-          version=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases | jq -r '.[] | select(.draft == false) | .tag_name' | sort -rV | awk -F. '!a[$1"."$2]++{print substr($0,2)}')
+          version=$(curl -s https://api.github.com/repos/hashicorp/terraform/releases | jq -r '.[] | select(.draft == false) | .tag_name' | sort -rV | awk -F. '!a[$1"."$2]++{print substr($0,2)}' | tr '\n' '\r\n')
           echo "versionsTerraform::versionsTerraform=\"$version\""
 
       - name: Update Docker Bake Override HCL File
@@ -95,7 +95,6 @@ jobs:
         run: |
           versionsTerraform=${{ steps.get-latest-terraform-versions.outputs.versionsTerraform }}
           echo $versionsTerraform > .env.terraform
-          echo "" >> .env.terraform
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3.12.0
