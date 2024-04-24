@@ -8,12 +8,12 @@
 #
 
 group "default" {
-  targets = ["rover_local", "rover_agents"]
+  targets = ["rover_local", "roverlight_local"]
 }
 
 target "rover_local" {
   dockerfile = "./Dockerfile"
-  tags = ["${tag}"]
+  tags = ["rover_local:${tag}"]
   args = {
     extensionsAzureCli   = extensionsAzureCli
     versionDockerCompose = versionDockerCompose
@@ -30,13 +30,29 @@ target "rover_local" {
     versionTerrascan     = versionTerrascan
     versionTfupdate      = versionTfupdate
   }
-  platforms = ["linux/amd64","linux/arm64" ]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  platforms = ["linux/arm64", "linux/amd64" ]
+  # cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
+  # cache-from = ["type=local,src=/tmp/.buildx-cache"]
+}
+
+target "roverlight_local" {
+  dockerfile = "./Dockerfile.roverlight"
+  tags = ["roverlight_local:${tag}"]
+  platforms = ["linux/arm64", "linux/amd64"]
+  # cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
+  # cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "rover_registry" {
   inherits = ["rover_local"]
+  tags = ["${versionRover}"]
+  args = {
+    image     = versionRover
+  }
+}
+
+target "roverlight_registry" {
+  inherits = ["roverlight_local"]
   tags = ["${versionRover}"]
   args = {
     image     = versionRover

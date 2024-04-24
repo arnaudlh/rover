@@ -1,0 +1,141 @@
+###########################################################
+# base tools and dependencies
+###########################################################
+FROM --platform=${TARGETPLATFORM} ubuntu as base
+
+ARG SSH_PASSWD TARGETARCH TARGETOS
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+
+ENV SSH_PASSWD=${SSH_PASSWD} \
+    USERNAME=${USERNAME} \
+    PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
+    TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
+    TF_PLUGIN_CACHE_DIR="/tf/cache" \
+    TF_REGISTRY_DISCOVERY_RETRY=5 \
+    TF_REGISTRY_CLIENT_TIMEOUT=15 \
+    ARM_USE_MSGRAPH=true \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+
+WORKDIR /tf/rover
+COPY ./scripts/.kubectl_aliases .
+COPY ./scripts/zsh-autosuggestions.zsh .
+
+    # installation common tools
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    apt-utils \
+    bsdmainutils \
+    ca-certificates \
+    curl \
+    fonts-powerline \
+    gettext \
+    git \
+    gpg \
+    gpg-agent \
+    jq \
+    less \
+    locales \
+    sudo \
+    unzip \
+    vim \
+    wget \
+    zip && \
+    #
+    # Create USERNAME
+    #
+    echo "Creating ${USERNAME} user..." && \
+    groupadd docker && \
+    useradd --uid $USER_UID -m -G docker ${USERNAME}  && \
+    #
+    # Set the locale
+    locale-gen en_US.UTF-8 && \
+    # Change ownership on the plugin cache directory
+    mkdir /tf/cache && \
+    chown -R ${USERNAME}:${USERNAME} ${TF_PLUGIN_CACHE_DIR} && \
+    #
+    # Create USERNAME home folder structure
+    #
+    mkdir -p /tf/caf \
+    /tf/rover \
+    /tf/logs \
+    /home/${USERNAME}/.ansible \
+    /home/${USERNAME}/.azure \
+    /home/${USERNAME}/.gnupg \
+    /home/${USERNAME}/.packer.d \
+    /home/${USERNAME}/.ssh \
+    /home/${USERNAME}/.ssh-localhost \
+    /home/${USERNAME}/.terraform.logs \
+    /home/${USERNAME}/.terraform.cache \
+    /home/${USERNAME}/.terraform.cache/tfstates \
+    /home/${USERNAME}/.vscode-server \
+    /home/${USERNAME}/.vscode-server-insiders && \
+    chown -R ${USER_UID}:${USER_GID} /home/${USERNAME} /tf/rover /tf/caf /tf/logs && \
+    chmod 777 -R /home/${USERNAME} /tf/caf /tf/rover && \
+    chmod 700 /home/${USERNAME}/.ssh && \
+    echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} && \
+    chmod 0440 /etc/sudoers.d/${USERNAME} && \
+    # for non-root user
+    mkdir /commandhistory && \
+    touch /commandhistory/.bash_history && \
+    chown -R ${USERNAME} /commandhistory && \
+    echo "set -o history" >> "/home/${USERNAME}/.bashrc" && \
+    echo "export HISTCONTROL=ignoredups:erasedups"  >> "/home/${USERNAME}/.bashrc" && \
+    echo "PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r\"" >> "/home/${USERNAME}/.bashrc" && \
+    echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  "/home/${USERNAME}/.bashrc" && \
+    echo "alias watch=\"watch \"" >> "/home/${USERNAME}/.bashrc" && \
+    #
+    # Clean-up
+    #
+    apt-get remove -y \
+        apt-utils && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /tmp/* && \
+    rm -rf /var/lib/apt/lists/* && \
+    find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+
+#
+# Switch to non-root ${USERNAME} context
+#
+
+USER ${USERNAME}
+
+COPY .devcontainer/.zshrc $HOME
+COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
+
+RUN sudo apt-get update && \
+    sudo apt-get install -y \
+    zsh && \
+    #
+    # Install Oh My Zsh
+    #
+    sudo runuser -l ${USERNAME} -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended' && \
+    chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
+    echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
+    echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
+    echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
+    echo "cd /tf/caf || true" >> /home/${USERNAME}/.bashrc && \
+    echo "cd /tf/caf || true" >> /home/${USERNAME}/.zshrc && \
+    echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  /home/${USERNAME}/.zshrc && \
+    echo "source /tf/rover/zsh-autosuggestions.zsh" >>  /home/${USERNAME}/.zshrc && \
+    echo "alias watch=\"watch \"" >> /home/${USERNAME}/.zshrc
+
+FROM base
+
+ARG USERNAME=vscode \
+    versionRover
+
+ENV versionRover=${versionRover}
+
+RUN echo  "Set rover version to ${versionRover}..." && \
+    echo "${versionRover}" > /tf/rover/version.txt
+
+COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh ./scripts/test_runner.sh ./
+COPY ./scripts/ci_tasks/* ./ci_tasks/
+COPY ./scripts/lib/* ./lib/
+COPY ./scripts/tfcloud/* ./tfcloud/
