@@ -43,11 +43,11 @@ jobs:
       id: scan
       with:
         image: "roverlight:latest"
-        severity-cutoff: critical
-        fail-build: false
-        output-format: table
+        severity-cutoff: medium
+        # output-format: table
 
     - name: Upload scan SARIF report
+      if: always()
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
