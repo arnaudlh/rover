@@ -26,17 +26,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
  
-    - name: Test Building roverlight
-      uses: docker/build-push-action@v5
+    - name: Test Building
+      uses: docker/bake-action@v4
       with:
-        context: .
-        file: ./Dockerfile.roverlight  # Specify the Dockerfile for the roverlight container
-        platforms: linux/amd64
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache
         push: false
         load: true
-        tags: roverlight:latest
+        targets: roverlight
 
     - name: Scan container
       uses: anchore/scan-action@v3

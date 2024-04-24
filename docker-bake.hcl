@@ -8,7 +8,7 @@
 #
 
 group "default" {
-  targets = ["rover_local", "roverlight_local"]
+  targets = ["rover_local", "roverlight"]
 }
 
 target "rover_local" {
@@ -35,12 +35,12 @@ target "rover_local" {
   # cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
-target "roverlight_local" {
+target "roverlight" {
   dockerfile = "./Dockerfile.roverlight"
-  tags = ["roverlight_local:${tag}"]
+  tags = ["roverlight:${tag}"]
   platforms = ["linux/arm64", "linux/amd64"]
-  # cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  # cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "rover_registry" {
@@ -52,7 +52,7 @@ target "rover_registry" {
 }
 
 target "roverlight_registry" {
-  inherits = ["roverlight_local"]
+  inherits = ["roverlight"]
   tags = ["${versionRover}"]
   args = {
     image     = versionRover
