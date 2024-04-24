@@ -35,4 +35,16 @@ jobs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
         push: false
+        load: true
         tags: roverlight:latest
+
+    - name: Scan container
+      uses: anchore/scan-action@v3
+      id: scan
+      with:
+        image: "roverlight:latest"
+
+    - name: Upload scan SARIF report
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
