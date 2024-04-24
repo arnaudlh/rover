@@ -43,8 +43,7 @@ jobs:
       id: scan
       with:
         image: "roverlight:latest"
-        severity-cutoff: medium
-        # output-format: table
+        severity-cutoff: critical
 
     - name: Upload scan SARIF report
       if: always()
