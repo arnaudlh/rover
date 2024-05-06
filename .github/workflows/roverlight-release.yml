@@ -70,10 +70,10 @@ jobs:
         image: ghcr.io/${{ github.repository }}/roverlight:latest
         severity-cutoff: critical
 
-    - name: Upload scan SARIF report
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: ${{ steps.scan.outputs.sarif }}
+    # - name: Upload scan SARIF report
+    #   uses: github/codeql-action/upload-sarif@v3
+    #   with:
+    #     sarif_file: ${{ steps.scan.outputs.sarif }}
 
     - name: Generate artifact attestation
       uses: actions/attest-build-provenance@v1
