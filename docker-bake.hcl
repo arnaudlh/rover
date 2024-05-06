@@ -37,10 +37,12 @@ target "rover_local" {
 
 target "roverlight" {
   dockerfile = "./Dockerfile.roverlight"
-  tags = ["roverlight:${tag}"]
-  platforms = ["linux/arm64", "linux/amd64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  tags = [
+    "roverlight:${tag}"
+  ]
+  args = {
+    date = date
+  }
 }
 
 target "rover_registry" {
@@ -51,26 +53,22 @@ target "rover_registry" {
   }
 }
 
-target "roverlight_registry" {
-  inherits = ["roverlight"]
-  tags = ["${versionRover}"]
-  args = {
-    image     = versionRover
-  }
-}
 
 variable "registry" {
-    default = ""
+  default = ""
 }
 
+# The tag variable is used to set the tag for the Docker image.
 variable "tag" {
-    default = "latest"
+  default = "latest"
 }
 
+# The versionRover variable is used to set the version of the Rover.
 variable "versionRover" {
-    default = ""
+  default = ""
 }
 
+# The versionTerraform variable is used to set the version of Terraform.
 variable "versionTerraform" {
-    default = ""
+  default = ""
 }
