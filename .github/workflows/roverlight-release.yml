@@ -1,6 +1,7 @@
 name: Roverlight-Build-On-Release
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 
