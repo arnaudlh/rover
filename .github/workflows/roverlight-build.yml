@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
-        
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -25,9 +25,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-${{ runner.arch }}-buildx-${{ github.sha }}
+        key: ${{ runner.os }}-${{ matrix.platform }}-buildx-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-${{ runner.arch }}-buildx-
+          ${{ runner.os }}-${{ matrix.platform }}-buildx-
     
     - name: Generate tags
       id: tag
