@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -34,11 +33,14 @@ jobs:
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
           
     - name: Test Building
-      uses: docker/bake-action@v4
+      uses: docker/build-push-action@v5
       with:
+        context: .
+        file: Dockerfile.roverlight
         push: false
         load: true
-        targets: roverlight
+        tags: roverlight:latest
+        platforms: ${{ matrix.platform }}
 
     - name: Scan container
       uses: anchore/scan-action@v3

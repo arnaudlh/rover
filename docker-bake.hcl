@@ -42,6 +42,7 @@ target "roverlight" {
   ]
   args = {
   }
+  platforms = ["linux/arm64", "linux/amd64" ]
 }
 
 target "rover_registry" {
