@@ -1,7 +1,7 @@
 ###########################################################
 # base tools and dependencies
 ###########################################################
-FROM --platform=${TARGETPLATFORM} ubuntu as base
+FROM --platform=${TARGETPLATFORM} ubuntu:22.04 as base
 
 ARG SSH_PASSWD TARGETARCH TARGETOS
 ARG USERNAME=vscode
