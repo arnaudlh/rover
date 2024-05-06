@@ -41,7 +41,6 @@ target "roverlight" {
     "roverlight:${tag}"
   ]
   args = {
-    date = date
   }
 }
 
