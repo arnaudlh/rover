@@ -23,7 +23,7 @@ jobs:
     - name: Cache Docker layers
       uses: actions/cache@v4
       with:
-        path: ~/.docker/buildx
+        path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
@@ -37,6 +37,8 @@ jobs:
       with:
         context: .
         file: Dockerfile.roverlight
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache
         push: false
         load: true
         tags: roverlight:${{ steps.tag.outputs.date }}, roverlight:test
