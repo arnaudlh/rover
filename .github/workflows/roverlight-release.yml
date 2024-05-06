@@ -54,6 +54,7 @@ jobs:
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
           
     - name: Building roverlight
+      id: push
       uses: docker/build-push-action@v5
       with:
         context: .
