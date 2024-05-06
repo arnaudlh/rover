@@ -52,6 +52,12 @@ jobs:
     - name: Generate tags
       id: tag
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           
     - name: Building roverlight
       id: push
@@ -61,9 +67,10 @@ jobs:
         file: Dockerfile.roverlight
         push: true
         load: true
-        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest
+        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
-
+    
     - name: Scan container
       uses: anchore/scan-action@v3
       id: scan
