@@ -1,11 +1,22 @@
-name: Roverlight-Test-Build-On-PR
+name: Roverlight-Build-On-Release
 
 on:
-  pull_request:
+  release:
+    types: [created]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
@@ -27,31 +38,43 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.platform }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.platform }}-buildx-
-    
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Generate tags
       id: tag
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
           
-    - name: Test Building
+    - name: Building roverlight
       uses: docker/build-push-action@v5
       with:
         context: .
         file: Dockerfile.roverlight
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache
-        push: false
+        push: true
         load: true
-        tags: roverlight:${{ steps.tag.outputs.date }}, roverlight:latest_test
+        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest
         platforms: ${{ matrix.platform }}
 
     - name: Scan container
       uses: anchore/scan-action@v3
       id: scan
       with:
-        image: roverlight:${{ steps.tag.outputs.date }}
+        image: ghcr.io/${{ github.repository }}/roverlight:latest
         severity-cutoff: critical
 
     - name: Upload scan SARIF report
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+        subject-digest: ${{ steps.push.outputs.digest }}
+        push-to-registry: true
