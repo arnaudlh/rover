@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
+        
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -41,7 +42,7 @@ jobs:
         cache-to: type=local,dest=/tmp/.buildx-cache
         push: false
         load: true
-        tags: roverlight:${{ steps.tag.outputs.date }}, roverlight:test
+        tags: roverlight:${{ steps.tag.outputs.date }}, roverlight:latest_test
         platforms: ${{ matrix.platform }}
 
     - name: Scan container
