@@ -39,7 +39,7 @@ jobs:
         file: Dockerfile.roverlight
         push: false
         load: true
-        tags: roverlight:latest
+        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:test
         platforms: ${{ matrix.platform }}
 
     - name: Scan container
