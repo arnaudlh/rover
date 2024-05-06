@@ -39,8 +39,6 @@ jobs:
         push: false
         load: true
         targets: roverlight
-        args: date=${{ steps.tag.outputs.date }}
-        platforms: ${{ matrix.platform }}
 
     - name: Scan container
       uses: anchore/scan-action@v3
