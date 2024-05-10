@@ -8,7 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        platform: 
+          - linux/amd64 
+          - linux/arm64
 
     steps:
     - name: Checkout code
@@ -32,7 +34,7 @@ jobs:
       id: tag
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
           
-      - name: Testing roverlight
+    - name: Testing roverlight
       id: push
       uses: docker/build-push-action@v5
       with:

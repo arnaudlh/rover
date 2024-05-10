@@ -24,7 +24,9 @@ jobs:
 
     strategy:
       matrix:
-        platform: [linux/arm64, linux/amd64]
+        platform: 
+          - linux/amd64 
+          - linux/arm64
 
     steps:
     - name: Checkout code
@@ -83,7 +85,6 @@ jobs:
       with:
         image: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}
         severity-cutoff: critical
-        only-fixed: true
 
     - name: Upload scan SARIF report
       uses: github/codeql-action/upload-sarif@v3
