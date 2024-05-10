@@ -59,7 +59,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}:${{ steps.tag.outputs.date }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           
     - name: Building roverlight
       id: push
