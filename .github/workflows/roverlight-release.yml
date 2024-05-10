@@ -59,7 +59,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/roverlight
           
     - name: Building roverlight
       id: push
@@ -73,7 +73,7 @@ jobs:
           versionRover=${{ steps.tag.outputs.date }}
         push: true
         load: true
-        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest
+        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
     
@@ -96,22 +96,3 @@ jobs:
         subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: false
-  msdo:
-    # currently only windows latest is supported
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: |
-          5.0.x
-          6.0.x
-    - name: Run Microsoft Security DevOps
-      uses: microsoft/security-devops-action@v1.6.0
-      id: msdo
-    - name: Upload results to Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-  
