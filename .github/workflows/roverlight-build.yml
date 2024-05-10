@@ -32,7 +32,8 @@ jobs:
       id: tag
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
           
-    - name: Test Building
+      - name: Testing roverlight
+      id: push
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -43,7 +44,8 @@ jobs:
           versionRover=${{ steps.tag.outputs.date }}
         push: false
         load: true
-        tags: roverlight:${{ steps.tag.outputs.date }}, roverlight:latest_test
+        tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
 
     - name: Scan container
