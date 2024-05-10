@@ -89,12 +89,6 @@ RUN apt-get update && \
     echo "PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r\"" >> "/home/${USERNAME}/.bashrc" && \
     echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  "/home/${USERNAME}/.bashrc" && \
     echo "alias watch=\"watch \"" >> "/home/${USERNAME}/.bashrc" && \
-    #
-    # Install Oh My Zsh
-    #
-    echo Installing Oh My Zsh... && \
-    sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)" "" --unattended && \
-    #
     # Clean-up
     #
     apt-get remove -y \
@@ -115,6 +109,12 @@ COPY .devcontainer/.zshrc $HOME
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
 RUN echo "Customizing userenv" && \
+    #
+    # Install Oh My Zsh
+    #
+    echo Installing Oh My Zsh... && \
+    sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)" "" --unattended && \
+    #
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \

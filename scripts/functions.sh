@@ -914,7 +914,7 @@ function verify_rover_version {
     user=$(whoami)
 
     if [ "${ROVER_RUNNER}" = false ]; then
-        required_version=$(cat /tf/caf/.devcontainer/docker-compose.yml | yq | jq -r '.services | first(.[]).image' || true)
+        required_version=$(cat /tf/caf/.devcontainer/docker-compose.yml | yq | jq -r '.services | first(.[]).image' || sed '/\/\//d' /tf/caf/.devcontainer/devcontainer.json | jq -r .image | awk -F ':' '{print $NF}' || true)
         running_version=$(cat ${script_path}/version.txt |  egrep -o '[^\/]+$')
 
         if [ "${required_version}" != "${TF_VAR_rover_version}" ]; then
