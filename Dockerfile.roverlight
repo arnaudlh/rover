@@ -44,6 +44,7 @@ RUN apt-get update && \
     unzip \
     vim \
     wget \
+    zsh \
     zip && \
     #
     # Create USERNAME
@@ -89,6 +90,11 @@ RUN apt-get update && \
     echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  "/home/${USERNAME}/.bashrc" && \
     echo "alias watch=\"watch \"" >> "/home/${USERNAME}/.bashrc" && \
     #
+    # Install Oh My Zsh
+    #
+    echo Installing Oh My Zsh... && \
+    sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)" "" --unattended && \
+    #
     # Clean-up
     #
     apt-get remove -y \
@@ -108,14 +114,7 @@ USER ${USERNAME}
 COPY .devcontainer/.zshrc $HOME
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
-RUN sudo apt-get update && \
-    sudo apt-get install -y \
-    zsh && \
-    #
-    # Install Oh My Zsh
-    #
-    sudo runuser -l ${USERNAME} -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended' && \
-    chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
+RUN echo "Customizing userenv" && \
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
