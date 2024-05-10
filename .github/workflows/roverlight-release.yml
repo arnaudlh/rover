@@ -78,6 +78,7 @@ jobs:
         tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
+        provenance: false
     
     - name: Scan container
       uses: anchore/scan-action@v3
