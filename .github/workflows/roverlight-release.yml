@@ -23,7 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        platform: [linux/arm64, linux/amd64]
 
     steps:
     - name: Checkout code
@@ -74,7 +74,7 @@ jobs:
         load: true
         tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: ${{ matrix.platform }}
+        # platforms: ${{ matrix.platform }}
     
     - name: Scan container
       uses: anchore/scan-action@v3
