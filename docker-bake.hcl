@@ -41,6 +41,7 @@ target "roverlight" {
     "roverlight:${tag}"
   ]
   args = {
+    versionRover = versionRover
   }
   platforms = ["linux/arm64", "linux/amd64" ]
 }

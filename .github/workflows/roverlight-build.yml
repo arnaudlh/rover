@@ -39,6 +39,8 @@ jobs:
         file: Dockerfile.roverlight
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
+        build-args: |
+          versionRover=${{ steps.tag.outputs.date }}
         push: false
         load: true
         tags: roverlight:${{ steps.tag.outputs.date }}, roverlight:latest_test

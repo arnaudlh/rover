@@ -68,18 +68,20 @@ jobs:
         file: Dockerfile.roverlight
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
+        build-args: |
+          versionRover=${{ steps.tag.outputs.date }}
         push: true
         load: true
         tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
     
-    # - name: Scan container
-    #   uses: anchore/scan-action@v3
-    #   id: scan
-    #   with:
-    #     image: ghcr.io/${{ github.repository }}/roverlight:latest
-    #     severity-cutoff: critical
+    - name: Scan container
+      uses: anchore/scan-action@v3
+      id: scan
+      with:
+        image: ghcr.io/${{ github.repository }}/roverlight:latest
+        severity-cutoff: critical
 
     # - name: Upload scan SARIF report
     #   uses: github/codeql-action/upload-sarif@v3
