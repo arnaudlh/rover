@@ -55,11 +55,11 @@ jobs:
       id: tag
       run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
 
-    # - name: Extract metadata (tags, labels) for Docker
-    #   id: meta
-    #   uses: docker/metadata-action@v5
-    #   with:
-    #     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           
     - name: Building roverlight
       id: push
@@ -83,15 +83,16 @@ jobs:
       with:
         image: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}
         severity-cutoff: critical
+        only-fixed: true
 
     - name: Upload scan SARIF report
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
 
-    # - name: Generate artifact attestation
-    #   uses: actions/attest-build-provenance@v1
-    #   with:
-    #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-    #     subject-digest: ${{ steps.push.outputs.digest }}
-    #     push-to-registry: false
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+        subject-digest: ${{ steps.push.outputs.digest }}
+        push-to-registry: false
