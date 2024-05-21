@@ -1,7 +1,7 @@
 ###########################################################
 # base tools and dependencies
 ###########################################################
-FROM --platform=${BUILDPLATFORM} ubuntu:22.04 as base
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/devcontainers/base:jammy as base
 
 ARG SSH_PASSWD TARGETARCH TARGETOS
 ARG USERNAME=vscode
@@ -46,13 +46,6 @@ RUN apt-get update && \
     wget \
     zsh \
     zip && \
-    #
-    # Create USERNAME
-    #
-    echo "Creating ${USERNAME} user..." && \
-    groupadd docker && \
-    useradd --uid $USER_UID -m -G docker ${USERNAME}  && \
-    #
     # Set the locale
     locale-gen en_US.UTF-8 && \
     # Change ownership on the plugin cache directory
@@ -109,12 +102,6 @@ COPY .devcontainer/.zshrc $HOME
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
 RUN echo "Customizing userenv" && \
-    #
-    # Install Oh My Zsh
-    #
-    echo Installing Oh My Zsh... && \
-    sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)" "" --unattended && \
-    #
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
