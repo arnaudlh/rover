@@ -26,12 +26,16 @@
     "features": {
         "ghcr.io/azure/azure-dev/azd:latest": {},
         "ghcr.io/devcontainers/features/azure-cli:1": {},
-        // "ghcr.io/mickeahlinder/devcontainer-features/tfenv:1": {},
-        // "ghcr.io/devcontainers-contrib/features/pre-commit:2": {},
-        // "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
         "ghcr.io/devcontainers-contrib/features/act:1": {},
-        "ghcr.io/devcontainers/features/github-cli:1": {}
-
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {
+            "plugins": [
+                "aliases syntax-highlighting autosuggestions"
+            ],
+            "username": [
+                "vscode"
+            ]
+        }
     },
 
     // Workspace mounts and environment variables can be added here.
@@ -50,12 +54,11 @@
     "customizations": {
         "vscode": {
             "extensions": [
-				"mutantdino.resourcemonitor",
-				"eamodio.gitlens",
-				"GitHub.copilot"
+                "mutantdino.resourcemonitor",
+                "eamodio.gitlens",
+                "GitHub.copilot"
 			]
         }
     }
-
 
 }
