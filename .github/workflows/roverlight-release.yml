@@ -61,7 +61,7 @@ jobs:
         platforms: ${{ matrix.platform }}
 
     - name: Scan container
-      uses: anchore/scan-action@v3
+      uses: anchore/scan-action@v4
       id: scan
       with:
         image: ghcr.io/${{ github.repository }}/roverlight:latest
