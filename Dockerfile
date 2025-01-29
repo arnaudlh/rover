@@ -413,11 +413,13 @@ ENV versionRover=${versionRover} \
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
-    PREFIX=/usr/local ./install.sh && \
+    mkdir -p /usr/local/lib/shellspec && \
+    cp -r lib/* /usr/local/lib/shellspec/ && \
+    cp shellspec /usr/local/lib/shellspec/ && \
     ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
     ln -sf /usr/local/lib/shellspec/shellspec /usr/bin/shellspec && \
     chmod +x /usr/local/bin/shellspec /usr/bin/shellspec && \
-    shellspec --version && \
+    /usr/bin/shellspec --version && \
     cd / && rm -rf /tmp/shellspec*
 #
 # Install Terraform
