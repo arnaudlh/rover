@@ -433,8 +433,6 @@ RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform
     echo "${versionRover}" > /tf/rover/version.txt && \
     chown ${USERNAME}:${USERNAME} /tf/rover/version.txt
 
-USER ${USERNAME}
-
 USER root
 
 COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/test_runner.sh ./
@@ -443,6 +441,8 @@ COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
 
 RUN find . -type f -name "*.sh" -exec chmod +x {} \; && \
-    chmod 644 ./backend.*.tf
+    chmod 644 ./backend.*.tf && \
+    # Ensure shellspec is in PATH for all users
+    ln -sf /usr/local/bin/shellspec /usr/bin/shellspec
 
 USER vscode
