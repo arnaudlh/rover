@@ -19,9 +19,7 @@ Usage: rover <command> <switches>
       delete      Delete a workspace
 
   switches:
-    -sc | --symphony-config   <path>        (ci workflow) Path to a symphony.yml file.
     -ct | --ci-task-name      <task name>   (ci workflow) CI Tool to invoke. If omitted all tools are run, if provided only that tool is run.
-     -b | --base-dir                        (ci workflow) Base directory for paths in symphony.yml.
      -d | --debug                           Show debug (verbose) logs
         | --log-severity        <degree>      This is the desired log degree. It can be set to FATAL,ERROR, WARN, INFO, DEBUG or VERBOSE         
     -lz | --landingzone                     Path to a landing zone

@@ -5,17 +5,19 @@ Rover ci invokes a set of predefined tools to ensure code quality. These tools a
 ### Pre-requisites to running CI:
 
 * Landing zones and configs are cloned to a base directory (eg. /tf/caf)
-* A symphony.yaml file. Please see [samples.symphony.yaml](symphony/sample.symphony.yaml)
+* Configuration follows standard directory structure:
+  - landingzones/{level} - Contains landing zone configurations
+  - configuration/{level} - Contains environment-specific configurations
 
 ### Run CI
 * Run all CI tools
 
   ```shell
-  rover ci -ct tflint -sc /tf/config/symphony.yml -b /tf/caf -env demo -d
+  rover ci -env demo -d
   ```
 
 * Run a single ci tool by name (tflint in this example)
 
   ```shell
-  rover ci -ct tflint -sc /tf/config/symphony.yml -b /tf/caf -env demo -d
+  rover ci -ct tflint -env demo -d
   ```
