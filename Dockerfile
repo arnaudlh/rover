@@ -418,12 +418,15 @@ ENV versionRover=${versionRover} \
     versionTerraform=${versionTerraform} \
     PATH="/usr/local/bin:/usr/bin:${PATH}"
 
-# Copy shellspec from base image
-COPY --from=base /usr/local/lib/shellspec /usr/local/lib/shellspec/
-COPY --from=base /usr/local/bin/shellspec /usr/local/bin/shellspec
-RUN ln -sf /usr/local/bin/shellspec /usr/bin/shellspec && \
-    chmod +x /usr/local/bin/shellspec /usr/bin/shellspec && \
-    shellspec --version
+# Install shellspec in final stage
+RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
+    tar xf /tmp/shellspec.tar.gz -C /tmp && \
+    cd /tmp/shellspec-0.28.1 && \
+    PREFIX=/usr/local ./install.sh && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
+    chmod +x /usr/local/bin/shellspec && \
+    shellspec --version && \
+    cd / && rm -rf /tmp/shellspec*
 #
 # Install Terraform
 #
