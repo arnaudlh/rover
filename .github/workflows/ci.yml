@@ -21,6 +21,7 @@ jobs:
           context: .
           load: true
           tags: rover:latest
+          push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
