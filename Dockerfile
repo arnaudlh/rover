@@ -370,7 +370,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /tmp/* && \
     rm -rf /var/lib/apt/lists/* && \
-    find /usr/local/lib/python* /usr/lib/python* -type f -name "*.py[co]" -delete -o -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    find /usr/local/lib/python* /usr/lib/python* -type f -name "*.py[co]" -delete -o -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    mkdir -p /usr/local/lib/shellspec
 #
 # Switch to non-root ${USERNAME} context
 #
@@ -409,7 +410,7 @@ ARG versionTerraform="1.5.7" \
 
 ENV versionRover=${versionRover} \
     versionTerraform=${versionTerraform} \
-    PATH="/usr/local/bin:/usr/bin:${PATH}"
+    PATH="/usr/local/bin:/usr/local/lib/shellspec:/usr/bin:${PATH}"
 
 # Install shellspec in final stage
 WORKDIR /tf/rover
@@ -419,7 +420,11 @@ ENV SHELLSPEC_VERSION=0.28.1
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/${SHELLSPEC_VERSION}.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-${SHELLSPEC_VERSION} && \
-    SHELLSPEC_INSTALL_NONINTERACTIVE=1 ./install.sh /usr/local && \
+    mkdir -p /usr/local/lib/shellspec && \
+    cp -r lib/* /usr/local/lib/shellspec/ && \
+    cp -r libexec /usr/local/lib/shellspec/ && \
+    cp shellspec /usr/local/bin/ && \
+    chmod +x /usr/local/bin/shellspec && \
     shellspec --version && \
     cd / && rm -rf /tmp/shellspec*
 
@@ -470,8 +475,6 @@ COPY ./scripts/tfcloud/* ./tfcloud/
 COPY ./spec /tf/rover/spec/
 
 RUN find . -type f -name "*.sh" -exec chmod +x {} \; && \
-    chmod 644 ./backend.*.tf && \
-    # Ensure shellspec is in PATH for all users
-    ln -sf /usr/local/bin/shellspec /usr/bin/shellspec
+    chmod 644 ./backend.*.tf
 
 USER vscode
