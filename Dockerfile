@@ -10,13 +10,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
-RUN apt-get update && \
-    apt-get install -y locales && \
-    sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen && \
-    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && \
-    dpkg-reconfigure --frontend=noninteractive locales
-
 
 # Arguments set during docker-compose build -b --build from .env file
 
@@ -54,6 +47,8 @@ ENV SSH_PASSWD=${SSH_PASSWD} \
     extensionsAzureCli=${extensionsAzureCli} \
     versionTerrascan=${versionTerrascan} \
     versionTfupdate=${versionTfupdate} \
+    versionTerraform=${versionTerraform} \
+    versionRover=${versionRover} \
     PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
     TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
     TF_PLUGIN_CACHE_DIR="/tf/cache" \
@@ -439,5 +434,4 @@ COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
 
-RUN chmod +x ./rover.sh ./tfstate.sh ./functions.sh ./remote.sh ./parse_command.sh ./banner.sh ./clone.sh ./walkthrough.sh ./sshd.sh ./ci.sh ./cd.sh ./test_runner.sh ./lib/* && \
-    ln -s ./lib/task.sh ./task.sh
+RUN chmod +x ./rover.sh ./tfstate.sh ./functions.sh ./remote.sh ./parse_command.sh ./banner.sh ./clone.sh ./walkthrough.sh ./sshd.sh ./ci.sh ./cd.sh ./test_runner.sh ./lib/*
