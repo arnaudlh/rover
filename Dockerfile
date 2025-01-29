@@ -432,17 +432,16 @@ COPY spec /tf/rover/spec/
 COPY . /tf/rover/
 
 # Create shellspec config and ensure correct directory structure
-RUN echo "--shell /bin/sh" > /tf/rover/.shellspec && \
-    echo "--sandbox" >> /tf/rover/.shellspec && \
-    echo "--require /tf/rover/spec/unit/helpers/skip_helper.sh" >> /tf/rover/.shellspec && \
+RUN mkdir -p /tf/rover/spec/unit/helpers && \
+    echo "--shell /bin/sh" > /tf/rover/.shellspec && \
+    echo "--require spec/unit/helpers/skip_helper.sh" >> /tf/rover/.shellspec && \
     cd /tf/rover && \
     mkdir -p scripts/lib && \
     mv scripts/cd.sh scripts/ 2>/dev/null || true && \
     mv scripts/lib/* scripts/lib/ 2>/dev/null || true && \
     chmod -R 755 scripts spec && \
     chown -R ${USERNAME}:${USERNAME} . && \
-    chown -R ${USERNAME}:${USERNAME} /usr/local/lib/shellspec && \
-    ls -la scripts/
+    chown -R ${USERNAME}:${USERNAME} /usr/local/lib/shellspec
 USER vscode
 #
 # Install Terraform
