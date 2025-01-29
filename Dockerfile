@@ -429,11 +429,14 @@ RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform
 
 USER ${USERNAME}
 
+USER root
+
 COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/test_runner.sh ./
 COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
 
-USER root
-RUN chmod +x ./rover.sh ./tfstate.sh ./functions.sh ./remote.sh ./parse_command.sh ./banner.sh ./clone.sh ./walkthrough.sh ./sshd.sh ./ci.sh ./cd.sh ./test_runner.sh ./lib/*
+RUN find . -type f -name "*.sh" -exec chmod +x {} \; && \
+    chmod 644 ./backend.*.tf
+
 USER vscode
