@@ -95,7 +95,7 @@ testing-rover-agent-1  |  - labels: test,runner-version-2.294.0
 testing-rover-agent-1  | Runner listener exit with 0 return code, stop the service, no retry needed.
 testing-rover-agent-1  | Exiting runner...,localhost:5000/rover-local:1.2.7-2208.170442
 testing-rover-agent-1  |  - name: agent-2kasm
-testing-rover-agent-1  | 
+testing-rover-agent-1  |
 testing-rover-agent-1  | --------------------------------------------------------------------------------
 testing-rover-agent-1  | |        ____ _ _   _   _       _          _        _   _                      |
 testing-rover-agent-1  | |       / ___(_) |_| | | |_   _| |__      / \   ___| |_(_) ___  _ __  ___      |
