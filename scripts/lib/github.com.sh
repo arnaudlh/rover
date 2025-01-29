@@ -7,7 +7,6 @@ check_github_session() {
   project=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id)
   export GITOPS_SERVER_URL=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url)
   debug "${project}"
-  
   verify_github_secret "actions" "BOOTSTRAP_TOKEN"
 
   if [ ! -v ${CODESPACES} ]; then

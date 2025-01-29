@@ -118,11 +118,11 @@ function execute_cd {
         fi
 
         information "Deploying level: $level caf_command: $caf_command"
-        
+
         # Default to single stack per level
         local stack="default"
         PARAMS=""
-        
+
         information "deploying stack $stack"
 
         # Use standard paths based on level
@@ -138,8 +138,8 @@ function execute_cd {
           export TF_VAR_tf_plan=${plan_file}
           export TF_VAR_level=${level}
           expand_tfvars_folder "$config_path"
-          tf_command=$(echo $PARAMS | sed -e 's/^[ \t]*//')                  
-          
+          tf_command=$(echo $PARAMS | sed -e 's/^[ \t]*//')
+
 
           log_debug @"Starting Deployment"
           log_debug "                landingzone_name: $landingzone_name"
@@ -164,9 +164,9 @@ function execute_cd {
                   export tf_action="plan"
                   log_debug "                       tf_action: $tf_action"
                   __set_tf_log__ "rover.deploy.plan"
-                  deploy "${TF_VAR_workspace}" 
-                  __reset_log__                 
-                  ;;                  
+                  deploy "${TF_VAR_workspace}"
+                  __reset_log__
+                  ;;
               apply)
                   export tf_action="apply"
                   log_debug "                       tf_action: $tf_action"
@@ -180,7 +180,7 @@ function execute_cd {
                   ;;
               *)
                   error "invalid cd action: $action"
-          esac          
+          esac
 
           if [ ! -z "$text_log_status" ]; then
             information "$text_log_status"

@@ -2,7 +2,7 @@
 
 ## Workspace configuration
 
-You can use Terraform Cloud or Terraform Enterprise to support CAF Terraform landing zones state files. 
+You can use Terraform Cloud or Terraform Enterprise to support CAF Terraform landing zones state files.
 
 Current support is for level greater than 1 (composition must be done with a launchpad stored on CAF Azure Storage Account).
 
@@ -36,7 +36,7 @@ export TF_VAR_workspace"networking-virtualwan-vwan-level2" #name of the workspac
 For any particular rover command you are using, add the ```-tfc``` parameter to switch to TFC/TFE storage instead of CAF Azure Storage hierarchy.
  
 ```bash
-rover ... -tfc 
+rover ... -tfc
 ```
 
 ## Workspace Creation

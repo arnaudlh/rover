@@ -50,7 +50,7 @@ create_federated_identity() {
     manage_sp_to_role "Privileged Role Administrator" ${sp_object_id} "POST"
     manage_sp_to_role "Application Administrator" ${sp_object_id} "POST"
     manage_sp_to_role "Groups Administrator" ${sp_object_id} "POST"
-  
+
   else
     success " - application already created."
     success " - service principal already created."

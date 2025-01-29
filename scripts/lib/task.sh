@@ -114,7 +114,7 @@ function run_task {
      export tf_action="$task_sub_command"
     information "\n - running tool : $task_executable $task_sub_command"
     information "        lz path : $landing_zone_path"
-    
+
     __set_text_log__ "$task_name"
     deploy ${TF_VAR_workspace}
     __reset_log__
@@ -155,7 +155,6 @@ function execute {
   local task=$1
   local task_name=$2
   local target_file=$3
-  
 
   __set_text_log__ "$task_name"
   eval "$task"
