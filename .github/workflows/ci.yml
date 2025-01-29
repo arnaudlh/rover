@@ -29,20 +29,6 @@ jobs:
           tags: rover:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: false
-
-      - name: Build and Push Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.DOCKERHUB_TOKEN != ''
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: aztfmod/rover:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          secrets: |
-            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-            DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
       - name: Run Pre-commit
         uses: pre-commit/action@v3.0.0
 
