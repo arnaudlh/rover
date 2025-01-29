@@ -148,14 +148,15 @@ RUN apt-get update && \
     #
     # Install tflint
     #
-    echo "Installing latest tflint ..." && \
-    curl -sSL -o /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/latest/download/tflint_${TARGETOS}_${TARGETARCH}.zip && \
+    echo "Installing tflint v0.55.0 ..." && \
+    curl -sSL -o /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/download/v0.55.0/tflint_${TARGETOS}_${TARGETARCH}.zip && \
     unzip -d /usr/bin /tmp/tflint.zip && \
     chmod +x /usr/bin/tflint && \
     #
     # Install terrascan
     #
-    echo "Installing terrascan v${versionTerrascan} ..." && \
+    echo "Installing terrascan v1.19.9 ..." && \
+    versionTerrascan=1.19.9 && \
     if [ ${TARGETARCH} == "amd64" ]; then \
         curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz ; \
     else \
@@ -177,8 +178,8 @@ RUN apt-get update && \
     #
     # Install tfsec
     #
-    echo "Installing latest tfsec ..." && \
-    curl -sSL -o /bin/tfsec https://github.com/tfsec/tfsec/releases/latest/download/tfsec-${TARGETOS}-${TARGETARCH} && \
+    echo "Installing tfsec v1.28.13 ..." && \
+    curl -sSL -o /bin/tfsec https://github.com/tfsec/tfsec/releases/download/v1.28.13/tfsec-${TARGETOS}-${TARGETARCH} && \
     chmod +x /bin/tfsec && \
     #
     # Install terraform docs
