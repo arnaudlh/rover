@@ -7,34 +7,32 @@ Describe 'cd.sh'
 
     It 'should handle base path with no ending slash'
       When call join_path "a/b" "c"
-      The output should include 'a/b/c'        
+      The output should include 'a/b/c'
     End
 
     It 'should handle base path with an ending slash'
       When call join_path "a/b/" "c"
-      The output should include 'a/b/c'        
+      The output should include 'a/b/c'
     End
 
     It 'should handle a part with a leading slash and basepath with ending slash'
       When call join_path "a/b/" "/c"
-      The output should include 'a/b/c'        
+      The output should include 'a/b/c'
     End
 
-
-    It 'should handle a part with a leading slash and basepath with no ending slash '
+    It 'should handle a part with a leading slash and basepath with no ending slash'
       When call join_path "a/b" "/c"
-      The output should include 'a/b/c'        
+      The output should include 'a/b/c'
     End
 
     It 'should handle a part with no leading slash and basepath with ending slash'
       When call join_path "a/b/" "c"
-      The output should include 'a/b/c'        
+      The output should include 'a/b/c'
     End
 
-
-    It 'should handle a part with no leading slash and basepath with no ending slash '
+    It 'should handle a part with no leading slash and basepath with no ending slash'
       When call join_path "a/b" "c"
-      The output should include 'a/b/c'        
+      The output should include 'a/b/c'
     End
 
   End
