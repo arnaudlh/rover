@@ -423,9 +423,10 @@ RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/${SHELLS
     mkdir -p /usr/local/lib/shellspec && \
     cp -r lib/* /usr/local/lib/shellspec/ && \
     cp -r libexec /usr/local/lib/shellspec/ && \
-    cp shellspec /usr/local/bin/ && \
+    cp -r bin /usr/local/lib/shellspec/ && \
+    ln -sf /usr/local/lib/shellspec/bin/shellspec /usr/local/bin/shellspec && \
     chmod +x /usr/local/bin/shellspec && \
-    shellspec --version && \
+    chmod +x /usr/local/lib/shellspec/bin/shellspec && \
     cd / && rm -rf /tmp/shellspec*
 
 # Copy spec directory
