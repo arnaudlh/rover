@@ -407,9 +407,9 @@ RUN echo "Setting up OMZ environment" && \
 
 FROM base
 
-ARG versionTerraform \
+ARG versionTerraform="1.5.7" \
     USERNAME=vscode \
-    versionRover
+    versionRover="3.0.0"
 
 ENV versionRover=${versionRover} \
     versionTerraform=${versionTerraform}
