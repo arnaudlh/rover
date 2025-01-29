@@ -9,7 +9,7 @@
         "caf (rover on dockerd)": {
             "path": "zsh",
             "args": [
-                "-c", 
+                "-c",
                 "docker compose -f ./.devcontainer/docker-compose.yml run -e ROVER_RUNNER=true --rm -w /tf/caf rover_ssh"],
             "overrideName": true
         },

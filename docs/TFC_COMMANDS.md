@@ -34,7 +34,7 @@ export TF_VAR_workspace"networking-virtualwan-vwan-level2" #name of the workspac
 3. Run your ```rover``` command
 
 For any particular rover command you are using, add the ```-tfc``` parameter to switch to TFC/TFE storage instead of CAF Azure Storage hierarchy.
- 
+
 ```bash
 rover ... -tfc
 ```

@@ -8,7 +8,7 @@ trap_with_arg() {
     done
 }
 
-function finally() 
+function finally()
 {
   echo "Trapped: $1"
   trap - 0

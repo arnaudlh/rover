@@ -137,7 +137,7 @@ You can check the runner is running under the Github project runner section
 From another terminal **docker-compose down** to clean up and de-register the container
 
 ```
-docker-compose down 
+docker-compose down
 ```
 
 ## Test the agent is working in auto-scaling mode
@@ -170,7 +170,7 @@ docker-compose up --scale rover-agent=1 -d
 ```
 
 ```
-% docker-compose down     
+% docker-compose down
 [+] Running 2/2
  ⠿ Container testing-rover-agent-1  Removed                                                                                                   10.3s
  ⠿ Network testing_default          Removed                                                                                                    0.3s
