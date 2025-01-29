@@ -106,28 +106,14 @@ testing-rover-agent-1  | |                                                      
 testing-rover-agent-1  | |                       Self-hosted runner registration                        |
 testing-rover-agent-1  | |                                                                              |
 testing-rover-agent-1  | --------------------------------------------------------------------------------
-testing-rover-agent-1  | 
 testing-rover-agent-1  | # Authentication
-testing-rover-agent-1  | 
-testing-rover-agent-1  | 
 testing-rover-agent-1  | √ Connected to GitHub
-testing-rover-agent-1  | 
 testing-rover-agent-1  | # Runner Registration
-testing-rover-agent-1  | 
-testing-rover-agent-1  | 
-testing-rover-agent-1  | 
-testing-rover-agent-1  | 
 testing-rover-agent-1  | √ Runner successfully added
 testing-rover-agent-1  | √ Runner connection is good
-testing-rover-agent-1  | 
 testing-rover-agent-1  | # Runner settings
-testing-rover-agent-1  | 
-testing-rover-agent-1  | 
 testing-rover-agent-1  | √ Settings Saved.
-testing-rover-agent-1  | 
-testing-rover-agent-1  | 
 testing-rover-agent-1  | √ Connected to GitHub
-testing-rover-agent-1  | 
 testing-rover-agent-1  | Current runner version: '2.294.0'
 testing-rover-agent-1  | 2022-08-16 20:55:23Z: Listening for Jobs
 ```
