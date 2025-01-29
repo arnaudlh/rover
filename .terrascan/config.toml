@@ -1,0 +1,14 @@
+[rules]
+  skip-rules = []
+
+[severity]
+  level = "high"
+  
+[notifications]
+  webhook = false
+
+[scan]
+  policy-type = ["azure"]
+  iac-type = ["terraform"]
+  use-colors = true
+  find-vulnerabilities = true

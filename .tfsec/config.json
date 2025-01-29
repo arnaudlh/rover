@@ -1,0 +1,13 @@
+{
+  "minimum_severity": "HIGH",
+  "exclude": [],
+  "exclude_directories": [
+    "**/.terraform/**/*",
+    "**/spec/**/*"
+  ],
+  "include_directories": [
+    "."
+  ],
+  "soft_fail": false,
+  "format": "default"
+}
