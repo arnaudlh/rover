@@ -413,7 +413,13 @@ ARG versionTerraform="1.5.7" \
     versionRover="3.0.0"
 
 ENV versionRover=${versionRover} \
-    versionTerraform=${versionTerraform}
+    versionTerraform=${versionTerraform} \
+    PATH="/usr/local/bin:/usr/bin:${PATH}"
+
+# Copy shellspec from base image
+COPY --from=base /usr/local/lib/shellspec /usr/local/lib/shellspec/
+COPY --from=base /usr/local/bin/shellspec /usr/local/bin/
+COPY --from=base /usr/bin/shellspec /usr/bin/
 #
 # Install Terraform
 #
