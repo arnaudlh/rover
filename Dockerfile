@@ -417,16 +417,7 @@ WORKDIR /tf/rover
 
 # Install shellspec
 ENV SHELLSPEC_VERSION=0.28.1
-RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/${SHELLSPEC_VERSION}.tar.gz -o /tmp/shellspec.tar.gz && \
-    tar xf /tmp/shellspec.tar.gz -C /tmp && \
-    cd /tmp/shellspec-${SHELLSPEC_VERSION} && \
-    mkdir -p /usr/local/lib/shellspec && \
-    cp -r lib/* /usr/local/lib/shellspec/ && \
-    cp -r libexec /usr/local/lib/shellspec/ && \
-    cp -r bin /usr/local/lib/shellspec/ && \
-    chmod +x /usr/local/lib/shellspec/bin/shellspec && \
-    cd / && rm -rf /tmp/shellspec* && \
-    ln -sf /usr/local/lib/shellspec/bin/shellspec /usr/local/bin/shellspec && \
+RUN wget -qO- https://git.io/shellspec | sh -s ${SHELLSPEC_VERSION} && \
     chmod +x /usr/local/bin/shellspec
 
 # Copy spec directory
