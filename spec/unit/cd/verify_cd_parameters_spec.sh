@@ -121,7 +121,7 @@ Describe 'cd.sh'
         The error should include 'Invalid cd action bad_action'
         The output should include 'Escape code: 1'
       End
-    End   
+    End
 
     Context "no environment set"
       setup() {
