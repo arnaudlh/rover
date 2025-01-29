@@ -49,7 +49,7 @@ ENV SSH_PASSWD=${SSH_PASSWD} \
     versionTfupdate=${versionTfupdate} \
     versionTerraform=${versionTerraform} \
     versionRover=${versionRover} \
-    PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
+    PATH="${PATH}:/opt/mssql-tools/bin:/usr/local/bin:/home/vscode/go/bin:/usr/local/go/bin" \
     TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
     TF_PLUGIN_CACHE_DIR="/tf/cache" \
     TF_REGISTRY_DISCOVERY_RETRY=5 \
@@ -311,6 +311,7 @@ RUN apt-get update && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
     PREFIX=/usr/local ./install.sh && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
     cd / && rm -rf /tmp/shellspec* && \
     #
     # Golang
