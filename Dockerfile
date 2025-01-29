@@ -412,6 +412,10 @@ ENV versionRover=${versionRover} \
     PATH="/usr/local/bin:/usr/bin:${PATH}"
 
 # Install shellspec in final stage
+WORKDIR /tf/rover
+
+# Copy project files
+# Install shellspec
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
@@ -420,7 +424,23 @@ RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.t
     ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
     chmod +x /usr/local/bin/shellspec && \
     cd / && rm -rf /tmp/shellspec* && \
+    mkdir -p /usr/local/lib/shellspec/lib && \
+    mv /usr/local/lib/shellspec/libexec /usr/local/lib/shellspec/lib/ && \
     shellspec --version
+
+# Copy project files with correct structure
+COPY . /tf/rover/
+
+# Create shellspec config
+RUN echo "--require spec/unit/helpers/skip_helper.sh" > /tf/rover/.shellspec && \
+    echo "--shell /bin/sh" >> /tf/rover/.shellspec && \
+    echo "--sandbox" >> /tf/rover/.shellspec
+
+# Set correct permissions and ownership
+RUN chmod -R 755 /tf/rover/scripts && \
+    chmod -R 755 /tf/rover/spec && \
+    chown -R ${USERNAME}:${USERNAME} /tf/rover && \
+    chown -R ${USERNAME}:${USERNAME} /usr/local/lib/shellspec
 USER vscode
 #
 # Install Terraform
