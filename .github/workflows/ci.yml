@@ -32,7 +32,7 @@ jobs:
           tags: rover:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Run Pre-commit
         uses: pre-commit/action@v3.0.0
 
@@ -47,7 +47,7 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure GitHub Token
         run: |
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
@@ -76,15 +76,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10.5
-      
+
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
-      
+
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
         with:
