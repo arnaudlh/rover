@@ -434,4 +434,6 @@ COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
 
+USER root
 RUN chmod +x ./rover.sh ./tfstate.sh ./functions.sh ./remote.sh ./parse_command.sh ./banner.sh ./clone.sh ./walkthrough.sh ./sshd.sh ./ci.sh ./cd.sh ./test_runner.sh ./lib/*
+USER vscode
