@@ -401,6 +401,8 @@ RUN echo "Setting up OMZ environment" && \
 
 FROM base
 
+USER root
+
 ARG versionTerraform="1.5.7" \
     USERNAME=vscode \
     versionRover="3.0.0"
@@ -410,7 +412,6 @@ ENV versionRover=${versionRover} \
     PATH="/usr/local/bin:/usr/bin:${PATH}"
 
 # Install shellspec in final stage
-USER root
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
