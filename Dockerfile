@@ -308,6 +308,7 @@ RUN apt-get update && \
     #
     && echo "Installing shellspec v0.28.1..." && \
     curl -fsSL https://git.io/shellspec | sh -s -- --yes --version 0.28.1 && \
+    ln -s /home/${USERNAME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
     #
     # Golang
     #
