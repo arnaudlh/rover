@@ -110,7 +110,7 @@ parse_parameters() {
         export caf_command="test"
         export devops="true"
         ;;
-      # Removed symphony config parameter
+      # Removed legacy config parameter
         ;;
       -ct|--ci-task-name)
         export ci_task_name=$(parameter_value --ci-task-name ${2})
