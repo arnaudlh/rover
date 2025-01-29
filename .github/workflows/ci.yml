@@ -15,7 +15,6 @@ jobs:
       - name: Build Docker image
         run: |
           DOCKER_BUILDKIT=1 docker build \
-            --target base \
             --tag rover:test \
             .
       
