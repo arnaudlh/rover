@@ -20,12 +20,11 @@ jobs:
         with:
           context: .
           load: true
-          tags: rover:latest
+          tags: rover:test
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          secrets: |
-            GIT_AUTH_TOKEN=${{ github.token }}
+          target: vscode
       
       - name: Run Pre-commit
         uses: pre-commit/action@v3.0.0
