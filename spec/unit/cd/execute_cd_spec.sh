@@ -96,7 +96,7 @@ Describe 'cd.sh'
         The variable set_autorest_environment_variables_called should equal false
         The variable run_integration_tests_called should equal false
       End
-    End    
+    End
 
     Context "cd action == test"
       setup() {
@@ -117,7 +117,7 @@ Describe 'cd.sh'
         The variable set_autorest_environment_variables_called should equal true
         The variable run_integration_tests_called should equal true
       End
-    End    
+    End
 
     Context "cd action == run, workspace=test1workspace"
       setup() {
@@ -137,9 +137,9 @@ Describe 'cd.sh'
         The output should include 'deploy called with: test1workspace'
         The variable deploy_called should equal true
         The variable set_autorest_environment_variables_called should equal true
-        The variable run_integration_tests_called should equal true        
+        The variable run_integration_tests_called should equal true
       End
-    End  
+    End
 
     Context "cd action == apply, workspace=test1workspace"
       setup() {
@@ -159,9 +159,9 @@ Describe 'cd.sh'
         The output should include 'deploy called with: test1workspace'
         The variable deploy_called should equal true
         The variable set_autorest_environment_variables_called should equal false
-        The variable run_integration_tests_called should equal false  
+        The variable run_integration_tests_called should equal false
       End
-    End   
+    End
 
     Context "cd action == run, workspace=test1workspace"
       setup() {
@@ -181,7 +181,7 @@ Describe 'cd.sh'
         When call execute_cd
         The output should include 'run_integration_tests called with: base_dir/integration_test_path'
       End
-    End      
+    End
 
     Context "level=0"
       setup() {
@@ -202,8 +202,7 @@ Describe 'cd.sh'
         The variable caf_command should equal "launchpad"
         The output should include '@Starting CD execution'
       End
-    End    
-
+    End
 
     Context "level=1"
       setup() {
@@ -224,7 +223,7 @@ Describe 'cd.sh'
         The variable caf_command should equal "landingzone"
         The output should include '@Starting CD execution'
       End
-    End    
+    End
 
     Context "level=1 cd_action=plan"
       setup() {
@@ -245,7 +244,7 @@ Describe 'cd.sh'
         The variable tf_action should equal "plan"
         The output should include '@Starting CD execution'
       End
-    End    
+    End
 
   End
 End

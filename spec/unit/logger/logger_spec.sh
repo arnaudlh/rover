@@ -1,7 +1,7 @@
 Describe 'logger.sh'
   Include scripts/functions.sh
   Include scripts/lib/logger.sh
-  
+
   Describe "__log_init__"
     #Function Mocks
     export TEST_DEBUG_CREATE_DIR=true

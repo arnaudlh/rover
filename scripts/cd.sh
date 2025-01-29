@@ -3,12 +3,12 @@
 function cd_usage {
   local code=$1
   _helpText="
-  Usage: 
+  Usage:
     rover deploy <action> <flags>
 
   actions:
     Select one of the following options:
-      * run     Terraform plan, Terraform apply, run integration tests 
+      * run     Terraform plan, Terraform apply, run integration tests
       * plan    Terraform plan only
       * apply   Terraform plan, Terraform apply
       * test    run integration tests
@@ -17,7 +17,7 @@ function cd_usage {
     -env    <env name>  optional      name of the environment (defaults to sandpit)
     -level  <level>     optional      Specifiy a level only performs cd on that level. If ommitted, action is performed on all levels.
     -h | --help         optional      Show the help usage guide (this.)
-"            
+"
   information "$_helpText" 1>&2
 
   if [ -z "$code" ]; then
@@ -41,21 +41,21 @@ function verify_cd_parameters {
       information "Found valid cd action ${cd_action}"
     ;;
     -h | --help)
-      cd_usage 
+      cd_usage
     ;;
     *)
       if [ ! -z "$cd_action" ]; then
         error_message "Invalid cd action ${cd_action}"
       fi
       cd_usage "1"
-  esac    
+  esac
 
   # Handle 2nd level sub commands. Only -h|--help is supported for now
   case "${PARAMS}" in
     "-h "| "--help ")
       cd_usage
     ;;
-  esac    
+  esac
 
   # verify environment
   if [ -z "$TF_VAR_environment" ]; then
@@ -74,7 +74,7 @@ function join_path {
 
   if [[ "$part" == '/'* ]]; then
      part="${part:1}"
-  fi  
+  fi
 
   echo "$base_path$part"
 }
@@ -145,7 +145,7 @@ function execute_cd {
           log_debug "                landingzone_name: $landingzone_name"
           log_debug "                  TF_VAR_tf_name: $TF_VAR_tf_name"
           log_debug "                  TF_VAR_tf_plan: $TF_VAR_tf_plan"
-          log_debug "                    TF_VAR_level: $TF_VAR_level"   
+          log_debug "                    TF_VAR_level: $TF_VAR_level"
           log_debug "                      tf_command: $tf_command"
           log_debug "                TF_VAR_workspace: $TF_VAR_workspace"
           log_debug "  integration_test_absolute_path: $integration_test_absolute_path"
@@ -153,26 +153,26 @@ function execute_cd {
          case "${action}" in
               run)
                   export tf_action="apply"
-                  log_debug "                       tf_action: $tf_action"     
+                  log_debug "                       tf_action: $tf_action"
                   __set_tf_log__ "rover.deploy.run"
                   deploy "${TF_VAR_workspace}"
-                  __reset_log__   
+                  __reset_log__
                   set_autorest_environment_variables
                   run_integration_tests "$integration_test_absolute_path"
                   ;;
               plan)
                   export tf_action="plan"
-                  log_debug "                       tf_action: $tf_action"     
+                  log_debug "                       tf_action: $tf_action"
                   __set_tf_log__ "rover.deploy.plan"
                   deploy "${TF_VAR_workspace}" 
                   __reset_log__                 
                   ;;                  
               apply)
                   export tf_action="apply"
-                  log_debug "                       tf_action: $tf_action"                   
+                  log_debug "                       tf_action: $tf_action"
                   __set_tf_log__ "rover.deploy.apply"
                   deploy "${TF_VAR_workspace}"
-                  __reset_log__   
+                  __reset_log__
                   ;;
               test)
                   set_autorest_environment_variables
