@@ -410,6 +410,7 @@ ENV versionRover=${versionRover} \
     PATH="/usr/local/bin:/usr/bin:${PATH}"
 
 # Install shellspec in final stage
+USER root
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
@@ -420,7 +421,9 @@ RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.t
     ln -sf /usr/local/lib/shellspec/shellspec /usr/bin/shellspec && \
     chmod +x /usr/local/bin/shellspec /usr/bin/shellspec && \
     /usr/bin/shellspec --version && \
-    cd / && rm -rf /tmp/shellspec*
+    cd / && rm -rf /tmp/shellspec* && \
+    chown -R vscode:vscode /usr/local/lib/shellspec
+USER vscode
 #
 # Install Terraform
 #
