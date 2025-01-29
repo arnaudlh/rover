@@ -415,12 +415,13 @@ ENV versionRover=${versionRover} \
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
-    mkdir -p /usr/local/lib/shellspec/lib/libexec && \
-    cp -r lib/* /usr/local/lib/shellspec/lib/ && \
-    cp -r libexec/* /usr/local/lib/shellspec/lib/libexec/ && \
-    cp shellspec /usr/local/bin/ && \
+    mkdir -p /usr/local/lib/shellspec && \
+    cp -r . /usr/local/lib/shellspec/ && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/bin/shellspec && \
+    ln -sf /usr/local/lib/shellspec/libexec /usr/local/bin/libexec && \
     chmod +x /usr/local/bin/shellspec && \
-    ln -sf /usr/local/bin/shellspec /usr/bin/shellspec && \
+    chmod +x /usr/bin/shellspec && \
     chown -R vscode:vscode /usr/local/lib/shellspec && \
     cd / && rm -rf /tmp/shellspec* && \
     /usr/bin/shellspec --version
