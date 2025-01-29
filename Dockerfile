@@ -306,16 +306,7 @@ RUN apt-get update && \
         echo "mssql-tools skipped as not running on arm64"; \
     fi \
     #
-    && echo "Installing shellspec v0.28.1..." && \
-    curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
-    tar xf /tmp/shellspec.tar.gz -C /tmp && \
-    cd /tmp/shellspec-0.28.1 && \
-    PREFIX=/usr/local ./install.sh && \
-    ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
-    ln -sf /usr/local/lib/shellspec/shellspec /usr/bin/shellspec && \
-    chmod +x /usr/local/bin/shellspec /usr/bin/shellspec && \
-    shellspec --version && \
-    cd / && rm -rf /tmp/shellspec* && \
+    && \
     #
     # Golang
     #
@@ -424,7 +415,8 @@ RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.t
     cd /tmp/shellspec-0.28.1 && \
     PREFIX=/usr/local ./install.sh && \
     ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
-    chmod +x /usr/local/bin/shellspec && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/bin/shellspec && \
+    chmod +x /usr/local/bin/shellspec /usr/bin/shellspec && \
     shellspec --version && \
     cd / && rm -rf /tmp/shellspec*
 #
