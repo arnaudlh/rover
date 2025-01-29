@@ -424,10 +424,10 @@ RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/${SHELLS
     cp -r lib/* /usr/local/lib/shellspec/ && \
     cp -r libexec /usr/local/lib/shellspec/ && \
     cp -r bin /usr/local/lib/shellspec/ && \
-    ln -sf /usr/local/lib/shellspec/bin/shellspec /usr/local/bin/shellspec && \
-    chmod +x /usr/local/bin/shellspec && \
     chmod +x /usr/local/lib/shellspec/bin/shellspec && \
-    cd / && rm -rf /tmp/shellspec*
+    cd / && rm -rf /tmp/shellspec* && \
+    ln -sf /usr/local/lib/shellspec/bin/shellspec /usr/local/bin/shellspec && \
+    chmod +x /usr/local/bin/shellspec
 
 # Copy spec directory
 COPY spec /tf/rover/spec/
