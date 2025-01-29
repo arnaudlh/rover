@@ -27,7 +27,7 @@ Describe 'cd.sh'
 
       It 'should handle known cd run'
         When call verify_cd_parameters
-        The output should include 'Found valid cd action - terraform run'        
+        The output should include 'Found valid cd action - terraform run'
         The status should eq 0
       End
     End
@@ -41,7 +41,7 @@ Describe 'cd.sh'
 
       It 'should handle known cd apply'
         When call verify_cd_parameters
-        The output should include 'Found valid cd action - terraform apply'        
+        The output should include 'Found valid cd action - terraform apply'
         The status should eq 0
       End
     End
@@ -55,7 +55,7 @@ Describe 'cd.sh'
 
       It 'should handle known cd plan'
         When call verify_cd_parameters
-        The output should include 'Found valid cd action - terraform plan'        
+        The output should include 'Found valid cd action - terraform plan'
         The status should eq 0
       End
     End
@@ -102,7 +102,7 @@ Describe 'cd.sh'
         When call verify_cd_parameters
         The output should include '@Verifying cd parameters'
         The error should include 'Usage:'
-        The error should include 'rover deploy <action> <flags>' 
+        The error should include 'rover deploy <action> <flags>'
         The status should eq 0
       End
     End
