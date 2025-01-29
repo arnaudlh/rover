@@ -20,5 +20,5 @@ spec_helper_loaded() {
 # This callback function will be invoked after core modules has been loaded.
 spec_helper_configure() {
   # Available functions: import, before_each, after_each, before_all, after_all
-  : import 'support/custom_matcher'
+  import 'unit/helpers/skip_helper'
 }

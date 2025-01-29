@@ -1,4 +1,3 @@
 --shell /bin/sh
---require /tf/rover/spec/unit/helpers/skip_helper.sh
+--require spec/spec_helper.sh
 --sandbox
---helperdir /tf/rover/spec/unit/helpers
