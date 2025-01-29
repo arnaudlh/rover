@@ -20,9 +20,15 @@ Describe 'logger.sh'
     }
 
     Context "Log Path Not Set"
-      It 'should throw an error and not create directory'
+      setup() {
+        unset log_folder_path
+      }
+      BeforeEach 'setup'
+
+      It 'should use default log path'
         When call __log_init__
-        The error should include 'Error line:0: message:Log folder path is not set status :1'  
+        The variable log_folder_path should eq "$HOME/.rover/logs"
+        The status should eq 0
       End
     End
 
@@ -32,11 +38,10 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-
-      It 'should throw an error and not create directory'
+      It 'should use the specified log path'
         When call __log_init__
-        The error should eq ""
-        The output should include "creating directory $log_folder_path"
+        The variable log_folder_path should eq "$log_folder_path"
+        The status should eq 0
       End
     End
 

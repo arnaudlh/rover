@@ -129,7 +129,7 @@ function execute_cd {
         landing_zone_path="landingzones/${level}"
         config_path="configuration/${level}"
         state_file_name="${level}.tfstate"
-        integration_test_absolute_path="tests/integration"
+        integration_test_absolute_path="base_dir/integration_test_path"
 
           local plan_file="${state_file_name%.*}.tfplan"
 
@@ -185,7 +185,6 @@ function execute_cd {
           if [ ! -z "$text_log_status" ]; then
             information "$text_log_status"
           fi
-        done
     done
     success "Continuous Deployment complete."
 }

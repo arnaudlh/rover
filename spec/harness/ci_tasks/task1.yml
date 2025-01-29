@@ -1,7 +1,5 @@
 name: task1
-executableName: "task1executablename"
-command : "pwd"
 parameters:
-  - name: config1
-    value: "value1"
-    prefix: ""
+  config1:
+    value: value1
+    prefix: false

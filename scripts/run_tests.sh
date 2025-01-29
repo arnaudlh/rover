@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Set up environment
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export script_path="${SCRIPT_DIR}"
+
 # Check if we're running inside Docker
 if [ -f /.dockerenv ]; then
   echo "Running tests inside Docker container..."

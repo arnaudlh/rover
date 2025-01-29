@@ -110,13 +110,11 @@ parse_parameters() {
         export caf_command="test"
         export devops="true"
         ;;
-      -sc|--symphony-config)
-        export symphony_yaml_file=$(parameter_value --symphony-config ${2})
-        shift 2
+      # Removed symphony config parameter
         ;;
       -ct|--ci-task-name)
         export ci_task_name=$(parameter_value --ci-task-name ${2})
-        export symphony_run_all_tasks=false
+        export run_all_tasks=false
         shift 2
         ;;
       -b|--base-dir)

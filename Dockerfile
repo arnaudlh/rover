@@ -5,6 +5,18 @@ FROM ubuntu:22.04 AS base
 
 SHELL ["/bin/bash", "-c"]
 
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+
+RUN apt-get update && \
+    apt-get install -y locales && \
+    sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen && \
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && \
+    dpkg-reconfigure --frontend=noninteractive locales
+
 
 # Arguments set during docker-compose build -b --build from .env file
 
@@ -57,8 +69,14 @@ ENV SSH_PASSWD=${SSH_PASSWD} \
 WORKDIR /tf/rover
 COPY ./scripts/.kubectl_aliases .
 COPY ./scripts/zsh-autosuggestions.zsh .
-    # installation common tools
+
+# Set up locales first to avoid warnings
 RUN apt-get update && \
+    apt-get install -y locales && \
+    sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen && \
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
     apt-get install -y --no-install-recommends \
     apt-transport-https \
     apt-utils \
@@ -105,25 +123,26 @@ RUN apt-get update && \
     #
     # Add Microsoft key
     #
-    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg && \
     #
     # Add Microsoft repository
     #
-    gosu root apt-add-repository https://packages.microsoft.com/ubuntu/22.04/prod && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | tee /etc/apt/sources.list.d/microsoft.list > /dev/null && \
     #
     # Add Docker repository
     #
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/docker-archive-keyring.gpg && \
-    echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu focal stable" > /etc/apt/sources.list.d/docker.list && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
     #
     # Kubernetes repo
     #
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/ /" | gosu root tee /etc/apt/sources.list.d/kubernetes.list && \
+    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list && \
     #
     # Github shell
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gosu root dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null &&\
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/githubcli.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
     #
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -156,11 +175,10 @@ RUN apt-get update && \
     # Install terrascan
     #
     echo "Installing terrascan v1.19.9 ..." && \
-    versionTerrascan=1.19.9 && \
     if [ ${TARGETARCH} == "amd64" ]; then \
-        curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz ; \
+        curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v1.19.9/terrascan_1.19.9_Linux_x86_64.tar.gz ; \
     else \
-        curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_${TARGETARCH}.tar.gz ; \
+        curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v1.19.9/terrascan_1.19.9_Linux_${TARGETARCH}.tar.gz ; \
     fi  \
     && tar -xf terrascan.tar.gz terrascan && rm terrascan.tar.gz && \
     install terrascan /usr/local/bin && rm terrascan && \
@@ -168,7 +186,7 @@ RUN apt-get update && \
     # Install tfupdate
     #
     echo "Installing tfupdate v${versionTfupdate} ..." && \
-    if [ ${TARGETARCH} == "amd64" ]; then \
+    if [ "${TARGETARCH}" == "amd64" ]; then \
         curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_amd64.tar.gz ; \
     else \
         curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_${TARGETARCH}.tar.gz ; \
@@ -228,10 +246,12 @@ RUN apt-get update && \
     echo "Installing Kubelogin ${versionKubelogin}..." && \
     curl -sSL -o /tmp/kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v${versionKubelogin}/kubelogin-${TARGETOS}-${TARGETARCH}.zip 2>&1 && \
     unzip -d /usr/ /tmp/kubelogin.zip && \
-    if [ ${TARGETARCH} == "amd64" ]; then \
-        chmod +x /usr/bin/linux_amd64/kubelogin ; \
+    if [ "${TARGETARCH}" == "amd64" ]; then \
+        chmod +x /usr/bin/linux_amd64/kubelogin && \
+        ln -s /usr/bin/linux_amd64/kubelogin /usr/bin/kubelogin ; \
     else \
-        chmod +x /usr/bin/linux_arm64/kubelogin ; \
+        chmod +x /usr/bin/linux_arm64/kubelogin && \
+        ln -s /usr/bin/linux_arm64/kubelogin /usr/bin/kubelogin ; \
     fi  && \
     # Hashicorp Vault
     #
@@ -272,6 +292,10 @@ RUN apt-get update && \
     echo "Installing latest pywinrm ..." && \
     pip3 install pywinrm && \
     #
+    # Configure Azure CLI
+    #
+    az config set core.login_experience_v2=false && \
+    #
     #
     # Install Ansible
     #
@@ -281,10 +305,10 @@ RUN apt-get update && \
     #
     # ################ Install apt packages ##################
     # For amd64 only - as no arm64 version packages available per:  https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools/
-    if [ ${TARGETARCH} == "amd64" ]; then \
-        echo ACCEPT_EULA=Y apt-get install -y --no-install-recommends unixodbc mssql-tools; \
+    if [ "${TARGETARCH}" == "amd64" ]; then \
+        ACCEPT_EULA=Y apt-get install -y --no-install-recommends unixodbc mssql-tools; \
     else \
-        echo "mssql-tools skipped as not running on amr64"; \
+        echo "mssql-tools skipped as not running on arm64"; \
     fi \
     #
     && echo "Installing shellspec v0.28.1..." && \
@@ -338,7 +362,7 @@ RUN apt-get update && \
     chown -R ${USERNAME} /commandhistory && \
     echo "set -o history" >> "/home/${USERNAME}/.bashrc" && \
     echo "export HISTCONTROL=ignoredups:erasedups"  >> "/home/${USERNAME}/.bashrc" && \
-    echo "PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r\"" >> "/home/${USERNAME}/.bashrc" && \
+    echo 'PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\''\\n'\''}history -a; history -c; history -r"' >> "/home/${USERNAME}/.bashrc" && \
     echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  "/home/${USERNAME}/.bashrc" && \
     echo "alias watch=\"watch \"" >> "/home/${USERNAME}/.bashrc" && \
     #
@@ -352,7 +376,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /tmp/* && \
     rm -rf /var/lib/apt/lists/* && \
-    find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+    find /usr/local/lib/python* /usr/lib/python* -type f -name "*.py[co]" -delete -o -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 #
 # Switch to non-root ${USERNAME} context
 #
@@ -394,17 +418,21 @@ ENV versionRover=${versionRover} \
 #
 # Keeping this method to support alpha build installations
 
+USER root
+
 RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform ${versionTerraform}..." && \
     curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" 2>&1 && \
-    sudo unzip -o -d /usr/bin /tmp/terraform.zip && \
-    sudo chmod +x /usr/bin/terraform && \
+    unzip -o -d /usr/bin /tmp/terraform.zip && \
+    chmod +x /usr/bin/terraform && \
     mkdir -p "/home/${USERNAME}/.terraform.cache/plugin-cache" && \
+    chown -R ${USERNAME}:${USERNAME} "/home/${USERNAME}/.terraform.cache" && \
     rm /tmp/terraform.zip && \
     #
     echo "Set rover version to ${versionRover}..." && \
-    echo "${versionRover}" > /tf/rover/version.txt
+    echo "${versionRover}" > /tf/rover/version.txt && \
+    chown ${USERNAME}:${USERNAME} /tf/rover/version.txt
 
-RUN az config set core.login_experience_v2=false
+USER ${USERNAME}
 
 COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/task.sh ./scripts/test_runner.sh ./
 COPY ./scripts/ci_tasks/* ./ci_tasks/

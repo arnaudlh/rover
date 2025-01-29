@@ -44,11 +44,11 @@ __log_init__() {
     # make sure log directory exists in standard log folder
     #------------------------------------------------------------------------------
 
-    if [ -z "$log_folder_path" ]; then
-        error "0" "Log folder path is not set" 1
-    fi
-
-    __create_dir__ "$log_folder_path"
+    # Set default log path and ensure it exists
+    export log_folder_path=${log_folder_path:-"$HOME/.rover/logs"}
+    mkdir -p "${log_folder_path}" 2>/dev/null || true
+    chmod -R 777 "${log_folder_path}" 2>/dev/null || true
+    touch "${log_folder_path}/.writable" 2>/dev/null || export log_folder_path="/tmp/rover/logs"
 
 }
 
@@ -59,13 +59,10 @@ __create_dir__()  {
 
 __set_tf_log__() {
     local name=$1
-    local logDate=$(date +%Y.%m.%d)
-
-    if [ ! -d "$log_folder_path/$logDate" ]; then
-      mkdir -p "$log_folder_path/$logDate"
-    fi
-
-    export TF_LOG_PATH="$log_folder_path/$logDate/tf_raw_$name.log"
+    local log_dir="${log_folder_path}"
+    mkdir -p "${log_dir}" 2>/dev/null || true
+    chmod -R 777 "${log_dir}" 2>/dev/null || true
+    export TF_LOG_PATH="${log_dir}/tf_raw_$name.log"
     __set_text_log__ "$name"
 }
 
@@ -83,15 +80,19 @@ __set_text_log__() {
     local name=$1
     local logDate=$(date +%Y.%m.%d)
 
-    if [ ! -d "$log_folder_path/$logDate" ]; then
-      mkdir -p "$log_folder_path/$logDate"
-    fi
-
+    local log_dir="${log_folder_path}"
+    mkdir -p "${log_dir}" 2>/dev/null || true
+    chmod -R 777 "${log_dir}" 2>/dev/null || true
     export LOG_TO_FILE=true
-    export CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
+    export CURRENT_LOG_FILE="${log_dir}/$name.log"
     information "Detailed Logs @ $CURRENT_LOG_FILE"
     exec 3>&1 4>&2
-    exec 1>> $CURRENT_LOG_FILE 2>&1
+    # Try to create log directory and file, but continue if we can't
+    mkdir -p "$(dirname "$CURRENT_LOG_FILE")" 2>/dev/null || true
+    touch "$CURRENT_LOG_FILE" 2>/dev/null || true
+    if [ -w "$CURRENT_LOG_FILE" ]; then
+        exec 1>> "$CURRENT_LOG_FILE" 2>&1
+    fi
     echo "------------------------------------------------------------------------------------------------------"
     printf "$(date +"%Y-%m-%dT%H:%M:%S %Z") - STARTING LOG OUTPUT TO : %s\n" $CURRENT_LOG_FILE
     echo "------------------------------------------------------------------------------------------------------"
@@ -101,7 +102,9 @@ __reset_log__() {
     echo "------------------------------------------------------------------------------------------------------"
     printf "STOPPING LOG OUTPUT TO : %s\n" $CURRENT_LOG_FILE
     echo "------------------------------------------------------------------------------------------------------"
-    sed -i 's/\x1b\[[0-9;]*m//g' $CURRENT_LOG_FILE
+    if [ -f "$CURRENT_LOG_FILE" ]; then
+        sed -i 's/\x1b\[[0-9;]*m//g' "$CURRENT_LOG_FILE" 2>/dev/null || true
+    fi
     export LOG_TO_FILE=false
     unset CURRENT_LOG_FILE
     unset TF_LOG_PATH

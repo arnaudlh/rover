@@ -6,10 +6,6 @@ Describe 'cd.sh'
   Describe "execute_cd"
     #Function Mocks
 
-    validate_symphony () {
-      echo ""
-    }
-
     escape () {
       echo "Escape code: $1"
     }
@@ -67,7 +63,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="all"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
       }
       BeforeEach 'setup'
@@ -88,7 +84,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="all"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="apply"
       }
       BeforeEach 'setup'
@@ -109,7 +105,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="all"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="test"
       }
       BeforeEach 'setup'
@@ -131,7 +127,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="all"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
       }
       BeforeEach 'setup'
@@ -153,7 +149,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="all"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="apply"
       }
       BeforeEach 'setup'
@@ -176,7 +172,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="all"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
       }
       BeforeEach 'setup'
@@ -196,7 +192,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="level0"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
       }
       BeforeEach 'setup'
@@ -218,7 +214,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="level1"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
       }
       BeforeEach 'setup'
@@ -239,7 +235,7 @@ Describe 'cd.sh'
         export set_autorest_environment_variables_called=false
 
         export TF_VAR_level="level1"
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="plan"
       }
       BeforeEach 'setup'

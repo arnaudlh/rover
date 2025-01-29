@@ -1,8 +1,5 @@
 name: task3
-executableName: "ls"
-command : "ls"
 parameters:
-- name: "directory"
-  value: "."
-  prefix: ""
-flags: "-lha"
+  config3:
+    value: value3
+    prefix: false

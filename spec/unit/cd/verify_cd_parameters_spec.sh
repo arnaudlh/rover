@@ -6,10 +6,6 @@ Describe 'cd.sh'
   Describe "verify_cd_parameters"
     #Function Mocks
 
-    validate_symphony () {
-      echo ""
-    }
-
     escape () {
       echo "Escape code: $1"
     }
@@ -22,9 +18,9 @@ Describe 'cd.sh'
         echo "here*******"
     }
 
-    Context "run action & valid Symphony Yaml Provided"
+    Context "run action"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
       }
       BeforeEach 'setup'
@@ -36,9 +32,9 @@ Describe 'cd.sh'
       End
     End
 
-    Context "run action & valid Symphony Yaml Provided"
+    Context "apply action"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="apply"
       }
       BeforeEach 'setup'
@@ -50,9 +46,9 @@ Describe 'cd.sh'
       End
     End
 
-    Context "run action & valid Symphony Yaml Provided"
+    Context "plan action"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="plan"
       }
       BeforeEach 'setup'
@@ -64,9 +60,9 @@ Describe 'cd.sh'
       End
     End
 
-    Context "test action & valid Symphony Yaml Provided"
+    Context "test action"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="test"
       }
       BeforeEach 'setup'
@@ -78,9 +74,9 @@ Describe 'cd.sh'
       End
     End   
 
-    Context "rover deploy -h & valid Symphony Yaml Provided"
+    Context "rover deploy help"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="-h"
       }
       BeforeEach 'setup'
@@ -94,9 +90,9 @@ Describe 'cd.sh'
       End
     End   
 
-    Context "rover cd run -h & valid Symphony Yaml Provided"
+    Context "rover cd run help"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="run"
         export PARAMS="-h "
       }
@@ -111,9 +107,9 @@ Describe 'cd.sh'
       End
     End  
 
-    Context "invalid action & valid Symphony Yaml Provided"
+    Context "invalid action"
       setup() {
-        export symphony_yaml_file="spec/harness/symphony.yml"
+        export TF_VAR_environment="demo"
         export cd_action="bad_action"
       }
 
@@ -127,19 +123,19 @@ Describe 'cd.sh'
       End
     End   
 
-    Context "rover cd only"
+    Context "no environment set"
       setup() {
-        unset symphony_yaml_file
-        export cd_action="bad_action"
+        unset TF_VAR_environment
+        export cd_action="run"
       }
 
       BeforeEach 'setup'
 
-      It 'show usage if rover cd is called'
+      It 'should default to sandpit environment'
         When call verify_cd_parameters
         The output should include '@Verifying cd parameters'
-        The error should include 'Invalid cd action bad_action'
-        The status should eq 1
+        The variable TF_VAR_environment should eq 'sandpit'
+        The status should eq 0
       End
     End    
 

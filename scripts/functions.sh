@@ -1,6 +1,11 @@
-for script in ${script_path}/tfcloud/*.sh; do
-  source "$script"
-done
+# Only source tfcloud scripts if directory exists
+if [ -d "${script_path}/tfcloud" ]; then
+  for script in ${script_path}/tfcloud/*.sh; do
+    if [ -f "$script" ]; then
+      source "$script"
+    fi
+  done
+fi
 
 error() {
     if [ "$LOG_TO_FILE" == "true" ];then
@@ -550,6 +555,12 @@ function workspace_delete {
     mkdir -p ${TF_VAR_environment}/${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}
 
     echo ""
+}
+
+function success() {
+    local message="$1"
+    printf "\e[32m%s\n\e[0m" "$message"
+    return 0
 }
 
 function clean_up_variables {

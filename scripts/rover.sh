@@ -21,10 +21,9 @@ source ${script_path}/tfstate.sh
 source ${script_path}/walkthrough.sh
 
 
-# symphony
+# core scripts
 source ${script_path}/ci.sh
 source ${script_path}/cd.sh
-source ${script_path}/symphony_yaml.sh
 source ${script_path}/test_runner.sh
 
 export ROVER_RUNNER=${ROVER_RUNNER:=false}
@@ -38,10 +37,10 @@ export ARM_USE_AZUREAD=${ARM_USE_AZUREAD:="true"}
 export ARM_STORAGE_USE_AZUREAD=${ARM_STORAGE_USE_AZUREAD:="true"}
 export ARM_USE_MSAL=${ARM_USE_MSAL:="false"}
 export skip_permission_check=${skip_permission_check:=false}
-export symphony_run_all_tasks=true
+export run_all_tasks=true
 export debug_mode=${debug_mode:="false"}
 export devops=${devops:="false"}
-export log_folder_path=${log_folderpath:=~/.terraform.logs}
+export log_folder_path=${log_folderpath:="/tmp/rover/logs"}
 export TF_IN_AUTOMATION="true" #Overriden in logger if log-severity is passed in.
 export TF_VAR_tf_cloud_organization=${TF_CLOUD_ORGANIZATION}
 export TF_VAR_tf_cloud_hostname=${TF_CLOUD_HOSTNAME:="app.terraform.io"}
@@ -122,8 +121,7 @@ if [ "${caf_command}" != "walkthrough" ]; then
     fi
   information "Tenant id                     : '$(echo ${TF_VAR_tenant_id})'"
   information "CI/CD enabled                 : '$(echo ${devops})'"
-  information "Symphony Yaml file path       : '$(echo ${symphony_yaml_file})'"
-  information "Run all tasks                 : '$(echo ${symphony_run_all_tasks})'"
+  information "Run all tasks                 : '$(echo ${run_all_tasks})'"
 
   if [ ! -z "$TF_LOG" ]; then
     information "TF_LOG                        : '$(echo ${TF_LOG})'"
@@ -133,7 +131,7 @@ if [ "${caf_command}" != "walkthrough" ]; then
   fi
 fi
 
-if [ $symphony_run_all_tasks == false ]; then
+if [ $run_all_tasks == false ]; then
   information "Running task                  : '$(echo ${ci_task_name})'"
 fi
 information ""
