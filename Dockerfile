@@ -434,7 +434,10 @@ RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform
 
 USER ${USERNAME}
 
-COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/task.sh ./scripts/test_runner.sh ./
+COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/test_runner.sh ./
 COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
+
+RUN chmod +x ./rover.sh ./tfstate.sh ./functions.sh ./remote.sh ./parse_command.sh ./banner.sh ./clone.sh ./walkthrough.sh ./sshd.sh ./ci.sh ./cd.sh ./test_runner.sh ./lib/* && \
+    ln -s ./lib/task.sh ./task.sh
