@@ -419,12 +419,10 @@ WORKDIR /tf/rover
 RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.tar.gz -o /tmp/shellspec.tar.gz && \
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
-    mkdir -p /usr/local/lib/shellspec/lib && \
-    cp -r lib/* /usr/local/lib/shellspec/lib/ && \
-    cp -r libexec /usr/local/lib/shellspec/lib/ && \
-    cp shellspec /usr/local/lib/shellspec/ && \
+    mkdir -p /usr/local/lib/shellspec && \
+    cp -r lib libexec shellspec /usr/local/lib/shellspec/ && \
+    chmod +x /usr/local/lib/shellspec/shellspec && \
     ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
-    chmod +x /usr/local/bin/shellspec && \
     cd / && rm -rf /tmp/shellspec*
 
 # Copy project files with correct structure
