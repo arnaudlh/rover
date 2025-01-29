@@ -416,16 +416,9 @@ WORKDIR /tf/rover
 
 # Copy project files
 # Install shellspec
-ENV SHELLSPEC_VERSION=0.28.1 \
-    SHELLSPEC_INSTALL_DIR=/usr/local \
-    SHELLSPEC_YES=1
-
-RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/${SHELLSPEC_VERSION}.tar.gz -o /tmp/shellspec.tar.gz && \
-    tar xf /tmp/shellspec.tar.gz -C /tmp && \
-    cd /tmp/shellspec-${SHELLSPEC_VERSION} && \
-    ./install.sh ${SHELLSPEC_INSTALL_DIR} && \
-    cd / && rm -rf /tmp/shellspec* && \
-    chown -R vscode:vscode ${SHELLSPEC_INSTALL_DIR}/lib/shellspec
+ENV SHELLSPEC_VERSION=0.28.1
+RUN curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
+    shellspec --version
 
 # Copy spec directory
 COPY spec /tf/rover/spec/
