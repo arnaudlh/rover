@@ -287,8 +287,8 @@ RUN apt-get update && \
         echo "mssql-tools skipped as not running on amr64"; \
     fi \
     #
-    && echo "Installing latest shellspec..." && \
-    curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
+    && echo "Installing shellspec v0.28.1..." && \
+    curl -fsSL https://git.io/shellspec | sh -s -- --yes --version 0.28.1 && \
     #
     # Golang
     #
