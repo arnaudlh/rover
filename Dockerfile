@@ -416,11 +416,10 @@ RUN curl -fsSL https://github.com/shellspec/shellspec/archive/refs/tags/0.28.1.t
     tar xf /tmp/shellspec.tar.gz -C /tmp && \
     cd /tmp/shellspec-0.28.1 && \
     mkdir -p /usr/local/lib/shellspec && \
-    cp -r lib /usr/local/lib/shellspec/ && \
-    cp -r libexec /usr/local/lib/shellspec/ && \
-    cp shellspec /usr/local/bin/ && \
-    chmod +x /usr/local/bin/shellspec && \
-    ln -sf /usr/local/bin/shellspec /usr/bin/shellspec && \
+    cp -r lib libexec shellspec /usr/local/lib/shellspec/ && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
+    ln -sf /usr/local/lib/shellspec/shellspec /usr/bin/shellspec && \
+    chmod +x /usr/local/bin/shellspec /usr/bin/shellspec && \
     /usr/bin/shellspec --version && \
     cd / && rm -rf /tmp/shellspec* && \
     chown -R vscode:vscode /usr/local/lib/shellspec
