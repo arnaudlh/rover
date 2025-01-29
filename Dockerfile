@@ -312,6 +312,7 @@ RUN apt-get update && \
     cd /tmp/shellspec-0.28.1 && \
     PREFIX=/usr/local ./install.sh && \
     ln -sf /usr/local/lib/shellspec/shellspec /usr/local/bin/shellspec && \
+    chmod +x /usr/local/bin/shellspec && \
     cd / && rm -rf /tmp/shellspec* && \
     #
     # Golang
