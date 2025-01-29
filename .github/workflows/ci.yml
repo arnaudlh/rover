@@ -24,6 +24,8 @@ jobs:
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secrets: |
+            GIT_AUTH_TOKEN=${{ github.token }}
       
       - name: Run Pre-commit
         uses: pre-commit/action@v3.0.0
