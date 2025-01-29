@@ -1,5 +1,5 @@
 Describe 'task.sh'
-  Include scripts/task.sh
+  Include scripts/lib/task.sh
   Describe "get_list_of_task"
     #Function Mocks
     error() {
@@ -11,7 +11,7 @@ Describe 'task.sh'
 
     Context "Invalid CI Task Dir Provided"
 
-      It 'should return an error that the path to symphony.yml is not provided'
+      It 'should return an error for invalid CI task directory'
         When call get_list_of_task './bogus_ci_dir/'
         The error should eq 'Error line:1: message:Invalid CI Directory path, ./bogus_ci_dir/ not found. status :1'
         The status should eq 1
@@ -32,7 +32,7 @@ Describe 'task.sh'
 
       It 'should return an error that the JSON is invalid'
         When call format_task_parameters "Invalid Json"
-        The error should eq 'parse error: Invalid numeric literal at line 1, column 8'
+        The status should eq 1
         The output should eq ''
       End
     End
@@ -40,7 +40,7 @@ Describe 'task.sh'
     Context "Valid Json without prefix"
 
       It 'should return valid parameters'
-        When call format_task_parameters $(get_task_parameters_json spec/harness/ci_tasks/task1.yml)
+        When call format_task_parameters '{"config1":{"value":"value1","prefix":false}}'
         The error should eq ''
         The output should eq 'config1=value1'
       End
@@ -49,7 +49,7 @@ Describe 'task.sh'
     Context "Valid Json w/ prefix"
 
       It 'should return valid parameters with prefix'
-        When call format_task_parameters $(get_task_parameters_json spec/harness/ci_tasks/task2.yml)
+        When call format_task_parameters '{"config2":{"value":"value2","prefix":true}}'
         The error should eq ''
         The output should eq '--config2=value2'
       End

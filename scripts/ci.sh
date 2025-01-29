@@ -1,11 +1,10 @@
 #!/bin/bash
 
-source /tf/rover/task.sh
-source /tf/rover/symphony_yaml.sh
+source "${script_path}/lib/task.sh"
 
 declare -a CI_TASK_CONFIG_FILE_LIST=()
 declare -a REGISTERED_CI_TASKS=()
-declare CI_TASK_DIR=/tf/rover/ci_tasks/
+declare CI_TASK_DIR=${script_path}/ci_tasks
 
 function verify_task_name(){
     local ci_task_name=$1
@@ -20,20 +19,10 @@ function verify_task_name(){
 function verify_ci_parameters {
     echo "@Verifying ci parameters"
 
-    # verify symphony yaml
-    if [ -z "$symphony_yaml_file" ]; then
-        export code="1"
-        error "1" "Missing path to symphony.yml. Please provide a path to the file via -sc or --symphony-config"
-        return $code
+    # Verify environment
+    if [ -z "$TF_VAR_environment" ]; then
+        export TF_VAR_environment="sandpit"
     fi
-
-    if [ ! -f "$symphony_yaml_file" ]; then
-        export code="1"
-        error "1" "Invalid path, $symphony_yaml_file file not found. Please provide a valid path to the file via -sc or --symphony-config"
-        return $code
-    fi
-
-    validate_symphony "$symphony_yaml_file"
 
     # verify ci task name is valid
     if [ ! -z "$ci_task_name" ]; then
@@ -86,28 +75,25 @@ function execute_ci_actions {
     echo "@Starting CI tools execution"
 
     if [ "${TF_VAR_level}" == "all" ]; then
-      # get all levels from symphony yaml (only useful in env where there is a single MSI for all levels.)
-      local -a levels=($(get_all_level_names "$symphony_yaml_file"))
+      # Default levels when no specific level is provided
+      local -a levels=("level0" "level1" "level2" "level3" "level4")
       # echo "get all levels"
     else
       # run CI for a single level
+      if [[ ! "${TF_VAR_level}" =~ ^level[0-4]$ ]]; then
+        error ${LINENO} "Invalid level specified"
+        return 1
+      fi
       local -a levels=($(echo $TF_VAR_level))
       # echo "single level CI - ${TF_VAR_level}"
     fi
 
     for level in "${levels[@]}"
     do
-        local -a stacks=($(get_all_stack_names_for_level "$symphony_yaml_file" "$level" ))
-
-        if [ ${#stacks[@]} -eq 0 ]; then
-          export code="1"
-          error ${LINENO} "No stacks found, check that level ${level} exist and has stacks defined in ${symphony_yaml_file}"
-        fi
-
-        for stack in "${stacks[@]}"
-        do
-          landing_zone_path=$(get_landingzone_path_for_stack "$symphony_yaml_file" "$level" "$stack")
-          config_path=$(get_config_path_for_stack "$symphony_yaml_file" "$level" "$stack")
+        # Default to single stack per level
+        local stack="default"
+        landing_zone_path="landingzones/${level}"
+        config_path="configuration/${level}"
 
           if [ ! -z "$ci_task_name" ]; then
             # run a single task by name
@@ -120,7 +106,6 @@ function execute_ci_actions {
             done
             echo " "
           fi
-        done
     done
 
     success "All CI tasks have run successfully."
