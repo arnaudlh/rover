@@ -450,6 +450,7 @@ COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/re
 COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
+COPY ./spec /tf/rover/spec/
 
 RUN find . -type f -name "*.sh" -exec chmod +x {} \; && \
     chmod 644 ./backend.*.tf && \
