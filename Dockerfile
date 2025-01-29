@@ -432,9 +432,9 @@ COPY spec /tf/rover/spec/
 COPY . /tf/rover/
 
 # Create shellspec config and ensure correct directory structure
-RUN echo "--require spec/unit/helpers/skip_helper.sh" > /tf/rover/.shellspec && \
-    echo "--shell /bin/sh" >> /tf/rover/.shellspec && \
+RUN echo "--shell /bin/sh" > /tf/rover/.shellspec && \
     echo "--sandbox" >> /tf/rover/.shellspec && \
+    echo "--require /tf/rover/spec/unit/helpers/skip_helper.sh" >> /tf/rover/.shellspec && \
     cd /tf/rover && \
     mkdir -p scripts/lib && \
     mv scripts/cd.sh scripts/ 2>/dev/null || true && \
