@@ -69,10 +69,10 @@ Describe 'cd.sh'
 
       It 'should handle known cd test'
         When call verify_cd_parameters
-        The output should include 'Found valid cd action test'        
+        The output should include 'Found valid cd action test'
         The status should eq 0
       End
-    End   
+    End
 
     Context "rover deploy help"
       setup() {
@@ -85,10 +85,10 @@ Describe 'cd.sh'
         When call verify_cd_parameters
         The output should include '@Verifying cd parameters'
         The error should include 'Usage:'
-        The error should include 'rover deploy <action> <flags>' 
+        The error should include 'rover deploy <action> <flags>'
         The status should eq 0
       End
-    End   
+    End
 
     Context "rover cd run help"
       setup() {
@@ -105,7 +105,7 @@ Describe 'cd.sh'
         The error should include 'rover deploy <action> <flags>' 
         The status should eq 0
       End
-    End  
+    End
 
     Context "invalid action"
       setup() {
@@ -137,7 +137,7 @@ Describe 'cd.sh'
         The variable TF_VAR_environment should eq 'sandpit'
         The status should eq 0
       End
-    End    
+    End
 
   End
 End

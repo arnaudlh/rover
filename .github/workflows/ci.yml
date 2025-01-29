@@ -12,19 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
       - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          tags: rover:test
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          target: vscode
+        run: |
+          DOCKER_BUILDKIT=1 docker build \
+            --target vscode \
+            --tag rover:test \
+            .
       
       - name: Run Pre-commit
         uses: pre-commit/action@v3.0.0
