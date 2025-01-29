@@ -15,7 +15,7 @@ jobs:
       - name: Build Docker image
         run: |
           DOCKER_BUILDKIT=1 docker build \
-            --target vscode \
+            --target base \
             --tag rover:test \
             .
       
@@ -24,12 +24,19 @@ jobs:
 
       - name: Run Tests
         run: |
-          docker run --rm rover:latest shellspec
+          docker run --rm rover:test shellspec
 
   security-scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Configure GitHub Token
+        run: |
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.3

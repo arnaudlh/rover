@@ -5,7 +5,7 @@ plugin "azurerm" {
 }
 
 config {
-  module = false
+  call_module_type = "all"
   force = false
 }
 
