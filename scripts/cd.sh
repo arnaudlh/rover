@@ -14,10 +14,8 @@ function cd_usage {
       * test    run integration tests
 
   flags:
-    -sc     <path>      required      path to symphony.yml file.
-    -b      <path>      required      base path to be used for symphony.yml file.
     -env    <env name>  optional      name of the environment (defaults to sandpit)
-    -level  <level>     optional      Specifiy a level only performs cd on that level. If ommitted, action is performed on all levels in symphony.yml.
+    -level  <level>     optional      Specifiy a level only performs cd on that level. If ommitted, action is performed on all levels.
     -h | --help         optional      Show the help usage guide (this.)
 "            
   information "$_helpText" 1>&2
@@ -34,7 +32,6 @@ function escape {
 }
 function verify_cd_parameters {
   echo "@Verifying cd parameters"
-  echo "symphony_yaml_file: $symphony_yaml_file"
   # Handle 1st level sub commands
   case "${cd_action}" in
     run | plan | apply )
@@ -60,20 +57,10 @@ function verify_cd_parameters {
     ;;
   esac    
 
-  # verify symphony yaml
-  if [ -z "$symphony_yaml_file" ]; then
-    export code="1"
-    error "1" "Missing path to symphony.yml. Please provide a path to the file via -sc or --symphony-config"
-    return $code
+  # verify environment
+  if [ -z "$TF_VAR_environment" ]; then
+    export TF_VAR_environment="sandpit"
   fi
-
-  if [ ! -f "$symphony_yaml_file" ]; then
-    export code="1"
-    error "1" "Invalid path, $symphony_yaml_file file not found. Please provide a valid path to the file via -sc or --symphony-config"
-    return $code
-  fi
-
-  validate_symphony "$symphony_yaml_file"
 }
 
 
@@ -115,13 +102,11 @@ function execute_cd {
 
     local successMessage=""
     if [ "${TF_VAR_level}" == "all" ]; then
-      # get all levels from symphony yaml (only useful in env where there is a single MSI for all levels.)
-      local -a levels=($(get_all_level_names "$symphony_yaml_file"))
-      #echo "get all levels $levels"
+      # Default levels when no specific level is provided
+      local -a levels=("level0" "level1" "level2" "level3" "level4")
     else
       # run CD for a single level
       local -a levels=($(echo $TF_VAR_level))
-      #echo "single level CD - ${TF_VAR_level}"
     fi
 
     for level in "${levels[@]}"
@@ -134,25 +119,17 @@ function execute_cd {
 
         information "Deploying level: $level caf_command: $caf_command"
         
-        local -a stacks=($(get_all_stack_names_for_level "$symphony_yaml_file" "$level" ))
+        # Default to single stack per level
+        local stack="default"
+        PARAMS=""
+        
+        information "deploying stack $stack"
 
-        if [ ${#stacks[@]} -eq 0 ]; then
-          export code="1"
-          error ${LINENO} "No stacks found, check that level ${level} exist and has stacks defined in ${symphony_yaml_file}"
-        fi
-
-        for stack in "${stacks[@]}"
-        do
-          # Reset TFVAR file list
-          PARAMS=""
-          
-          information "deploying stack $stack"
-
-          landing_zone_path=$(get_landingzone_path_for_stack "$symphony_yaml_file" "$level" "$stack")
-          config_path=$(get_config_path_for_stack "$symphony_yaml_file" "$level" "$stack")
-          state_file_name=$(get_state_file_name_for_stack "$symphony_yaml_file" "$level" "$stack")
-          integration_test_relative_path=$(get_integration_test_path "$symphony_yaml_file")
-          integration_test_absolute_path=$(join_path "$base_directory" "$integration_test_relative_path")
+        # Use standard paths based on level
+        landing_zone_path="landingzones/${level}"
+        config_path="configuration/${level}"
+        state_file_name="${level}.tfstate"
+        integration_test_absolute_path="tests/integration"
 
           local plan_file="${state_file_name%.*}.tfplan"
 
