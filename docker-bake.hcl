@@ -38,7 +38,8 @@ target "rover_local" {
 target "roverlight" {
   dockerfile = "./Dockerfile.roverlight"
   tags = [
-    "roverlight:${tag}"
+    "ghcr.io/${registry}/roverlight:${tag}",
+    "ghcr.io/${registry}/roverlight:latest"
   ]
   args = {
     versionRover = versionRover
@@ -75,4 +76,3 @@ variable "versionRover" {
 variable "versionTerraform" {
   default = ""
 }
-
