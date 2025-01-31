@@ -66,6 +66,7 @@ jobs:
         severity-cutoff: critical
 
     - name: Upload scan SARIF report
+      if: matrix.platform == 'linux/amd64'
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
