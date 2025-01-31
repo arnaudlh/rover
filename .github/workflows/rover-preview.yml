@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
 
+# Workflow disabled as requested
+if: false
+
 jobs:
   build:
 
