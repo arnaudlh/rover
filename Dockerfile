@@ -343,15 +343,12 @@ RUN apt-get update && \
     #
     # Clean-up
     #
-    apt-get remove -y \
-        gcc \
-        python3-dev \
-        apt-utils && \
-    apt-get autoremove -y && \
+    apt-get remove -y gcc python3-dev apt-utils || true && \
+    apt-get autoremove -y || true && \
     apt-get clean && \
     rm -rf /tmp/* && \
     rm -rf /var/lib/apt/lists/* && \
-    find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+    find . -type f -name "__pycache__" -o -name "*.pyc" -o -name "*.pyo" -delete || true
 #
 # Switch to non-root ${USERNAME} context
 #
@@ -409,3 +406,8 @@ COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/re
 COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
+
+FROM base AS rover
+COPY rover /usr/local/bin/rover
+RUN chmod +x /usr/local/bin/rover
+ENTRYPOINT ["/usr/local/bin/rover"]
