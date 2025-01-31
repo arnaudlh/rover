@@ -146,6 +146,7 @@ function build_base_rover_image {
             docker buildx bake \
                 -f docker-bake.hcl \
                 -f docker-bake.override.hcl \
+                --allow=fs=/tmp \
                 --push rover_registry
             ;;
     esac
