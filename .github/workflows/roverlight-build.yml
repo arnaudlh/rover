@@ -26,6 +26,11 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        buildkit-flags: |
+          --debug
+          --allow-insecure-entitlement security.insecure
+          --allow-insecure-entitlement network.host
     
     - name: Generate tags
       id: tag
@@ -44,12 +49,17 @@ jobs:
       with:
         context: .
         file: Dockerfile.roverlight
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: |
+          type=gha,scope=docker-${{ matrix.platform }}
+          type=registry,ref=ghcr.io/${{ github.repository }}/rover/roverlight:cache-${{ matrix.platform }}
+        cache-to: |
+          type=gha,scope=docker-${{ matrix.platform }},mode=max
+          type=registry,ref=ghcr.io/${{ github.repository }}/rover/roverlight:cache-${{ matrix.platform }},mode=max
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: false
         load: ${{ matrix.platform == 'linux/amd64' }}
+        platforms: ${{ matrix.platform }}
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
