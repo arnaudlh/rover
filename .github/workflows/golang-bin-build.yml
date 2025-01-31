@@ -77,5 +77,14 @@ jobs:
         env:
           BUILDX_BAKE_ENTITLEMENTS_FS: "0"
           DOCKER_BUILDKIT: "1"
+          DOCKER_REGISTRY: ghcr.io
+          DOCKER_IMAGE: ${{ github.repository }}
+          DOCKER_TAG: ${{ github.ref_name }}
         run: |
-          docker buildx bake --allow=fs=/tmp -f docker-bake.hcl -f docker-bake.override.hcl --push rover_registry
+          docker buildx bake \
+            --set *.platform=linux/amd64,linux/arm64 \
+            --set *.tags=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} \
+            --allow=fs=/tmp \
+            -f docker-bake.hcl \
+            -f docker-bake.override.hcl \
+            --push rover_registry
