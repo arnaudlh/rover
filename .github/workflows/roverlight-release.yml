@@ -65,7 +65,7 @@ jobs:
           
     - name: Building roverlight
       id: push
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v5
       with:
         context: .
         file: Dockerfile.roverlight
