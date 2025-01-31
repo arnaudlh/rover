@@ -80,6 +80,10 @@ var requiredEnvVars = []string{
 }
 
 func NewOperations(workingDir, dataDir, level, workspace string, backend Backend) (*Operations, error) {
+	if workingDir == "" {
+		return nil, fmt.Errorf("working directory cannot be empty")
+	}
+
 	stateName := filepath.Base(workingDir) + ".tfstate"
 	planName := filepath.Base(workingDir) + ".tfplan"
 
