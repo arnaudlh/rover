@@ -49,12 +49,8 @@ jobs:
       with:
         context: .
         file: Dockerfile.roverlight
-        cache-from: |
-          type=gha,scope=docker-${{ matrix.platform }}
-          type=registry,ref=ghcr.io/${{ github.repository }}/rover/roverlight:cache-${{ matrix.platform }}
-        cache-to: |
-          type=gha,scope=docker-${{ matrix.platform }},mode=max
-          type=registry,ref=ghcr.io/${{ github.repository }}/rover/roverlight:cache-${{ matrix.platform }},mode=max
+        cache-from: type=gha,scope=${{ matrix.platform }}
+        cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: false
@@ -62,8 +58,6 @@ jobs:
         platforms: ${{ matrix.platform }}
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: ${{ matrix.platform }}
-        outputs: type=image
 
     - name: Scan container
       if: matrix.platform == 'linux/amd64'
