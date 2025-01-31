@@ -3,15 +3,33 @@ package rover
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/arnaudlh/rover/internal/azure"
 	"github.com/arnaudlh/rover/internal/terraform"
 )
 
+type StorageClient interface {
+	GetStorageAccountByFilter(ctx context.Context, filter azure.StorageAccountFilter) (*armstorage.Account, error)
+	UploadTFState(ctx context.Context, resourceGroup, accountName, containerName, blobName string, data []byte) error
+	DownloadTFState(ctx context.Context, resourceGroup, accountName, containerName, blobName string) ([]byte, error)
+}
+
+type TerraformOperations interface {
+	Init(context.Context) error
+	Plan(context.Context, bool) error
+	Apply(context.Context) error
+	Destroy(context.Context) error
+	Show(context.Context) error
+	Validate(context.Context) error
+}
+
 type StateManager struct {
-	storage    *azure.StorageClient
-	terraform  *terraform.Operations
+	storage    StorageClient
+	terraform  TerraformOperations
 	level      string
 	workspace  string
 	stateName  string
@@ -77,7 +95,11 @@ func (m *StateManager) UploadState(ctx context.Context) error {
 		return fmt.Errorf("failed to get storage account: %v", err)
 	}
 
-	if err := m.storage.UploadTFState(ctx, *account.ResourceGroup, *account.Name, m.workspace, m.stateName, data); err != nil {
+	resourceGroup, err := getResourceGroup(account)
+	if err != nil {
+		return fmt.Errorf("failed to get resource group: %v", err)
+	}
+	if err := m.storage.UploadTFState(ctx, resourceGroup, *account.Name, m.workspace, m.stateName, data); err != nil {
 		return fmt.Errorf("failed to upload state: %v", err)
 	}
 	return nil
@@ -94,7 +116,11 @@ func (m *StateManager) DownloadState(ctx context.Context) error {
 		return fmt.Errorf("failed to get storage account: %v", err)
 	}
 
-	data, err := m.storage.DownloadTFState(ctx, *account.ResourceGroup, *account.Name, m.workspace, m.stateName)
+	resourceGroup, err := getResourceGroup(account)
+	if err != nil {
+		return fmt.Errorf("failed to get resource group: %v", err)
+	}
+	data, err := m.storage.DownloadTFState(ctx, resourceGroup, *account.Name, m.workspace, m.stateName)
 	if err != nil {
 		return fmt.Errorf("failed to download state: %v", err)
 	}
@@ -174,4 +200,21 @@ func getEnvVar(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func getResourceGroupFromID(id string) (string, error) {
+	parts := strings.Split(id, "/")
+	for i := 0; i < len(parts)-1; i++ {
+		if parts[i] == "resourceGroups" {
+			return parts[i+1], nil
+		}
+	}
+	return "", fmt.Errorf("resource group not found in ID: %s", id)
+}
+
+func getResourceGroup(account *armstorage.Account) (string, error) {
+	if account.ID == nil {
+		return "", fmt.Errorf("account ID is nil")
+	}
+	return getResourceGroupFromID(*account.ID)
 }
