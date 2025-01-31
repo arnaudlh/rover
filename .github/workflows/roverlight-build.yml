@@ -44,8 +44,13 @@ jobs:
       with:
         context: .
         file: Dockerfile.roverlight
-        cache-from: type=gha,scope=${{ github.ref_name }}-${{ matrix.platform }}
-        cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
+        cache-from: |
+          type=gha
+          type=registry,ref=ghcr.io/${{ github.repository }}/rover/roverlight:buildcache-${{ matrix.platform }}
+        cache-to: |
+          type=gha,mode=max
+          type=registry,ref=ghcr.io/${{ github.repository }}/rover/roverlight:buildcache-${{ matrix.platform }},mode=max
+        outputs: type=docker
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: false
