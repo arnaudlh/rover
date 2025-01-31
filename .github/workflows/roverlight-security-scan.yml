@@ -2,7 +2,7 @@ name: Roverlight-Security-Scan
 
 on:
   workflow_run:
-    workflows: ["Roverlight-Build"]
+    workflows: ["Roverlight-Build-Release"]
     types:
       - completed
 
