@@ -7,7 +7,6 @@ on:
   push:
     branches: 
       - 'roverlight'
-      - 'devin/1738291242-modernize-github-actions'
 
 env:
   REGISTRY: ghcr.io
