@@ -97,7 +97,7 @@ RUN apt-get update && \
 
 USER ${USERNAME}
 
-COPY .devcontainer/.zshrc /home/${USERNAME}
+COPY .devcontainer/.zshrc /home/${USERNAME}/.zshrc
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
 RUN echo "Customizing userenv" && \
