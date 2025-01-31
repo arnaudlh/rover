@@ -19,11 +19,6 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-    strategy:
-      matrix:
-        platform: 
-          - linux/amd64 
-          - linux/arm64
     outputs:
       image_tag: ${{ steps.tag.outputs.date }}
     steps:
@@ -40,9 +35,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-${{ matrix.platform }}-buildx-${{ github.sha }}
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.platform }}-buildx-
+          ${{ runner.os }}-buildx-
 
     - name: Log in to the Container registry
       uses: docker/login-action@v3
@@ -75,7 +70,7 @@ jobs:
         load: false
         tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        platforms: ${{ matrix.platform }}
+        platforms: linux/amd64,linux/arm64
         provenance: false
 
     - name: Generate artifact attestation
