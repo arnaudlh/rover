@@ -1,4 +1,4 @@
-name: Roverlight-Build-On-Release
+name: Roverlight-Build
 
 on:
   workflow_dispatch:
