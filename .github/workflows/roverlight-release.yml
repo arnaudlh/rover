@@ -65,9 +65,8 @@ jobs:
         push: true
         load: false
         tags: |
-          ghcr.io/${{ github.repository }}/roverlight:latest
-          ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}
-          ${{ steps.meta.outputs.tags }}
+          ghcr.io/rover/roverlight:latest
+          ghcr.io/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/amd64,linux/arm64
         provenance: false
