@@ -52,6 +52,7 @@ jobs:
         platforms: ${{ matrix.platform }}
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
+        provenance: false
 
     - name: Scan container
       if: matrix.platform == 'linux/amd64'
