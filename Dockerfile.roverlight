@@ -104,8 +104,8 @@ RUN echo "Customizing userenv" && \
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
-    echo "alias t=/home/\${USERNAME}/.tfenv/tfenv-3.0.0/bin/terraform" >> /home/${USERNAME}/.bashrc && \
-    echo "alias t=/home/\${USERNAME}/.tfenv/tfenv-3.0.0/bin/terraform" >> /home/${USERNAME}/.zshrc && \
+    echo "alias t=/home/${USERNAME}/.tfenv/tfenv-3.0.0/bin/terraform" >> /home/${USERNAME}/.bashrc && \
+    echo "alias t=/home/${USERNAME}/.tfenv/tfenv-3.0.0/bin/terraform" >> /home/${USERNAME}/.zshrc && \
     echo "cd /tf/caf || true" >> /home/${USERNAME}/.bashrc && \
     echo "cd /tf/caf || true" >> /home/${USERNAME}/.zshrc && \
     echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  /home/${USERNAME}/.zshrc && \
