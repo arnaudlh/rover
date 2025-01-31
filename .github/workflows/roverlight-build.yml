@@ -52,12 +52,13 @@ jobs:
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: false
-        load: true
+        load: ${{ matrix.platform == 'linux/amd64' }}
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
 
     - name: Scan container
+      if: matrix.platform == 'linux/amd64'
       uses: anchore/scan-action@v3
       id: scan
       with:
