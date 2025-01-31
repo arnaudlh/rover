@@ -44,8 +44,8 @@ jobs:
       with:
         context: .
         file: Dockerfile.roverlight
-        cache-from: type=gha,scope=${{ github.workflow }}
-        cache-to: type=gha,mode=max,scope=${{ github.workflow }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: true
