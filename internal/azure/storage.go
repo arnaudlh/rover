@@ -1,14 +1,27 @@
 package azure
 
 import (
+	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+
 )
+
+type readSeekCloser struct {
+	*bytes.Reader
+}
+
+func (r *readSeekCloser) Close() error {
+	return nil
+}
+
+func newReadSeekCloser(data []byte) *readSeekCloser {
+	return &readSeekCloser{bytes.NewReader(data)}
+}
 
 type StorageClient struct {
 	SubscriptionID string
@@ -88,7 +101,11 @@ func (c *StorageClient) GetStorageAccountKeys(ctx context.Context, resourceGroup
 	if err != nil {
 		return nil, fmt.Errorf("failed to list storage account keys: %v", err)
 	}
-	return *resp.Keys, nil
+	keys := make([]armstorage.AccountKey, len(resp.Keys))
+	for i, key := range resp.Keys {
+		keys[i] = *key
+	}
+	return keys, nil
 }
 
 func (c *StorageClient) UploadTFState(ctx context.Context, resourceGroup, accountName, containerName, blobName string, data []byte) error {
@@ -114,7 +131,10 @@ func (c *StorageClient) UploadTFState(ctx context.Context, resourceGroup, accoun
 		return fmt.Errorf("failed to create blob client: %v", err)
 	}
 
-	_, err = serviceClient.UploadBuffer(ctx, containerName, blobName, data, nil)
+	containerClient := serviceClient.ServiceClient().NewContainerClient(containerName)
+	blobClient := containerClient.NewBlockBlobClient(blobName)
+	reader := newReadSeekCloser(data)
+	_, err = blobClient.Upload(ctx, reader, nil)
 	if err != nil {
 		return fmt.Errorf("failed to upload state file: %v", err)
 	}
@@ -149,10 +169,11 @@ func (c *StorageClient) BlobExists(ctx context.Context, resourceGroup, accountNa
 		return false, err
 	}
 
-	_, err = client.GetBlobClient(containerName, blobName).GetProperties(ctx, nil)
+	containerClient := client.ServiceClient().NewContainerClient(containerName)
+	blobClient := containerClient.NewBlockBlobClient(blobName)
+	_, err = blobClient.GetProperties(ctx, nil)
 	if err != nil {
-		var storageErr *azblob.ResponseError
-		if errors.As(err, &storageErr) && storageErr.ErrorCode == "BlobNotFound" {
+		if err != nil && err.Error() == "The specified blob does not exist." {
 			return false, nil
 		}
 		return false, fmt.Errorf("failed to check blob existence: %v", err)
@@ -174,15 +195,18 @@ func (c *StorageClient) DownloadTFState(ctx context.Context, resourceGroup, acco
 		return nil, fmt.Errorf("state file does not exist: %s", blobName)
 	}
 
-	download, err := client.DownloadStream(ctx, containerName, blobName, nil)
+	containerClient := client.ServiceClient().NewContainerClient(containerName)
+	blobClient := containerClient.NewBlockBlobClient(blobName)
+	resp, err := blobClient.DownloadStream(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download state file: %v", err)
 	}
 
-	data, err := io.ReadAll(download.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read state file: %v", err)
 	}
+	defer resp.Body.Close()
 
 	return data, nil
 }
@@ -201,12 +225,18 @@ func (c *StorageClient) DeleteTFState(ctx context.Context, resourceGroup, accoun
 		return nil // Already deleted
 	}
 
-	_, err = client.GetBlobClient(containerName, blobName).Delete(ctx, &azblob.DeleteBlobOptions{
-		DeleteSnapshots: true,
+	containerClient := client.ServiceClient().NewContainerClient(containerName)
+	blobClient := containerClient.NewBlockBlobClient(blobName)
+	_, err = blobClient.Delete(ctx, &azblob.DeleteBlobOptions{
+		DeleteSnapshots: toPtr(azblob.DeleteSnapshotsOptionType("include")),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to delete state file: %v", err)
 	}
 
 	return nil
+}
+
+func toPtr[T any](v T) *T {
+	return &v
 }

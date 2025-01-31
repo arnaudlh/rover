@@ -1,7 +1,6 @@
 package azure
 
 import (
-	"context"
 	"testing"
 )
 
