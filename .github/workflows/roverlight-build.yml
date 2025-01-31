@@ -5,7 +5,9 @@ on:
   release:
     types: [created]
   push:
-    branches: ['roverlight']
+    branches: 
+      - 'roverlight'
+      - 'devin/1738291242-modernize-github-actions'
 
 env:
   REGISTRY: ghcr.io
