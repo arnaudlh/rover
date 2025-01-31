@@ -248,9 +248,7 @@ func (o *Operations) Plan(ctx context.Context, destroy bool) error {
 		planCmd = "-destroy " + planCmd
 	}
 
-	statePath := o.getStatePath()
 	planPath := o.getPlanPath()
-
 	if err := os.MkdirAll(filepath.Dir(planPath), 0755); err != nil {
 		return &TerraformError{Op: "plan", Path: planPath, Version: o.Version,
 			Err: fmt.Errorf("failed to create plan directory: %v", err)}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
@@ -87,7 +88,7 @@ func (c *StorageClient) GetStorageAccountKeys(ctx context.Context, resourceGroup
 	if err != nil {
 		return nil, fmt.Errorf("failed to list storage account keys: %v", err)
 	}
-	return resp.Keys, nil
+	return *resp.Keys, nil
 }
 
 func (c *StorageClient) UploadTFState(ctx context.Context, resourceGroup, accountName, containerName, blobName string, data []byte) error {
@@ -148,10 +149,10 @@ func (c *StorageClient) BlobExists(ctx context.Context, resourceGroup, accountNa
 		return false, err
 	}
 
-	_, err = client.GetBlobProperties(ctx, containerName, blobName, nil)
+	_, err = client.GetBlobClient(containerName, blobName).GetProperties(ctx, nil)
 	if err != nil {
-		var storageErr *azblob.StorageError
-		if errors.As(err, &storageErr) && storageErr.ErrorCode == azblob.StorageErrorCodeBlobNotFound {
+		var storageErr *azblob.ResponseError
+		if errors.As(err, &storageErr) && storageErr.ErrorCode == "BlobNotFound" {
 			return false, nil
 		}
 		return false, fmt.Errorf("failed to check blob existence: %v", err)
@@ -178,7 +179,7 @@ func (c *StorageClient) DownloadTFState(ctx context.Context, resourceGroup, acco
 		return nil, fmt.Errorf("failed to download state file: %v", err)
 	}
 
-	data, err := download.ReadAll()
+	data, err := io.ReadAll(download.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read state file: %v", err)
 	}
@@ -200,8 +201,8 @@ func (c *StorageClient) DeleteTFState(ctx context.Context, resourceGroup, accoun
 		return nil // Already deleted
 	}
 
-	_, err = client.DeleteBlob(ctx, containerName, blobName, &azblob.DeleteBlobOptions{
-		DeleteSnapshots: azblob.DeleteSnapshotsOptionTypeInclude,
+	_, err = client.GetBlobClient(containerName, blobName).Delete(ctx, &azblob.DeleteBlobOptions{
+		DeleteSnapshots: true,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to delete state file: %v", err)
