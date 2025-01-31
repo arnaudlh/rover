@@ -77,13 +77,18 @@ jobs:
         env:
           BUILDX_BAKE_ENTITLEMENTS_FS: "0"
           DOCKER_BUILDKIT: "1"
-          DOCKER_REGISTRY: ghcr.io
-          DOCKER_IMAGE: ${{ github.repository }}
-          DOCKER_TAG: ${{ github.ref_name }}
         run: |
           docker buildx bake \
             --set *.platform=linux/amd64,linux/arm64 \
-            --set *.tags=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} \
+            --set *.tags=ghcr.io/${{ github.repository }}:${{ github.ref_name }} \
+            --set *.args.versionTerraform=1.11.0-alpha20241106 \
+            --set *.args.versionDockerCompose=2.30.3 \
+            --set *.args.versionPacker=1.11.2 \
+            --set *.args.versionPowershell=7.4.6 \
+            --set *.args.versionTerraformDocs=0.16.0 \
+            --set *.args.versionTerrascan=1.19.9 \
+            --set *.args.versionTfupdate=0.8.5 \
+            --set *.args.versionAnsible=2.18.0 \
             --allow=fs=/tmp \
             -f docker-bake.hcl \
             -f docker-bake.override.hcl \
