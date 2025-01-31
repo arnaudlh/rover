@@ -72,7 +72,7 @@ jobs:
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: true
-        load: true
+        load: false
         tags: ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}, ghcr.io/${{ github.repository }}/roverlight:latest, ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
