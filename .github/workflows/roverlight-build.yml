@@ -97,9 +97,10 @@ jobs:
           image: ghcr.io/${{ github.repository }}/rover/roverlight:${{ env.TAG }}
           severity-cutoff: critical
           fail-build: false
-          output-format: table
+          output-format: sarif
+          output-file: scan-results.sarif
 
       - name: Upload scan SARIF report
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+          sarif_file: scan-results.sarif
