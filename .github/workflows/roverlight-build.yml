@@ -1,12 +1,15 @@
 name: Roverlight-Build-Release
+# Workflow for building and scanning roverlight images
 
 on:
   workflow_dispatch:
   release:
     types: [created]
   push:
-    branches: 
+    branches:
       - 'roverlight'
+      - 'devin/1738291242-modernize-github-actions'
+      - 'devin/1738295777-multi-stage-docker'
 
 env:
   REGISTRY: ghcr.io
@@ -59,6 +62,10 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+
+    - name: Get build start time
+      id: build-start-time
+      run: echo "build_start_time=$(date +%s)" >> $GITHUB_OUTPUT
           
     - name: Building roverlight
       id: push
@@ -79,6 +86,30 @@ jobs:
         platforms: ${{ matrix.platform }}
         provenance: false
 
+    - name: Calculate build duration
+      id: build-time
+      run: |
+        end_time=$(date +%s)
+        start_time=${{ steps.build-start-time.outputs.build_start_time }}
+        duration=$((end_time - start_time))
+        echo "build_duration=$duration" >> $GITHUB_OUTPUT
+        echo "🏗️ Build took $duration seconds" >> $GITHUB_STEP_SUMMARY
+
+    - name: Comment build time on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const duration = ${{ steps.build-time.outputs.build_duration }};
+          const message = `🏗️ Build metrics:\n- Build duration: ${duration} seconds`;
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.name,
+            body: message
+          });
+
   scan:
     needs: build
     runs-on: ubuntu-latest
@@ -89,6 +120,10 @@ jobs:
       packages: read
       security-events: write
     steps:
+      - name: Get scan start time
+        id: scan-start-time
+        run: echo "scan_start_time=$(date +%s)" >> $GITHUB_OUTPUT
+
       - name: Scan container
         uses: anchore/scan-action@v3
         id: scan
@@ -102,3 +137,27 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
+
+      - name: Calculate scan duration
+        id: scan-time
+        run: |
+          end_time=$(date +%s)
+          start_time=${{ steps.scan-start-time.outputs.scan_start_time }}
+          duration=$((end_time - start_time))
+          echo "scan_duration=$duration" >> $GITHUB_OUTPUT
+          echo "🔍 Security scan took $duration seconds" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment scan time on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const duration = ${{ steps.scan-time.outputs.scan_duration }};
+            const message = `🔍 Security scan metrics:\n- Scan duration: ${duration} seconds`;
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: message
+            });

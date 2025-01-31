@@ -1,7 +1,30 @@
 ###########################################################
-# base tools and dependencies
+# Builder stage for initial setup and build dependencies
 ###########################################################
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/devcontainers/base:ubuntu as base
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/devcontainers/base:ubuntu as builder
+
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gpg \
+    gpg-agent \
+    locales \
+    unzip \
+    wget && \
+    locale-gen en_US.UTF-8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+###########################################################
+# Base stage for common tools and configurations
+###########################################################
+FROM mcr.microsoft.com/devcontainers/base:ubuntu as base
 
 ARG SSH_PASSWD TARGETARCH TARGETOS
 ARG USERNAME=vscode
@@ -24,7 +47,6 @@ WORKDIR /tf/rover
 COPY ./scripts/.kubectl_aliases .
 COPY ./scripts/zsh-autosuggestions.zsh .
 
-    # installation common tools
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-transport-https \
@@ -46,14 +68,9 @@ RUN apt-get update && \
     wget \
     zsh \
     zip && \
-    # Set the locale
     locale-gen en_US.UTF-8 && \
-    # Change ownership on the plugin cache directory
     mkdir /tf/cache && \
     chown -R ${USERNAME}:${USERNAME} ${TF_PLUGIN_CACHE_DIR} && \
-    #
-    # Create USERNAME home folder structure
-    #
     mkdir -p /tf/caf \
     /tf/rover \
     /tf/logs \
@@ -73,7 +90,6 @@ RUN apt-get update && \
     chmod 700 /home/${USERNAME}/.ssh && \
     echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
-    # for non-root user
     mkdir /commandhistory && \
     touch /commandhistory/.bash_history && \
     chown -R ${USERNAME} /commandhistory && \
@@ -82,19 +98,10 @@ RUN apt-get update && \
     echo "PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r\"" >> "/home/${USERNAME}/.bashrc" && \
     echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >>  "/home/${USERNAME}/.bashrc" && \
     echo "alias watch=\"watch \"" >> "/home/${USERNAME}/.bashrc" && \
-    # Clean-up
-    #
-    apt-get remove -y \
-        apt-utils && \
-    apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /tmp/* && \
     rm -rf /var/lib/apt/lists/* && \
     find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
-
-#
-# Switch to non-root ${USERNAME} context
-#
 
 USER ${USERNAME}
 
@@ -113,6 +120,9 @@ RUN echo "Customizing userenv" && \
     echo "source /tf/rover/zsh-autosuggestions.zsh" >>  /home/${USERNAME}/.zshrc && \
     echo "alias watch=\"watch \"" >> /home/${USERNAME}/.zshrc
 
+###########################################################
+# Final stage with minimal runtime dependencies
+###########################################################
 FROM base
 
 ARG USERNAME=vscode \
@@ -120,10 +130,30 @@ ARG USERNAME=vscode \
 
 ENV versionRover=${versionRover}
 
-RUN echo  "Set rover version to ${versionRover}..." && \
-    echo "${versionRover}" > /tf/rover/version.txt
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=base /home/${USERNAME} /home/${USERNAME}
+COPY --from=base /tf /tf
+COPY --from=base /etc/sudoers.d/${USERNAME} /etc/sudoers.d/${USERNAME}
+
+RUN echo "${versionRover}" > /tf/rover/version.txt
 
 COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh ./scripts/test_runner.sh ./
 COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
+
+USER ${USERNAME}
+
+RUN sudo apt-get update && \
+    sudo apt-get install -y --no-install-recommends \
+    ca-certificates \
+    git \
+    jq \
+    less \
+    sudo \
+    vim \
+    zsh && \
+    sudo apt-get clean && \
+    sudo rm -rf /var/lib/apt/lists/* && \
+    sudo find / -type f -name "*.pyc" -delete && \
+    sudo find / -type d -name "__pycache__" -exec rm -r {} + || true
