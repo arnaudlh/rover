@@ -74,8 +74,8 @@ jobs:
         push: true
         load: false
         tags: |
-          ghcr.io/${{ github.repository }}/rover/roverlight:latest
-          ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
+          ghcr.io/${{ github.repository }}/roverlight:latest
+          ghcr.io/${{ github.repository }}/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
         provenance: false
@@ -94,7 +94,7 @@ jobs:
         uses: anchore/scan-action@v3
         id: scan
         with:
-          image: ghcr.io/${{ github.repository }}/rover/roverlight:${{ env.TAG }}
+          image: ghcr.io/${{ github.repository }}/roverlight:${{ env.TAG }}
           severity-cutoff: critical
           fail-build: false
           output-format: sarif
