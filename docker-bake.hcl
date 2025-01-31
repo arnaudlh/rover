@@ -31,8 +31,8 @@ target "rover_local" {
     versionTfupdate      = versionTfupdate
   }
   platforms = ["linux/arm64", "linux/amd64" ]
-  # cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  # cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "roverlight" {
@@ -44,6 +44,8 @@ target "roverlight" {
     versionRover = versionRover
   }
   platforms = ["linux/arm64", "linux/amd64" ]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "rover_registry" {
@@ -73,3 +75,4 @@ variable "versionRover" {
 variable "versionTerraform" {
   default = ""
 }
+

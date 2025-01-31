@@ -1,7 +1,7 @@
 ###########################################################
 # base tools and dependencies
 ###########################################################
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/devcontainers/base:jammy as base
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/devcontainers/base:ubuntu as base
 
 ARG SSH_PASSWD TARGETARCH TARGETOS
 ARG USERNAME=vscode
