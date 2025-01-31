@@ -33,7 +33,7 @@ jobs:
           image: ghcr.io/${{ github.repository }}/rover/roverlight:latest
           severity-cutoff: critical
           fail-build: false
-          output-format: table
+          output-format: sarif
 
       - name: Upload scan SARIF report
         uses: github/codeql-action/upload-sarif@v3
