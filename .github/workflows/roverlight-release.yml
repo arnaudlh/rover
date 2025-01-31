@@ -17,6 +17,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      tag: ${{ steps.tag.outputs.date }}
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
@@ -47,7 +49,9 @@ jobs:
 
     - name: Generate tags
       id: tag
-      run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
+      run: |
+        echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
+        echo "tag=$(date +'%g%m.%d%H%M')" >> $GITHUB_ENV
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
@@ -77,6 +81,8 @@ jobs:
   scan:
     needs: build
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
     permissions:
       contents: read
       packages: read
@@ -93,7 +99,7 @@ jobs:
         uses: anchore/scan-action@v3
         id: scan
         with:
-          image: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
+          image: ghcr.io/${{ github.repository }}/rover/roverlight:${{ env.TAG }}
           severity-cutoff: critical
           fail-build: false
           output-format: table
