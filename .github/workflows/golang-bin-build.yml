@@ -75,19 +75,43 @@ jobs:
 
       - name: Build and push Docker image
         env:
-          BUILDX_BAKE_ENTITLEMENTS_FS: "0"
+          BUILDX_BAKE_ENTITLEMENTS_FS: "1"
           DOCKER_BUILDKIT: "1"
           DOCKER_REGISTRY: ghcr.io
           DOCKER_IMAGE: ${{ github.repository }}
           DOCKER_TAG: ${{ github.ref_name }}
+          USERNAME: vscode
+          USER_UID: 1000
+          USER_GID: 1000
+          TF_PLUGIN_CACHE_DIR: /tf/cache
+          TARGETOS: linux
+          TARGETARCH: amd64
+          versionKubectl: 1.28
+          versionKubelogin: 0.1.1
+          versionVault: 1.15.4
+          versionTerraform: 1.11.0-alpha20241106
+          versionDockerCompose: 2.30.3
+          versionPacker: 1.11.2
+          versionPowershell: 7.4.6
+          versionTerraformDocs: 0.16.0
+          versionTerrascan: 1.19.9
+          versionTfupdate: 0.8.5
+          versionAnsible: 2.18.0
+          versionGolang: 1.21.6
+          extensionsAzureCli: resource-graph
         run: |
           docker buildx bake \
             --set *.platform=linux/amd64,linux/arm64 \
             --set *.tags=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} \
-            --set *.args.USERNAME=vscode \
-            --set *.args.USER_UID=1000 \
-            --set *.args.USER_GID=1000 \
-            --set *.args.TF_PLUGIN_CACHE_DIR=/tf/cache \
+            --set *.args.USERNAME=${USERNAME} \
+            --set *.args.USER_UID=${USER_UID} \
+            --set *.args.USER_GID=${USER_GID} \
+            --set *.args.TF_PLUGIN_CACHE_DIR=${TF_PLUGIN_CACHE_DIR} \
+            --set *.args.TARGETOS=${TARGETOS} \
+            --set *.args.TARGETARCH=${TARGETARCH} \
+            --set *.args.versionKubectl=${versionKubectl} \
+            --set *.args.versionKubelogin=${versionKubelogin} \
+            --set *.args.versionVault=${versionVault} \
             --set *.args.versionTerraform=1.11.0-alpha20241106 \
             --set *.args.versionDockerCompose=2.30.3 \
             --set *.args.versionPacker=1.11.2 \
@@ -96,7 +120,10 @@ jobs:
             --set *.args.versionTerrascan=1.19.9 \
             --set *.args.versionTfupdate=0.8.5 \
             --set *.args.versionAnsible=2.18.0 \
+            --set *.args.versionGolang=1.21.6 \
             --set *.args.extensionsAzureCli=resource-graph \
+            --set *.output=type=registry \
+            --set *.target=rover \
             --allow=fs=/tmp \
             -f docker-bake.hcl \
             -f docker-bake.override.hcl \
