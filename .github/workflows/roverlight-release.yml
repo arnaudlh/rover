@@ -86,6 +86,7 @@ jobs:
         push-to-registry: false
 
   scan:
+    if: ${{ always() }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
