@@ -26,9 +26,10 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-${{ matrix.platform }}-buildx-${{ github.sha }}
+        key: ${{ runner.os }}-${{ matrix.platform }}-buildx-${{ hashFiles('Dockerfile.roverlight') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.platform }}-buildx-
+          ${{ runner.os }}-buildx-
     
     - name: Generate tags
       id: tag
@@ -48,7 +49,7 @@ jobs:
         context: .
         file: Dockerfile.roverlight
         cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: false
@@ -56,6 +57,7 @@ jobs:
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
+        outputs: type=image
 
     - name: Scan container
       if: matrix.platform == 'linux/amd64'
@@ -70,3 +72,9 @@ jobs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
+
+    # Move cache to avoid growing indefinitely
+    - name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
