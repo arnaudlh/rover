@@ -1,13 +1,15 @@
 name: Roverlight-Build-Release
+# Workflow for building and scanning roverlight images
 
 on:
   workflow_dispatch:
   release:
     types: [created]
   push:
-    branches: 
+    branches:
       - 'roverlight'
       - 'devin/1738291242-modernize-github-actions'
+      - 'devin/1738295777-multi-stage-docker'
 
 env:
   REGISTRY: ghcr.io
@@ -60,7 +62,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          
+
     - name: Building roverlight
       id: push
       uses: docker/build-push-action@v5
