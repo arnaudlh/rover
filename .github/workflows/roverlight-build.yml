@@ -53,6 +53,7 @@ jobs:
 
     - name: Generate tags
       id: tag
+<<<<<<< HEAD
       run: |
         echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
         echo "tag=$(date +'%g%m.%d%H%M')" >> $GITHUB_ENV
@@ -64,6 +65,23 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
 
     - name: Building roverlight
+||||||| 7d67a17
+      run: echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
+          
+    - name: Testing roverlight
+=======
+      run: |
+        echo "date=$(date +'%g%m.%d%H%M')" >> $GITHUB_OUTPUT
+        echo "tag=$(date +'%g%m.%d%H%M')" >> $GITHUB_ENV
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          
+    - name: Building roverlight
+>>>>>>> roverlight
       id: push
       uses: docker/build-push-action@v5
       with:
