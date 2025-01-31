@@ -61,7 +61,7 @@ jobs:
       uses: anchore/scan-action@v3
       id: scan
       with:
-        image: roverlight:${{ steps.tag.outputs.date }}
+        image: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         severity-cutoff: critical
 
     - name: Upload scan SARIF report
