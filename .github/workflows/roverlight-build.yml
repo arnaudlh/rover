@@ -48,8 +48,7 @@ jobs:
         cache-to: type=gha,mode=max
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
-        push: false
-        load: ${{ matrix.platform == 'linux/amd64' }}
+        push: true
         platforms: ${{ matrix.platform }}
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
