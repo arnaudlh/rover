@@ -52,10 +52,11 @@ jobs:
         build-args: |
           versionRover=${{ steps.tag.outputs.date }}
         push: false
-        load: ${{ matrix.platform == 'linux/amd64' }}
+        load: false
         tags: ghcr.io/${{ github.repository }}/rover/roverlight:${{ steps.tag.outputs.date }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
+        outputs: type=docker,dest=/tmp/image.tar
 
     - name: Scan container
       if: matrix.platform == 'linux/amd64'
