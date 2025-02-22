@@ -41,9 +41,7 @@ jobs:
           echo "Current working directory:"
           pwd
           echo "Script contents:"
-          ls -la spec/unit/lib/
-          echo "Script path contents:"
-          ls -la $GITHUB_WORKSPACE/scripts/lib/
+          cat spec/unit/lib/init.sh
           
       - name: Run Unit Tests
         run: |
