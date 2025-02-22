@@ -54,7 +54,7 @@ resource_group() {
     -o tsv
 
   az group wait --created  --resource-group ${rg_name}
-  echo "  ...created"
+  echo "...created"
 }
 
 storage_account() {
@@ -132,7 +132,7 @@ keyvault() {
       --value $(az account show --query tenantId -o tsv) \
       --query id
 
-    echo "  ...created"
+    echo "...created"
   fi
 
 }
