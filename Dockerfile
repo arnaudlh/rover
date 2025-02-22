@@ -354,16 +354,19 @@ RUN apt-get update && \
 COPY .devcontainer/.zshrc /home/${USERNAME}/
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
+# Install zsh first to avoid QEMU issues
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends zsh && \
-    groupadd --gid ${USER_GID} ${USERNAME} && \
-    useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up user and Oh My Zsh in a separate layer
+RUN groupadd --gid ${USER_GID} ${USERNAME} && \
+    useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh ${USERNAME} && \
     chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
     chmod 644 /home/${USERNAME}/.zshrc && \
     chmod 600 /home/${USERNAME}/.ssh/sshd_config && \
-    su - ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
+    su ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
-    rm -rf /var/lib/apt/lists/* && \
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
