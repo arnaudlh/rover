@@ -160,7 +160,7 @@ parse_parameters() {
       -tfstate)
         export TF_VAR_tf_name=$(parameter_value -tfstate ${2})
         if [ ${TF_VAR_tf_name##*.} != "tfstate" ]; then
-            echo "tfstate name extension must be .tfstate" >&2
+            error ${LINENO} "tfstate name extension must be .tfstate"
             exit 50
         fi
         export TF_VAR_tf_plan="${TF_VAR_tf_name%.*}.tfplan"

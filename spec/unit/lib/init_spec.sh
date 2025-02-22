@@ -92,6 +92,9 @@ Describe 'init.sh'
         export ARM_TENANT_ID="tenant123"
         export TF_VAR_tenant_id="tenant123"
         export TF_VAR_tfstate_container_name="tfstate"
+        export TF_VAR_tfstate_key="test.tfstate"
+        export TF_VAR_logged_user_objectId="user123"
+        export TF_VAR_landingzone_name="test-launchpad"
         unset mock_group_list
       }
 
