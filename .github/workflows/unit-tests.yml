@@ -25,8 +25,10 @@ jobs:
           cp -r scripts/lib/* spec/unit/lib/
           cp scripts/functions.sh spec/unit/lib/
           cp scripts/rover.sh spec/unit/lib/
-          cp -r scripts/tfcloud spec/unit/lib/
-          chmod +x spec/unit/lib/*.sh
+          mkdir -p spec/unit/lib/scripts/lib
+          cp -r scripts/lib/* spec/unit/lib/scripts/lib/
+          cp scripts/functions.sh spec/unit/lib/scripts/
+          chmod +x spec/unit/lib/*.sh spec/unit/lib/scripts/lib/*.sh
           ls -la spec/unit/lib/
           mkdir -p /tmp/test/tfstates/level0/default
           
@@ -34,7 +36,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/spec/unit/lib
           export PATH="$HOME/.local/bin:$PATH"
-          export script_path="$GITHUB_WORKSPACE/spec/unit/lib"
+          export script_path="$GITHUB_WORKSPACE/spec/unit/lib/scripts"
           export TF_DATA_DIR="/tmp/test"
           export TF_VAR_environment="test"
           export TF_VAR_level="level0"
