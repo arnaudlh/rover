@@ -23,7 +23,8 @@ jobs:
         run: |
           mkdir -p spec/unit/lib
           cp scripts/lib/*.sh spec/unit/lib/
-          cp spec/unit/lib/*.sh spec/unit/lib/ || true
+          cp scripts/functions.sh spec/unit/lib/
+          cp scripts/rover.sh spec/unit/lib/
           chmod +x spec/unit/lib/*.sh
           ls -la spec/unit/lib/
           
@@ -32,7 +33,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           export PATH="$HOME/.local/bin:$PATH"
           shellspec --init
-          shellspec --format documentation --shell bash spec/unit/lib/init_spec.sh spec/unit/lib/parse_parameters_spec.sh || exit 1
+          shellspec --format documentation --shell bash spec/unit/lib/init_spec.sh spec/unit/lib/parse_parameters_spec.sh -f d || exit 1
       
       - name: Generate Coverage Report
         run: |
