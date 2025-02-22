@@ -374,18 +374,22 @@ RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ss
     chmod 644 /home/${USERNAME}/.zshrc && \
     chmod 600 /home/${USERNAME}/.ssh/sshd_config && \
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
-    echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
-    echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
-    echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
-    echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.bashrc && \
-    echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.zshrc && \
-    echo "alias k=/usr/bin/kubectl" >> /home/${USERNAME}/.zshrc && \
-    echo "alias k=/usr/bin/kubectl" >> /home/${USERNAME}/.bashrc && \
-    echo "cd /tf/caf || true" >> /home/${USERNAME}/.bashrc && \
-    echo "cd /tf/caf || true" >> /home/${USERNAME}/.zshrc && \
-    echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >> /home/${USERNAME}/.zshrc && \
-    echo "source /tf/rover/zsh-autosuggestions.zsh" >> /home/${USERNAME}/.zshrc && \
-    echo "alias watch=\"watch \"" >> /home/${USERNAME}/.zshrc
+    { \
+        echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\""; \
+        echo "alias rover=/tf/rover/rover.sh"; \
+        echo "alias t=/usr/bin/terraform"; \
+        echo "alias k=/usr/bin/kubectl"; \
+        echo "cd /tf/caf || true"; \
+        echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases"; \
+        echo "source /tf/rover/zsh-autosuggestions.zsh"; \
+        echo "alias watch=\"watch \""; \
+    } >> /home/${USERNAME}/.zshrc && \
+    { \
+        echo "alias rover=/tf/rover/rover.sh"; \
+        echo "alias t=/usr/bin/terraform"; \
+        echo "alias k=/usr/bin/kubectl"; \
+        echo "cd /tf/caf || true"; \
+    } >> /home/${USERNAME}/.bashrc
     echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.bashrc && \
     echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.zshrc && \
     echo "alias k=/usr/bin/kubectl" >> /home/${USERNAME}/.zshrc && \
