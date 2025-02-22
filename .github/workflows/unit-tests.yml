@@ -35,6 +35,10 @@ jobs:
           # Debug information
           echo "Test environment structure:"
           ls -la spec/unit/lib/
+          echo "Script contents:"
+          cat spec/unit/lib/init.sh || true
+          cat spec/unit/lib/logger.sh || true
+          cat spec/unit/lib/functions.sh || true
           
           # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
