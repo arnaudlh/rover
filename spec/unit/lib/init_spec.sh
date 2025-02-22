@@ -78,8 +78,8 @@ Describe 'init.sh'
 
       It 'should create new resource group when none exists'
         When call init
-        The output should include "Creating resource group: test-launchpad"
-        The output should include "created"
+        The output should include "Creating resource group"
+        The output should include "...created"
       End
 
       It 'should skip creation when resource group exists'
@@ -109,6 +109,7 @@ Describe 'init.sh'
         When call storage_account "test-rg" "eastus"
         The status should eq 0
         The output should include "Creating storage account"
+        The output should include "...created"
       End
     End
 
