@@ -1,9 +1,11 @@
 # Source tfcloud scripts
-for script in ${script_path}/tfcloud/*.sh; do
-  if [ -f "$script" ]; then
-    source "$script"
-  fi
-done
+if [ -d "${script_path}/tfcloud" ]; then
+  for script in ${script_path}/tfcloud/*.sh; do
+    if [ -f "$script" ]; then
+      source "$script"
+    fi
+  done
+fi
 
 error() {
     if [ "$LOG_TO_FILE" == "true" ];then
