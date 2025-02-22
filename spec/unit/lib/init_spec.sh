@@ -188,7 +188,7 @@ Describe 'init.sh'
 
       It 'should create keyvault when none exists'
         When call keyvault "test-rg" "eastus"
-        The output should include "Creating keyvault:"
+        The output should include "Creating keyvault: "
         The output should include "...created"
         The status should eq 0
       End
