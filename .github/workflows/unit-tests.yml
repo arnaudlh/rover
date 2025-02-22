@@ -23,11 +23,13 @@ jobs:
         run: |
           # Set up test directory structure
           mkdir -p spec/unit/lib/scripts/lib
+          mkdir -p spec/unit/lib/scripts/tfcloud
           
           # Copy scripts to test directory
           cp -r scripts/lib/* spec/unit/lib/scripts/lib/
           cp scripts/functions.sh spec/unit/lib/scripts/
           cp scripts/rover.sh spec/unit/lib/scripts/
+          cp -r scripts/tfcloud/* spec/unit/lib/scripts/tfcloud/
           
           # Set up permissions
           chmod +x spec/unit/lib/scripts/lib/*.sh spec/unit/lib/scripts/*.sh
@@ -42,6 +44,8 @@ jobs:
           pwd
           echo "Script contents:"
           ls -la spec/unit/lib/scripts/
+          echo "TFCloud scripts:"
+          ls -la spec/unit/lib/scripts/tfcloud/
           
       - name: Run Unit Tests
         run: |
@@ -49,7 +53,7 @@ jobs:
           
           # Set up environment variables
           export PATH="$HOME/.local/bin:$PATH"
-          export script_path="$GITHUB_WORKSPACE"
+          export script_path="$GITHUB_WORKSPACE/spec/unit/lib/scripts"
           export TF_DATA_DIR="/tmp/test"
           export TF_VAR_environment="test"
           export TF_VAR_level="level0"
@@ -69,7 +73,7 @@ jobs:
           # Initialize and run tests
           cd spec/unit/lib
           shellspec --init
-          shellspec --format documentation --shell bash --no-banner --fail-fast init_spec.sh -f d || exit 1
+          shellspec --format documentation --shell bash --no-banner --fail-fast init_spec.sh parse_parameters_spec.sh -f d || exit 1
       
       - name: Generate Coverage Report
         run: |
