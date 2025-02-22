@@ -9,11 +9,15 @@ Describe 'init.sh'
         "group")
           case "$2" in
             "list")
-              echo "${mock_group_list:-[]}"
+              if [ ! -z "${mock_group_list}" ]; then
+                echo "${mock_group_list}"
+              else
+                echo "[]"
+              fi
               return 0
               ;;
             "create")
-              echo "/subscriptions/123/resourceGroups/test-launchpad"
+              echo "/subscriptions/123/resourceGroups/${TF_VAR_environment}-launchpad"
               return 0
               ;;
             "wait")
