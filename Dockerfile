@@ -390,15 +390,6 @@ RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ss
         echo "alias k=/usr/bin/kubectl"; \
         echo "cd /tf/caf || true"; \
     } >> /home/${USERNAME}/.bashrc
-    echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.bashrc && \
-    echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.zshrc && \
-    echo "alias k=/usr/bin/kubectl" >> /home/${USERNAME}/.zshrc && \
-    echo "alias k=/usr/bin/kubectl" >> /home/${USERNAME}/.bashrc && \
-    echo "cd /tf/caf || true" >> /home/${USERNAME}/.bashrc && \
-    echo "cd /tf/caf || true" >> /home/${USERNAME}/.zshrc && \
-    echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >> /home/${USERNAME}/.zshrc && \
-    echo "source /tf/rover/zsh-autosuggestions.zsh" >> /home/${USERNAME}/.zshrc && \
-    echo "alias watch=\"watch \"" >> /home/${USERNAME}/.zshrc
 
 FROM base
 
