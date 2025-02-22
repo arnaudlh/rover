@@ -373,11 +373,10 @@ ARG USER_GID=1000
 RUN apt-get update && \
     apt-get install -y --no-install-recommends zsh && \
     rm -rf /var/lib/apt/lists/* && \
-    # Create user and group
-    groupadd --gid ${USER_GID} ${USERNAME} && \
-    useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh ${USERNAME} && \
+    # Set zsh as default shell for vscode user
+    chsh -s /usr/bin/zsh ${USERNAME} && \
     # Set up Oh My Zsh
-    gosu ${USERNAME} sh -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
+    runuser -l ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh
 RUN groupadd --gid ${USER_GID} ${USERNAME} && \
     useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh ${USERNAME} && \
