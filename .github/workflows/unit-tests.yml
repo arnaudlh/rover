@@ -18,11 +18,17 @@ jobs:
         run: |
           curl -fsSL https://git.io/shellspec | sh -s -- --yes
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+      - name: Setup Test Environment
+        run: |
+          mkdir -p spec/unit/lib
+          chmod +x scripts/lib/*.sh
+          chmod +x spec/unit/lib/*.sh
       
       - name: Run Unit Tests
         run: |
           cd $GITHUB_WORKSPACE
-          shellspec --format documentation spec/unit/lib/ || exit 1
+          PATH="$HOME/.local/bin:$PATH" shellspec --format documentation spec/unit/lib/ || exit 1
       
       - name: Generate Coverage Report
         run: |
