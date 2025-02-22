@@ -369,21 +369,10 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-# Install zsh and set up Oh My Zsh
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends zsh && \
-    rm -rf /var/lib/apt/lists/* && \
-    # Set zsh as default shell for vscode user
-    chsh -s /usr/bin/zsh ${USERNAME} && \
-    # Set up Oh My Zsh
-    runuser -l ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
-    chmod 700 -R /home/${USERNAME}/.oh-my-zsh
-RUN groupadd --gid ${USER_GID} ${USERNAME} && \
-    useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh ${USERNAME} && \
-    chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
+# Configure shell files
+RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
     chmod 644 /home/${USERNAME}/.zshrc && \
-    chmod 600 /home/${USERNAME}/.ssh/sshd_config && \
-    su ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
+    chmod 600 /home/${USERNAME}/.ssh/sshd_config
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
