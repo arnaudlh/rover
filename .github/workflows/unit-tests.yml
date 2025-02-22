@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir -p spec/unit/lib
           cp -r scripts/lib/* spec/unit/lib/
-          cp scripts/functions.sh spec/unit/lib/
+          cp scripts/functions.sh spec/unit/lib/functions.sh
           cp scripts/rover.sh spec/unit/lib/
           chmod +x spec/unit/lib/*.sh
           ls -la spec/unit/lib/
@@ -31,7 +31,7 @@ jobs:
           
       - name: Run Unit Tests
         run: |
-          cd $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE/spec/unit
           export PATH="$HOME/.local/bin:$PATH"
           export script_path="$GITHUB_WORKSPACE/scripts"
           export TF_DATA_DIR="/tmp/test"
@@ -42,7 +42,7 @@ jobs:
           export TF_VAR_tenant_id="tenant123"
           export location="eastus"
           shellspec --init
-          shellspec --format documentation --shell bash --no-banner --fail-fast spec/unit/lib/init_spec.sh -f d || exit 1
+          shellspec --format documentation --shell bash --no-banner --fail-fast lib/init_spec.sh -f d || exit 1
       
       - name: Generate Coverage Report
         run: |
