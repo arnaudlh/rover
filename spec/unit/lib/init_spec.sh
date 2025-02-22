@@ -1,6 +1,7 @@
 Describe 'init.sh'
-  Include scripts/lib/logger.sh
-  Include scripts/lib/init.sh
+  Include lib/logger.sh
+  Include lib/init.sh
+  Include functions.sh
 
   Describe "init"
     # Mock Azure CLI commands

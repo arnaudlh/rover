@@ -23,20 +23,20 @@ jobs:
         run: |
           mkdir -p spec/unit/lib
           cp -r scripts/lib/* spec/unit/lib/
-          cp scripts/functions.sh spec/unit/lib/
-          cp scripts/rover.sh spec/unit/lib/
-          chmod +x spec/unit/lib/*.sh
-          ls -la spec/unit/lib/
+          cp scripts/functions.sh spec/unit/
+          cp scripts/rover.sh spec/unit/
+          chmod +x spec/unit/lib/*.sh spec/unit/*.sh
+          ls -la spec/unit/lib/ spec/unit/
           mkdir -p /tmp/test/tfstates/level0/default
           
       - name: Run Unit Tests
         run: |
-          cd $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE/spec/unit
           export PATH="$HOME/.local/bin:$PATH"
           export script_path="$GITHUB_WORKSPACE/scripts"
           export TF_DATA_DIR="/tmp/test"
           shellspec --init
-          shellspec --format documentation --shell bash --no-banner --fail-fast spec/unit/lib/init_spec.sh || exit 1
+          shellspec --format documentation --shell bash --no-banner --fail-fast lib/init_spec.sh || exit 1
       
       - name: Generate Coverage Report
         run: |
