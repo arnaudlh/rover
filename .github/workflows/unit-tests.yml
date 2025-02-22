@@ -46,13 +46,9 @@ jobs:
           
           # Debug information
           echo "Test environment structure:"
-          ls -la spec/unit/lib/scripts/lib/
+          ls -la spec/unit/lib/
           echo "Current working directory:"
           pwd
-          echo "Script contents:"
-          ls -la spec/unit/lib/scripts/
-          echo "TFCloud scripts:"
-          ls -la spec/unit/lib/scripts/tfcloud/
           
       - name: Run Unit Tests
         run: |
@@ -60,7 +56,7 @@ jobs:
           
           # Set up environment variables
           export PATH="$HOME/.local/bin:$PATH"
-          export script_path="$GITHUB_WORKSPACE/spec/unit/lib/scripts"
+          export script_path="$GITHUB_WORKSPACE/spec/unit/lib"
           export TF_DATA_DIR="/tmp/test"
           export TF_VAR_environment="test"
           export TF_VAR_level="level0"
@@ -83,7 +79,6 @@ jobs:
           
           # Run tests with detailed output
           echo "Running tests..."
-          cd spec/unit/lib
           SHELLSPEC_LOAD_PATH="$PWD" shellspec --format documentation --shell bash --no-banner --fail-fast *.sh -f d || exit 1
       
       - name: Generate Coverage Report
