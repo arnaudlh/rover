@@ -170,7 +170,7 @@ Describe 'init.sh'
 
       It 'should create storage account with valid name'
         When call storage_account "test-rg" "eastus"
-        The output should include "Creating storage account:"
+        The output should include "Creating storage account: st"
         The output should include "stg created"
         The output should include "role"
         The status should eq 0
