@@ -52,8 +52,8 @@ Describe 'parse_parameters.sh'
     Context "Parameter validation"
       It 'should validate tfstate extension'
         When call parse_parameters -tfstate invalid.txt
-        The stderr should include "tfstate name extension must be .tfstate"
         The status should eq 50
+        The stderr should include "tfstate name extension must be .tfstate"
       End
 
       It 'should accept valid tfstate extension'
