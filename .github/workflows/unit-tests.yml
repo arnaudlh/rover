@@ -28,6 +28,7 @@ jobs:
           cp -r scripts/lib/* spec/unit/lib/
           cp scripts/functions.sh spec/unit/lib/
           cp scripts/rover.sh spec/unit/lib/
+          cp -r scripts/tfcloud spec/unit/lib/tfcloud
           
           # Set up permissions
           chmod +x spec/unit/lib/*.sh
@@ -40,6 +41,8 @@ jobs:
           ls -la spec/unit/lib/
           echo "Current working directory:"
           pwd
+          echo "Script path contents:"
+          ls -la $GITHUB_WORKSPACE/scripts/lib/
           
       - name: Run Unit Tests
         run: |
