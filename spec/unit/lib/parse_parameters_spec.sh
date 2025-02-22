@@ -1,5 +1,6 @@
 Describe 'parse_parameters.sh'
   Include scripts/functions.sh
+  Include scripts/lib/logger.sh
   Include scripts/lib/parse_parameters.sh
 
   Describe "parse_parameters"
@@ -12,6 +13,10 @@ Describe 'parse_parameters.sh'
 
     debug() {
       echo "Debug: $1"
+    }
+
+    set_log_severity() {
+      export LOG_SEVERITY="${1}"
     }
 
     parameter_value() {
