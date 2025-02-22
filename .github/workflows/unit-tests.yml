@@ -21,22 +21,33 @@ jobs:
           
       - name: Setup Test Environment
         run: |
+          # Set up test directory structure
           mkdir -p spec/unit/lib
+          
+          # Copy scripts to test directory
           cp -r scripts/lib/* spec/unit/lib/
           cp scripts/functions.sh spec/unit/lib/
           cp scripts/rover.sh spec/unit/lib/
-          mkdir -p spec/unit/lib/scripts/lib
-          cp -r scripts/lib/* spec/unit/lib/scripts/lib/
-          cp scripts/functions.sh spec/unit/lib/scripts/
-          chmod +x spec/unit/lib/*.sh spec/unit/lib/scripts/lib/*.sh
-          ls -la spec/unit/lib/
+          
+          # Set up permissions
+          chmod +x spec/unit/lib/*.sh
+          
+          # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
+          
+          # Debug information
+          echo "Test environment structure:"
+          ls -la spec/unit/lib/
+          echo "Current working directory:"
+          pwd
           
       - name: Run Unit Tests
         run: |
           cd $GITHUB_WORKSPACE/spec/unit/lib
+          
+          # Set up environment variables
           export PATH="$HOME/.local/bin:$PATH"
-          export script_path="$GITHUB_WORKSPACE/spec/unit/lib/scripts"
+          export script_path="$GITHUB_WORKSPACE/spec/unit/lib"
           export TF_DATA_DIR="/tmp/test"
           export TF_VAR_environment="test"
           export TF_VAR_level="level0"
@@ -44,6 +55,13 @@ jobs:
           export TF_VAR_tfstate_subscription_id="sub123"
           export TF_VAR_tenant_id="tenant123"
           export location="eastus"
+          
+          # Debug information
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la
+          
+          # Initialize and run tests
           shellspec --init
           shellspec --format documentation --shell bash --no-banner --fail-fast init_spec.sh -f d || exit 1
       
