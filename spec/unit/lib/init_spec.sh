@@ -72,6 +72,8 @@ Describe 'init.sh'
         export TF_VAR_tfstate_subscription_id="sub123"
         export location="eastus"
         export TF_VAR_workspace="default"
+        export ARM_CLIENT_ID="test-client"
+        export ARM_SUBSCRIPTION_ID="sub123"
         unset mock_group_list
       }
 
