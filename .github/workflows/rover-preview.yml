@@ -13,11 +13,12 @@ jobs:
     - uses: actions/checkout@v4
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
-    - name: Docker Hub Login
-      uses: docker/login-action@v3
-      with:
-          username: aztfmod
-          password: ${{ secrets.docker_registry_password }}
+    # Docker Hub Login disabled as requested
+    # - name: Docker Hub Login
+    #   uses: docker/login-action@v3
+    #   with:
+    #       username: aztfmod
+    #       password: ${{ secrets.docker_registry_password }}
     # - name: Cache Docker layers
     #   uses: actions/cache@v2
     #   with:
