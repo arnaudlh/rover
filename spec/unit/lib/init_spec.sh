@@ -10,15 +10,19 @@ Describe 'init.sh'
           case "$2" in
             "list")
               echo "${mock_group_list:-[]}"
+              return 0
               ;;
             "create")
               echo "/subscriptions/123/resourceGroups/test-rg"
+              return 0
               ;;
             "delete")
               echo "Deleted"
+              return 0
               ;;
             "wait")
               echo "Operation completed"
+              return 0
               ;;
           esac
           ;;
@@ -28,17 +32,21 @@ Describe 'init.sh'
               case "$3" in
                 "list")
                   echo "[]"
+                  return 0
                   ;;
                 "create")
                   echo "/subscriptions/123/resourceGroups/test-rg/providers/Microsoft.Storage/storageAccounts/st123"
+                  return 0
                   ;;
                 "check-name")
                   echo '{"nameAvailable": true}'
+                  return 0
                   ;;
               esac
               ;;
             "container")
               echo '{"created": true}'
+              return 0
               ;;
           esac
           ;;
@@ -46,22 +54,28 @@ Describe 'init.sh'
           case "$2" in
             "list")
               echo "[]"
+              return 0
               ;;
             "create")
               echo "/subscriptions/123/resourceGroups/test-rg/providers/Microsoft.KeyVault/vaults/kv123"
+              return 0
               ;;
             "secret")
               echo '{"id": "secret1"}'
+              return 0
               ;;
           esac
           ;;
         "role")
           echo '{"id": "role1"}'
+          return 0
           ;;
         "account")
           echo '{"tenantId": "tenant123"}'
+          return 0
           ;;
       esac
+      return 0
     }
 
     Context "Resource creation"
