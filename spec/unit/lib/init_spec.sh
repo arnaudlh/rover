@@ -13,7 +13,7 @@ Describe 'init.sh'
               return 0
               ;;
             "create")
-              echo "/subscriptions/123/resourceGroups/test-rg"
+              echo "/subscriptions/123/resourceGroups/test-launchpad"
               return 0
               ;;
             "wait")
