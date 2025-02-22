@@ -354,12 +354,21 @@ RUN apt-get update && \
 COPY .devcontainer/.zshrc /home/${USERNAME}/
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
-# Install zsh first to avoid QEMU issues
+# Create a separate stage for zsh installation to minimize QEMU usage
+FROM --platform=${BUILDPLATFORM} ubuntu:22.04 as zsh-builder
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends zsh && \
     rm -rf /var/lib/apt/lists/*
 
-# Set up user and Oh My Zsh in a separate layer
+# Main stage
+FROM ubuntu:22.04
+
+# Copy zsh from builder
+COPY --from=zsh-builder /usr/bin/zsh /usr/bin/zsh
+COPY --from=zsh-builder /usr/lib/*-linux-*/zsh /usr/lib/*-linux-*/zsh
+COPY --from=zsh-builder /usr/share/zsh /usr/share/zsh
+
+# Set up user and Oh My Zsh
 RUN groupadd --gid ${USER_GID} ${USERNAME} && \
     useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh ${USERNAME} && \
     chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
