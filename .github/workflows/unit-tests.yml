@@ -33,8 +33,10 @@ jobs:
           cd $GITHUB_WORKSPACE
           export PATH="$HOME/.local/bin:$PATH"
           export script_path="$GITHUB_WORKSPACE/scripts"
+          export TF_DATA_DIR="/tmp/test"
+          mkdir -p "${TF_DATA_DIR}/tfstates/level0/default"
           shellspec --init
-          shellspec --format documentation --shell bash --no-banner spec/unit/lib/init_spec.sh spec/unit/lib/parse_parameters_spec.sh || exit 1
+          shellspec --format documentation --shell bash --no-banner --fail-fast spec/unit/lib/init_spec.sh spec/unit/lib/parse_parameters_spec.sh || exit 1
       
       - name: Generate Coverage Report
         run: |
