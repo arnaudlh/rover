@@ -31,7 +31,7 @@ Describe 'init.sh'
               return 0
               ;;
             "create")
-              echo "/subscriptions/123/resourceGroups/${TF_VAR_landingzone_name}"
+              echo "/subscriptions/123/resourceGroups/${TF_VAR_environment}-launchpad"
               return 0
               ;;
             "wait")
@@ -136,9 +136,8 @@ Describe 'init.sh'
       BeforeEach 'setup'
 
       It 'should create new resource group when none exists'
-        export rg_name="${TF_VAR_landingzone_name}"
         When call init
-        The output should include "Creating resource group: ${rg_name}"
+        The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
         The output should include "...created"
         The status should eq 0
       End
