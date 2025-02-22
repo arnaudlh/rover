@@ -115,20 +115,6 @@ function process_actions {
             verify_parameters
             deploy ${TF_VAR_workspace}
             ;;
-        ci)
-            register_ci_tasks
-            verify_ci_parameters
-            set_default_parameters
-            execute_ci_actions
-            ;;
-        cd)
-            verify_cd_parameters
-            set_default_parameters
-            execute_cd
-            ;;
-        test)
-            run_integration_tests "$base_directory"
-            ;;
         *)
             display_instructions
     esac

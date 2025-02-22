@@ -92,7 +92,7 @@ function build_base_rover_image {
             tag_strategy="preview-"
             ;;
         "ci")
-            registry="symphonydev.azurecr.io/"
+            registry="aztfmod.azurecr.io/"
             tag=${versionTerraform}-${tag_date_preview}
             rover_base="${registry}rover-ci"
             export rover="${rover_base}:${tag}"

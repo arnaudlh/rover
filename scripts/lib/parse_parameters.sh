@@ -64,11 +64,6 @@ parse_parameters() {
         shift 1
         export caf_command="login"
         ;;
-      validate | ci)
-        shift 1
-        export caf_command="ci"
-        export devops="true"
-        ;;
       ignite)
         shift 1
         export caf_command="ignite"
@@ -91,33 +86,6 @@ parse_parameters() {
         ;;
       purge)
         purge
-        ;;
-      deploy | cd)
-        export cd_action=${2}
-        export TF_VAR_level="all"
-        export caf_command="cd"
-        export devops="true"
-        len=$#
-        if [ "$len" == "1" ]; then
-          shift 1
-        else
-          shift 2
-        fi
-
-        ;;
-      test)
-        shift 1
-        export caf_command="test"
-        export devops="true"
-        ;;
-      -sc|--symphony-config)
-        export symphony_yaml_file=$(parameter_value --symphony-config ${2})
-        shift 2
-        ;;
-      -ct|--ci-task-name)
-        export ci_task_name=$(parameter_value --ci-task-name ${2})
-        export symphony_run_all_tasks=false
-        shift 2
         ;;
       -b|--base-dir)
         export base_directory=$(parameter_value --base-dir ${2})
