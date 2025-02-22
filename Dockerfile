@@ -408,14 +408,18 @@ ENV versionRover=${versionRover} \
 #
 # Keeping this method to support alpha build installations
 
-RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform ${versionTerraform}..." && \
-    curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" 2>&1 && \
-    sudo unzip -o -d /usr/bin /tmp/terraform.zip && \
-    sudo chmod +x /usr/bin/terraform && \
+# Create required directories
+RUN mkdir -p /tf/rover && \
     mkdir -p "/home/${USERNAME}/.terraform.cache/plugin-cache" && \
+    chown -R ${USERNAME}:${USERNAME} /tf && \
+    chown -R ${USERNAME}:${USERNAME} "/home/${USERNAME}/.terraform.cache"
+
+# Install Terraform
+RUN echo "Installing Terraform ${versionTerraform}..." && \
+    curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
+    unzip -o -d /usr/bin /tmp/terraform.zip && \
+    chmod +x /usr/bin/terraform && \
     rm /tmp/terraform.zip && \
-    #
-    echo "Set rover version to ${versionRover}..." && \
     echo "${versionRover}" > /tf/rover/version.txt
 
 RUN az config set core.login_experience_v2=false
