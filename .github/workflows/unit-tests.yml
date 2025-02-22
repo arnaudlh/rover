@@ -1,0 +1,39 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install ShellSpec
+        run: |
+          curl -fsSL https://git.io/shellspec | sh -s -- --yes
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      
+      - name: Run Unit Tests
+        run: |
+          shellspec --format documentation
+      
+      - name: Generate Coverage Report
+        run: |
+          shellspec --coverage --kcov-options "--include-pattern=scripts/"
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          
+      - name: Report Coverage
+        run: |
+          echo "Coverage Report Summary:"
+          cat coverage/coverage.txt || echo "No coverage data available"
