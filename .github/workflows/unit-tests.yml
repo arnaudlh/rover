@@ -22,28 +22,26 @@ jobs:
       - name: Setup Test Environment
         run: |
           # Set up test directory structure
-          mkdir -p spec/unit/lib/scripts/lib
+          mkdir -p spec/unit/lib
           
           # Copy scripts to test directory
-          cp -r scripts/lib/* spec/unit/lib/scripts/lib/
-          cp scripts/functions.sh spec/unit/lib/scripts/
-          cp scripts/rover.sh spec/unit/lib/scripts/
-          cp -r scripts/tfcloud spec/unit/lib/scripts/tfcloud
-          
-          # Copy test files
-          cp spec/unit/lib/init_spec.sh spec/unit/lib/
+          cp -r scripts/lib/* spec/unit/lib/
+          cp scripts/functions.sh spec/unit/lib/
+          cp scripts/rover.sh spec/unit/lib/
           
           # Set up permissions
-          chmod +x spec/unit/lib/scripts/lib/*.sh spec/unit/lib/scripts/*.sh
+          chmod +x spec/unit/lib/*.sh
           
           # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
           
           # Debug information
           echo "Test environment structure:"
-          ls -la spec/unit/lib/scripts/lib/
+          ls -la spec/unit/lib/
           echo "Current working directory:"
           pwd
+          echo "Script contents:"
+          ls -la spec/unit/lib/
           echo "Script path contents:"
           ls -la $GITHUB_WORKSPACE/scripts/lib/
           
@@ -66,6 +64,7 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "Files in current directory:"
           ls -la
+          echo "Script path: $script_path"
           
           # Initialize and run tests
           shellspec --init
