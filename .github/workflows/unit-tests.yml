@@ -22,7 +22,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           cd $GITHUB_WORKSPACE
-          shellspec --format documentation spec/unit/lib/
+          shellspec --format documentation spec/unit/lib/ || exit 1
       
       - name: Generate Coverage Report
         run: |

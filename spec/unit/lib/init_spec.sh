@@ -17,7 +17,7 @@ Describe 'init.sh'
               return 0
               ;;
             "create")
-              echo "/subscriptions/123/resourceGroups/${TF_VAR_environment}-launchpad"
+              echo "/subscriptions/123/resourceGroups/test-launchpad"
               return 0
               ;;
             "wait")
