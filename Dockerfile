@@ -415,6 +415,11 @@ RUN mkdir -p /tf/rover && \
     chown -R ${USERNAME}:${USERNAME} "/home/${USERNAME}/.terraform.cache"
 
 # Install Terraform
+ARG TARGETOS
+ARG TARGETARCH
+ARG versionTerraform
+ARG versionRover
+
 RUN echo "Installing Terraform ${versionTerraform}..." && \
     curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
     unzip -o -d /usr/bin /tmp/terraform.zip && \
