@@ -370,7 +370,11 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 
 # Configure shell files and aliases
-RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
+RUN mkdir -p /home/${USERNAME}/.ssh && \
+    touch /home/${USERNAME}/.ssh/sshd_config && \
+    touch /home/${USERNAME}/.zshrc && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.ssh && \
+    chmod 700 /home/${USERNAME}/.ssh && \
     chmod 644 /home/${USERNAME}/.zshrc && \
     chmod 600 /home/${USERNAME}/.ssh/sshd_config && \
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
