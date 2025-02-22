@@ -1,5 +1,8 @@
 Describe 'init.sh'
   Include spec_helper.sh
+  Include ./init.sh
+  Include ./logger.sh
+  Include ./functions.sh
 
   setup() {
     setup_test_env
@@ -9,13 +12,6 @@ Describe 'init.sh'
   cleanup() {
     cleanup_test_env
     rm -rf "${TF_DATA_DIR}/tfstates"
-  }
-  BeforeEach 'setup'
-  AfterEach 'cleanup'
-
-  Include ./init.sh
-  Include ./logger.sh
-  Include ./functions.sh
   }
   BeforeEach 'setup'
   AfterEach 'cleanup'
@@ -141,7 +137,7 @@ Describe 'init.sh'
 
       It 'should create new resource group when none exists'
         When call init
-        The output should include "Creating resource group: test-launchpad"
+        The output should include "Creating resource group test-launchpad"
         The output should include "...created"
         The status should eq 0
       End
