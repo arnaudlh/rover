@@ -3,6 +3,7 @@ Describe 'init.sh'
     source spec_helper.sh
     setup_test_env
     mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
+    export script_path="$PWD"
   }
   cleanup() {
     cleanup_test_env
@@ -14,14 +15,6 @@ Describe 'init.sh'
   source ./init.sh
   source ./logger.sh
   source ./functions.sh
-
-  setup() {
-    setup_test_env
-    mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
-  }
-  cleanup() {
-    cleanup_test_env
-    rm -rf "${TF_DATA_DIR}/tfstates"
   }
   BeforeEach 'setup'
   AfterEach 'cleanup'
