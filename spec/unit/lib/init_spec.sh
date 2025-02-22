@@ -2,9 +2,11 @@ Describe 'init.sh'
   setup() {
     source ./spec_helper.sh
     setup_test_env
+    mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
   }
   cleanup() {
     cleanup_test_env
+    rm -rf "${TF_DATA_DIR}/tfstates"
   }
   BeforeEach 'setup'
   AfterEach 'cleanup'

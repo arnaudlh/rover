@@ -76,7 +76,7 @@ jobs:
           
           # Run tests with detailed output
           echo "Running tests..."
-          shellspec --format documentation --shell bash --no-banner --fail-fast *.sh -f d || exit 1
+          shellspec --format documentation --shell bash --no-banner --fail-fast --require spec_helper *.sh -f d || exit 1
       
       - name: Generate Coverage Report
         run: |
