@@ -21,11 +21,13 @@ jobs:
       
       - name: Run Unit Tests
         run: |
-          shellspec --format documentation
+          cd $GITHUB_WORKSPACE
+          shellspec --format documentation spec/unit/lib/
       
       - name: Generate Coverage Report
         run: |
-          shellspec --coverage --kcov-options "--include-pattern=scripts/"
+          cd $GITHUB_WORKSPACE
+          shellspec --coverage --kcov-options "--include-pattern=scripts/" spec/unit/lib/
       
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
