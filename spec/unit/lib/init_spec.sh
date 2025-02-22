@@ -112,6 +112,7 @@ Describe 'init.sh'
       It 'should create new resource group when none exists'
         When call init
         The output should include "Creating resource group: test-launchpad"
+        The output should include "...created"
         The status should eq 0
       End
 
@@ -141,6 +142,7 @@ Describe 'init.sh'
       It 'should create storage account with valid name'
         When call storage_account "test-rg" "eastus"
         The output should include "Creating storage account:"
+        The output should include "stg created"
         The status should eq 0
       End
     End
