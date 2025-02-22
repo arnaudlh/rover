@@ -1,6 +1,10 @@
 Describe 'init.sh'
+  Include spec_helper.sh
+  Include scripts/lib/logger.sh
+  Include scripts/lib/init.sh
+  Include scripts/functions.sh
+
   setup() {
-    source ./spec_helper.sh
     setup_test_env
     mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
   }
@@ -10,10 +14,6 @@ Describe 'init.sh'
   }
   BeforeEach 'setup'
   AfterEach 'cleanup'
-
-  Include ../../../scripts/lib/logger.sh
-  Include ../../../scripts/lib/init.sh
-  Include ../../../scripts/functions.sh
 
   Describe "init"
     # Mock Azure CLI commands
