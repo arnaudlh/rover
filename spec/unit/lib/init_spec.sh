@@ -57,7 +57,7 @@ Describe 'init.sh'
                   return 0
                   ;;
                 "create")
-                  echo "/subscriptions/123/resourceGroups/test-rg/providers/Microsoft.Storage/storageAccounts/st123"
+                  echo "/subscriptions/123/resourceGroups/${TF_VAR_environment}-launchpad/providers/Microsoft.Storage/storageAccounts/st123"
                   return 0
                   ;;
                 "check-name")
@@ -79,7 +79,7 @@ Describe 'init.sh'
               return 0
               ;;
             "create")
-              echo "/subscriptions/123/resourceGroups/test-rg/providers/Microsoft.KeyVault/vaults/kv123"
+              echo "/subscriptions/123/resourceGroups/${TF_VAR_environment}-launchpad/providers/Microsoft.KeyVault/vaults/kv123"
               return 0
               ;;
             "secret")
@@ -143,14 +143,14 @@ Describe 'init.sh'
       End
 
       It 'should skip creation when resource group exists'
-        export mock_group_list='[{"name": "test-rg"}]'
+        export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
         When call init
         The output should include "Launchpad already deployed"
       End
 
       It 'should handle clean command'
         export tf_command="--clean"
-        export mock_group_list='[{"name": "test-rg"}]'
+        export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
         When call init
         The output should include "Deleting launchpad"
       End
