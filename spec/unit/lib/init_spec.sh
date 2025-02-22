@@ -137,7 +137,7 @@ Describe 'init.sh'
 
       It 'should create new resource group when none exists'
         When call init
-        The output should include "Creating resource group ${TF_VAR_landingzone_name}"
+        The output should include "Creating resource group: test-launchpad"
         The output should include "...created"
         The status should eq 0
       End
