@@ -22,23 +22,26 @@ jobs:
       - name: Setup Test Environment
         run: |
           # Set up test directory structure
-          mkdir -p spec/unit/lib
+          mkdir -p spec/unit/lib/scripts/lib
           
           # Copy scripts to test directory
-          cp -r scripts/lib/* spec/unit/lib/
-          cp scripts/functions.sh spec/unit/lib/
-          cp scripts/rover.sh spec/unit/lib/
-          cp -r scripts/tfcloud spec/unit/lib/tfcloud
+          cp -r scripts/lib/* spec/unit/lib/scripts/lib/
+          cp scripts/functions.sh spec/unit/lib/scripts/
+          cp scripts/rover.sh spec/unit/lib/scripts/
+          cp -r scripts/tfcloud spec/unit/lib/scripts/tfcloud
+          
+          # Copy test files
+          cp spec/unit/lib/init_spec.sh spec/unit/lib/
           
           # Set up permissions
-          chmod +x spec/unit/lib/*.sh
+          chmod +x spec/unit/lib/scripts/lib/*.sh spec/unit/lib/scripts/*.sh
           
           # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
           
           # Debug information
           echo "Test environment structure:"
-          ls -la spec/unit/lib/
+          ls -la spec/unit/lib/scripts/lib/
           echo "Current working directory:"
           pwd
           echo "Script path contents:"
