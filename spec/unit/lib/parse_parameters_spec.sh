@@ -8,7 +8,8 @@ Describe 'parse_parameters.sh'
     error() {
       local parent_lineno="$1"
       local message="$2"
-      >&2 echo "Error line:${parent_lineno}: message:${message}"
+      echo "$message" >&2
+      return 50
     }
 
     debug() {

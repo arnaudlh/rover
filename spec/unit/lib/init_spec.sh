@@ -80,21 +80,30 @@ Describe 'init.sh'
 
     Context "Resource creation"
       setup() {
+        # Core environment variables
         export TF_VAR_environment="test"
         export TF_VAR_level="level0"
         export tf_command=""
         export TF_VAR_tfstate_subscription_id="sub123"
         export location="eastus"
         export TF_VAR_workspace="default"
+        
+        # Azure authentication
         export ARM_CLIENT_ID="test-client"
         export ARM_CLIENT_SECRET="test-secret"
         export ARM_SUBSCRIPTION_ID="sub123"
         export ARM_TENANT_ID="tenant123"
         export TF_VAR_tenant_id="tenant123"
+        
+        # Resource naming
         export TF_VAR_tfstate_container_name="tfstate"
         export TF_VAR_tfstate_key="test.tfstate"
         export TF_VAR_logged_user_objectId="user123"
         export TF_VAR_landingzone_name="test-launchpad"
+        export TF_VAR_random_length="5"
+        export TF_VAR_prefix="test"
+        
+        # Clear mocks
         unset mock_group_list
       }
 
