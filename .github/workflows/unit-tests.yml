@@ -79,7 +79,7 @@ jobs:
           
           # Run tests with detailed output
           echo "Running tests..."
-          SHELLSPEC_LOAD_PATH="$PWD" shellspec --format documentation --shell bash --no-banner --fail-fast *.sh -f d || exit 1
+          SHELLSPEC_LOAD_PATH="$PWD" shellspec --format documentation --shell bash --no-banner --fail-fast --jobs 1 *.sh -f d || exit 1
       
       - name: Generate Coverage Report
         run: |
