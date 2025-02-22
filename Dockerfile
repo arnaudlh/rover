@@ -351,16 +351,13 @@ RUN apt-get update && \
 # Switch to non-root ${USERNAME} context
 #
 
-USER ${USERNAME}
-
 COPY .devcontainer/.zshrc /home/${USERNAME}/
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
-RUN echo "Setting up OMZ environment" && \
-    #
-    # Install Oh My Zsh
-    #
-    curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended && \
+RUN chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
+    chmod 644 /home/${USERNAME}/.zshrc && \
+    chmod 600 /home/${USERNAME}/.ssh/sshd_config && \
+    su - ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
     echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
