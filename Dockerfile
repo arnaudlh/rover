@@ -354,21 +354,50 @@ RUN apt-get update && \
 COPY .devcontainer/.zshrc /home/${USERNAME}/
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
-# Create a separate stage for zsh installation to minimize QEMU usage
-FROM --platform=${BUILDPLATFORM} ubuntu:22.04 as zsh-builder
+# Create a base stage with minimal dependencies
+FROM ubuntu:22.04 AS base
+
+# Set up environment variables first
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+
+# Install only essential packages first
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends zsh && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        locales \
+        tzdata && \
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LANGUAGE=en_US:en && \
     rm -rf /var/lib/apt/lists/*
 
-# Main stage
-FROM ubuntu:22.04
+# Create a separate stage for zsh installation
+FROM base AS zsh-builder
+
+# Install zsh in a separate layer
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends zsh && \
+    rm -rf /var/lib/apt/lists/*
+
+# Final stage
+FROM base
 
 # Copy zsh from builder
 COPY --from=zsh-builder /usr/bin/zsh /usr/bin/zsh
 COPY --from=zsh-builder /usr/lib/*-linux-*/zsh /usr/lib/*-linux-*/zsh
 COPY --from=zsh-builder /usr/share/zsh /usr/share/zsh
 
-# Set up user and Oh My Zsh
+# Set up user environment
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# Create user and set up Oh My Zsh
 RUN groupadd --gid ${USER_GID} ${USERNAME} && \
     useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh ${USERNAME} && \
     chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.zshrc /home/${USERNAME}/.ssh/sshd_config && \
