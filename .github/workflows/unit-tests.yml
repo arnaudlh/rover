@@ -22,13 +22,16 @@ jobs:
       - name: Setup Test Environment
         run: |
           mkdir -p spec/unit/lib
-          chmod +x scripts/lib/*.sh
+          cp scripts/lib/*.sh spec/unit/lib/
+          cp spec/unit/lib/*.sh spec/unit/lib/ || true
           chmod +x spec/unit/lib/*.sh
-      
+          
       - name: Run Unit Tests
         run: |
           cd $GITHUB_WORKSPACE
-          PATH="$HOME/.local/bin:$PATH" shellspec --format documentation spec/unit/lib/ || exit 1
+          export PATH="$HOME/.local/bin:$PATH"
+          shellspec --init
+          shellspec --format documentation spec/unit/lib/ || exit 1
       
       - name: Generate Coverage Report
         run: |
