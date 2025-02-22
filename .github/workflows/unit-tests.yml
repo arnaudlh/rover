@@ -75,11 +75,8 @@ jobs:
           shellspec --init
           
           # Run tests with detailed output
-          echo "Running init_spec.sh tests..."
-          shellspec --format documentation --shell bash --no-banner init_spec.sh -f d || exit 1
-          
-          echo "Running parse_parameters_spec.sh tests..."
-          shellspec --format documentation --shell bash --no-banner parse_parameters_spec.sh -f d || exit 1
+          echo "Running tests..."
+          shellspec --format documentation --shell bash --no-banner --fail-fast --require spec_helper *.sh -f d || exit 1
       
       - name: Generate Coverage Report
         run: |

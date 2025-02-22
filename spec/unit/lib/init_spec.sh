@@ -2,7 +2,6 @@ Describe 'init.sh'
   Include scripts/lib/logger.sh
   Include scripts/lib/init.sh
   Include scripts/functions.sh
-  Include scripts/tfcloud/tfcloud.sh
 
   Describe "init"
     # Mock Azure CLI commands
