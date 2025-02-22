@@ -427,9 +427,20 @@ RUN echo "Installing Terraform ${versionTerraform}..." && \
     rm /tmp/terraform.zip && \
     echo "${versionRover}" > /tf/rover/version.txt
 
-RUN az config set core.login_experience_v2=false
+# Install Azure CLI
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    az config set core.login_experience_v2=false && \
+    az extension add --name ${extensionsAzureCli} --system
 
-COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/task.sh ./scripts/test_runner.sh ./
+# Create script directories
+RUN mkdir -p /tf/rover/scripts && \
+    chown -R ${USERNAME}:${USERNAME} /tf/rover
+
+# Copy rover scripts
+COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh \
+     ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh \
+     ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/task.sh \
+     ./scripts/test_runner.sh /tf/rover/scripts/
 COPY ./scripts/ci_tasks/* ./ci_tasks/
 COPY ./scripts/lib/* ./lib/
 COPY ./scripts/tfcloud/* ./tfcloud/
