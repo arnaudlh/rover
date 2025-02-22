@@ -16,6 +16,10 @@ Describe 'init.sh'
               echo "/subscriptions/123/resourceGroups/test-rg"
               return 0
               ;;
+            "wait")
+              echo "Operation completed"
+              return 0
+              ;;
             "delete")
               echo "Deleted"
               return 0
@@ -87,6 +91,7 @@ Describe 'init.sh'
         export TF_VAR_tfstate_subscription_id="sub123"
         export location="eastus"
         export TF_VAR_workspace="default"
+        export TF_DATA_DIR="/tmp/test"
         
         # Azure authentication
         export ARM_CLIENT_ID="test-client"
@@ -105,6 +110,9 @@ Describe 'init.sh'
         
         # Clear mocks
         unset mock_group_list
+
+        # Create required directories
+        mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
       }
 
       BeforeEach 'setup'
@@ -135,6 +143,9 @@ Describe 'init.sh'
         export TF_VAR_environment="test"
         export TF_VAR_workspace="default"
         export location="eastus"
+        export TF_VAR_level="level0"
+        export TF_VAR_tfstate_subscription_id="sub123"
+        export TF_VAR_landingzone_name="test-launchpad"
       }
 
       BeforeEach 'setup'
