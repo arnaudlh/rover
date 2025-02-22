@@ -427,11 +427,16 @@ RUN echo "Installing Terraform ${versionTerraform}..." && \
     rm /tmp/terraform.zip && \
     echo "${versionRover}" > /tf/rover/version.txt
 
-# Install Azure CLI and extensions
+# Install Azure CLI and extensions (with architecture-specific handling)
 ARG extensionsAzureCli
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
-    az config set core.login_experience_v2=false && \
-    az extension add --name resource-graph --system
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" = "amd64" ]; then \
+        curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+        az config set core.login_experience_v2=false && \
+        az extension add --name resource-graph --system; \
+    else \
+        echo "Skipping Azure CLI installation for ${TARGETARCH} due to QEMU limitations"; \
+    fi
 
 # Create script directories and set permissions
 RUN mkdir -p /tf/rover/scripts && \
