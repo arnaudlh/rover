@@ -32,8 +32,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           export PATH="$HOME/.local/bin:$PATH"
+          export script_path="$GITHUB_WORKSPACE/scripts"
           shellspec --init
-          shellspec --format documentation --shell bash spec/unit/lib/init_spec.sh spec/unit/lib/parse_parameters_spec.sh -f d || exit 1
+          shellspec --format documentation --shell bash --no-banner spec/unit/lib/init_spec.sh spec/unit/lib/parse_parameters_spec.sh || exit 1
       
       - name: Generate Coverage Report
         run: |
