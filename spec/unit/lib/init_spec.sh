@@ -172,6 +172,7 @@ Describe 'init.sh'
         When call storage_account "test-rg" "eastus"
         The output should include "Creating storage account:"
         The output should include "stg created"
+        The output should include "role"
         The status should eq 0
       End
     End
@@ -187,8 +188,9 @@ Describe 'init.sh'
 
       It 'should create keyvault when none exists'
         When call keyvault "test-rg" "eastus"
-        The output should include "Creating keyvault"
-        The output should include "created"
+        The output should include "Creating keyvault:"
+        The output should include "...created"
+        The status should eq 0
       End
     End
   End
