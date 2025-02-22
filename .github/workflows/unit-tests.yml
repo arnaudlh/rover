@@ -45,11 +45,11 @@ jobs:
           
       - name: Run Unit Tests
         run: |
-          cd $GITHUB_WORKSPACE/spec/unit/lib
+          cd $GITHUB_WORKSPACE
           
           # Set up environment variables
           export PATH="$HOME/.local/bin:$PATH"
-          export script_path="$GITHUB_WORKSPACE/spec/unit/lib"
+          export script_path="$GITHUB_WORKSPACE"
           export TF_DATA_DIR="/tmp/test"
           export TF_VAR_environment="test"
           export TF_VAR_level="level0"
@@ -63,8 +63,11 @@ jobs:
           echo "Files in current directory:"
           ls -la
           echo "Script path: $script_path"
+          echo "Environment:"
+          env | grep -E "script_path|TF_|location"
           
           # Initialize and run tests
+          cd spec/unit/lib
           shellspec --init
           shellspec --format documentation --shell bash --no-banner --fail-fast init_spec.sh -f d || exit 1
       
