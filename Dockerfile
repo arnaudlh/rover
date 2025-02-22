@@ -355,7 +355,7 @@ COPY .devcontainer/.zshrc /home/${USERNAME}/
 COPY ./scripts/sshd_config /home/${USERNAME}/.ssh/sshd_config
 
 # Use a pre-built base image that includes essential packages
-FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu-22.04 AS base
+FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu-22.04 AS config-base
 
 # Set up environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -395,7 +395,7 @@ RUN mkdir -p /home/${USERNAME}/.ssh && \
         echo "cd /tf/caf || true"; \
     } >> /home/${USERNAME}/.bashrc
 
-FROM base
+FROM config-base
 
 ARG versionTerraform \
     USERNAME=vscode \
