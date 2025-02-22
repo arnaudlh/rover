@@ -1,8 +1,17 @@
 Describe 'init.sh'
-  Include spec_helper.sh
-  Include scripts/lib/logger.sh
-  Include scripts/lib/init.sh
-  Include scripts/functions.sh
+  setup() {
+    source ./spec_helper.sh
+    setup_test_env
+  }
+  cleanup() {
+    cleanup_test_env
+  }
+  BeforeEach 'setup'
+  AfterEach 'cleanup'
+
+  Include ../../../scripts/lib/logger.sh
+  Include ../../../scripts/lib/init.sh
+  Include ../../../scripts/functions.sh
 
   Describe "init"
     # Mock Azure CLI commands
