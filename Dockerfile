@@ -69,7 +69,6 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 
 # Installation of common tools
 RUN set -ex && \
-    apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -110,6 +109,8 @@ RUN set -ex && \
         wget \
         zsh \
         zip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
     #
     # Create USERNAME
     #
@@ -152,6 +153,7 @@ RUN set -ex && \
         gh && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/* && \
     #
     # Install Docker Compose - required to rebuild the rover and dynamic terminal in VSCode
     #
