@@ -101,9 +101,28 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}'
+          format: 'table'
+          output: 'trivy-results.txt'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.txt
+          
+      - name: Run Trivy for SARIF output
+        uses: aquasecurity/trivy-action@master
+        if: always()
+        with:
+          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
