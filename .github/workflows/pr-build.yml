@@ -7,6 +7,9 @@ on:
     branches:
       - devin/1740289687-ghcr-migration
       - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
 
 permissions:
   contents: write
@@ -21,6 +24,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/rover
+  BUILDX_NO_DEFAULT_LOAD: true
 
 jobs:
   build:
