@@ -231,6 +231,9 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/tmp/.buildx-cache \
+                --allow=fs.write=/tmp/.buildx-cache-new \
                 -f docker-bake-agents.hcl \
                 -f docker-bake.override.hcl \
                 --set *.platform=${os}/${platform} \
