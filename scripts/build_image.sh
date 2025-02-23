@@ -250,7 +250,7 @@ function build_rover_agents {
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${rover_agents} for registry '${registry}'"
             ;;
-        "github")
+        "github"|"ghcr")
             tag=${versionTerraform}-${tag_date_release}
             echo " - tag           - ${tag}"
 
@@ -260,8 +260,11 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-agents.hcl \
-                -f docker-bake.override.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --push rover_agents
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
