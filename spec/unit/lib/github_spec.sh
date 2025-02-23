@@ -7,6 +7,8 @@ Describe 'github.com.sh'
   setup() {
     setup_test_env
     export script_path="$PWD"
+    export LOG_TO_FILE="false"
+    export LOG_LEVEL="INFO"
     
     # Create mock bin directory
     mkdir -p /tmp/mock_bin
