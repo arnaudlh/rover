@@ -1,12 +1,10 @@
 name: PR Build & Test
 
 on:
-  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
     branches:
-      - 'devin/**'
       - main
 
 concurrency:
@@ -14,11 +12,11 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
   packages: write
   checks: write
   pull-requests: write
-  actions: write
+  actions: read
   id-token: write
   statuses: write
   security-events: write
