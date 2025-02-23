@@ -1,5 +1,12 @@
 check_github_session() {
   information "@call check_github_session"
+  
+  # Check GitHub authentication first
+  if ! /usr/bin/gh auth status >/dev/null 2>&1; then
+    error ${LINENO} "GitHub authentication failed" 1
+    return 1
+  fi
+
   url=$(git config --get remote.origin.url)
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')
   export git_project=$(basename -s .git $(git config --get remote.origin.url))
@@ -20,6 +27,7 @@ check_github_session() {
     verify_github_secret "codespaces" "GH_TOKEN"
   fi
 
+  # Show full auth status at the end
   /usr/bin/gh auth status
 }
 
