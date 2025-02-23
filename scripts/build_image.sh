@@ -145,7 +145,7 @@ function build_base_rover_image {
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.TARGETARCH=${architecture}" \
                 --set "*.args.TARGETOS=${os}" \
-                --set "*.args.versionRover=rover:local" \
+                --set "*.args.versionRover=localhost:5000/rover:local" \
                 --set "*.args.versionTerraform=${versionTerraform}" \
                 --set "*.tags=rover:local" \
                 --load \
@@ -159,7 +159,7 @@ function build_base_rover_image {
                 -f docker-bake-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.platform=linux/amd64" \
-                --set "*.args.versionRover=rover:local" \
+                --set "*.args.versionRover=localhost:5000/rover:local" \
                 --load \
                 rover_agents
             # Local build complete
