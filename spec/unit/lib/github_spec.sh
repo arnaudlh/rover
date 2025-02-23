@@ -71,8 +71,8 @@ esac
 return 0
 EOF
     chmod +x /tmp/mock_bin/gh
-    ln -sf /tmp/mock_bin/gh /tmp/mock_bin/usr/bin/gh
-    chmod +x /tmp/mock_bin/gh
+    mkdir -p /tmp/mock_bin/usr/bin
+    ln -sf $(readlink -f /tmp/mock_bin/gh) /tmp/mock_bin/usr/bin/gh
     
     # Mock git command
     git() {
