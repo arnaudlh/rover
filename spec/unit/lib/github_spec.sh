@@ -30,29 +30,46 @@ Describe 'github.com.sh'
                 ;;
             esac
             ;;
-          "repo")
+          "api")
+            if [[ "$2" == "repos/"* ]]; then
+              echo '{"id": 12345, "svn_url": "https://github.com/test/repo"}'
+              return 0
+            fi
+            ;;
+          "secret")
             case "$2" in
-              "view")
-                if [ "${mock_repo_error}" = "true" ]; then
-                  return 1
+              "list")
+                if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+                  echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+                  return 0
                 fi
-                echo "owner/repo"
-                return 0
                 ;;
             esac
             ;;
         esac
         return 0
       }
+      export -f gh
     }
 
     BeforeEach 'setup'
 
     Context "Authentication verification"
       It 'should verify GitHub authentication successfully'
+        # Mock git config
+        git() {
+          case "$2" in
+            "--get")
+              echo "https://github.com/owner/repo.git"
+              return 0
+              ;;
+          esac
+          return 0
+        }
+        export -f git
         PATH="/tmp/mock_bin:$PATH"
         When call check_github_session
-        The output should include "Connected to GiHub: repos/"
+        The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
         The status should eq 0
       End
