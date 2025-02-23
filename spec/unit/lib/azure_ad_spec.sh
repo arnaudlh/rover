@@ -27,7 +27,8 @@ Describe 'azure_ad.sh'
                     if [ "${mock_error}" = "true" ]; then
                       return 1
                     fi
-                    if [ "$4" = "--query" ] && [ "$5" = "id" ] && [ "$6" = "-o" ] && [ "$7" = "tsv" ]; then
+                    # Handle --query id -o tsv --only-show-errors flags
+                    if [[ "$*" =~ "--query id" && "$*" =~ "-o tsv" ]]; then
                       echo "user123"
                     else
                       echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
