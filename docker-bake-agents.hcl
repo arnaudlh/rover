@@ -31,11 +31,15 @@ target "common_agent" {
   context = "."
   args = {
     USERNAME = "vscode"
+    versionRover = ""
   }
   platforms = ["linux/amd64"]
   output = ["type=docker"]
   cache-from = ["type=local,src=/tmp/.buildx-cache"]
   cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
+  contexts = {
+    rover = "docker-image://rover:local"
+  }
 }
 
 target "github" {

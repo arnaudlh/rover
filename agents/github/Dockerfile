@@ -1,5 +1,4 @@
-ARG versionRover
-FROM rover:local
+FROM rover
 
 ARG AGENT_NAME
 ARG AGENT_TOKEN

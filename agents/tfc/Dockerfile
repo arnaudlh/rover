@@ -1,5 +1,4 @@
-ARG versionRover
-FROM rover:local
+FROM rover
 
 ARG versionTfc
 ARG TFC_AGENT_TOKEN
