@@ -130,22 +130,25 @@ jobs:
             const buildId = '${{ steps.build.outputs.digest }}' || 'N/A';
             const dockerVersion = '${{ steps.build.outputs.docker-version }}' || 'N/A';
             const buildkitVersion = '${{ steps.build.outputs.buildkit-version }}' || 'N/A';
+            const trivyStatus = process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌';
             
-            const body = `Build Status: ${status}
-
-Build Information:
-- Platforms: linux/amd64
-- SHA: ${context.sha}
-- Build ID: ${buildId}
-- Security: Trivy scan results uploaded to Security tab
-
-Status Details:
-- Build: ${status}
-- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}
-
-Debug Information:
-- Docker Version: ${dockerVersion}
-- BuildKit Version: ${buildkitVersion}`;
+            const body = [
+              `Build Status: ${status}`,
+              '',
+              'Build Information:',
+              '- Platforms: linux/amd64',
+              `- SHA: ${context.sha}`,
+              `- Build ID: ${buildId}`,
+              '- Security: Trivy scan results uploaded to Security tab',
+              '',
+              'Status Details:',
+              `- Build: ${status}`,
+              `- Security Scan: ${trivyStatus}`,
+              '',
+              'Debug Information:',
+              `- Docker Version: ${dockerVersion}`,
+              `- BuildKit Version: ${buildkitVersion}`
+            ].join('\n');
             
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
@@ -156,7 +159,6 @@ Debug Information:
               });
             }
             
-            // Set status check
             const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
             await github.rest.checks.create({
               owner,
