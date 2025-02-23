@@ -35,15 +35,15 @@ Describe 'github.com.sh'
               echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
               return 0
             fi
-            if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
-              echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
-              return 0
-            fi
             ;;
           "secret")
             case "$2" in
               "list")
                 if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+                  if [ "${mock_secret_error}" = "true" ]; then
+                    echo "Error: Secret not found" >&2
+                    return 1
+                  fi
                   echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
                   return 0
                 fi
