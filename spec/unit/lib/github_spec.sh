@@ -35,13 +35,26 @@ case "$1" in
           echo "Error: Not authenticated with GitHub" >&2
           return 1
         fi
-        # Match actual gh auth status output format
-        echo "github.com" >&2
-        echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)" >&2
-        echo "  - Active account: true" >&2
-        echo "  - Git operations protocol: https" >&2
-        echo "  - Token: ghs_************************************" >&2
-        return 0
+        # Mock gh auth status
+        if [ "$1" = "auth" ] && [ "$2" = "status" ]; then
+          echo "github.com"
+          echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)"
+          echo "  - Active account: true"
+          echo "  - Git operations protocol: https"
+          echo "  - Token: ghs_************************************"
+          return 0
+        fi
+        # Mock gh api calls
+        if [ "$1" = "api" ] && [[ "$2" == "repos/${git_org_project}" ]]; then
+          echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+          return 0
+        fi
+        # Mock gh secret list
+        if [ "$1" = "secret" ] && [ "$2" = "list" ] && [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+          return 0
+        fi
+        return 1
         ;;
     esac
     ;;
@@ -126,9 +139,9 @@ EOF
         export -f verify_github_secret
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
-        The stderr should include "github.com"
-        The stderr should include "  ✓ Logged in to github.com account"
-        The stderr should include "  - Git operations protocol: https"
+        The output should include "github.com"
+        The output should include "  ✓ Logged in to github.com account"
+        The output should include "  - Git operations protocol: https"
         The status should eq 0
       End
 
