@@ -29,6 +29,8 @@ Describe 'init.sh'
       setup() {
         # Mock functions
         display_instructions() { echo "Instructions displayed"; }
+        export tf_command=""
+        export mock_group_list='[]'
         az() {
           case "$1" in
             "group")
@@ -127,8 +129,6 @@ Describe 'init.sh'
       BeforeEach 'setup'
 
       It 'should create new resource group when none exists'
-        unset mock_group_list
-        export tf_command=""
         When call init
         The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
         The output should include "...created"
