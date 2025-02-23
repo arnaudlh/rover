@@ -143,6 +143,8 @@ function build_base_rover_image {
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.TARGETARCH=${architecture}" \
                 --set "*.args.TARGETOS=${os}" \
+                --set "*.args.versionRover=${rover_base}:${tag}" \
+                --set "*.args.versionTerraform=${versionTerraform}" \
                 --load \
                 rover_local
             # Pull from in-memory local registry to local docker images
