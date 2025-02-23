@@ -140,7 +140,7 @@ function build_base_rover_image {
             docker buildx inspect --bootstrap && \
             docker buildx bake \
                 -f docker-bake.hcl \
-                -f docker-bake.override.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.platform=${os}/${architecture}" \
                 --load \
                 rover_local
