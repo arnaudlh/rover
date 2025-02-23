@@ -35,6 +35,8 @@ Describe 'azure_ad.sh'
                     return 0
                     ;;
                 esac
+                ;;
+            esac
             ;;
         esac
         return 0
