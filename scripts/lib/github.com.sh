@@ -14,7 +14,6 @@ check_github_session() {
   url=$(git config --get remote.origin.url)
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')
   export git_project=$(basename -s .git $(git config --get remote.origin.url))
-  success "Connected to GiHub: repos/${git_org_project}"
   if ! project=$(gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id); then
     error ${LINENO} "Failed to access GitHub repository ${git_org_project}" 1
     return 1
