@@ -218,10 +218,6 @@ EOF
           return 0
         }
         export -f verify_github_secret
-    ;;
-  "secret")
-    case "$2" in
-      "list")
         if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
           echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
           return 0
