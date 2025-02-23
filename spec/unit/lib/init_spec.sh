@@ -43,12 +43,10 @@ Describe 'init.sh'
               case "$2" in
                 "list")
                   # Match the exact query format from init.sh
-                  if [[ "$*" == *"group list"* ]] && [[ "$*" == *"--query"* ]]; then
-                    # Extract and normalize the query part
-                    local query_part=$(echo "$*" | grep -o "\[?tags.*\]" || echo "")
-                    local expected_query="[?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']"
-                    
-                    if [[ "$query_part" == "$expected_query" ]]; then
+                  # Match the exact query format from init.sh
+                  if [[ "$*" == *"group list"* ]] && [[ "$*" == *"--query"* ]] && [[ "$*" == *"-o json"* ]]; then
+                    # Check if query matches expected format
+                    if [[ "$*" == *"[?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']"* ]]; then
                       if [ ! -z "${mock_group_list}" ]; then
                         echo "${mock_group_list}"
                       else
