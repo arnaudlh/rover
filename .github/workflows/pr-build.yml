@@ -127,13 +127,16 @@ jobs:
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const buildId = '${{ steps.build.outputs.digest }}' || 'N/A';
+            const dockerVersion = '${{ steps.build.outputs.docker-version }}' || 'N/A';
+            const buildkitVersion = '${{ steps.build.outputs.buildkit-version }}' || 'N/A';
             
             const body = `Build Status: ${status}
 
 Build Information:
 - Platforms: linux/amd64
 - SHA: ${context.sha}
-- Build ID: ${{ steps.build.outputs.digest || 'N/A' }}
+- Build ID: ${buildId}
 - Security: Trivy scan results uploaded to Security tab
 
 Status Details:
@@ -141,8 +144,8 @@ Status Details:
 - Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}
 
 Debug Information:
-- Docker Version: ${{ steps.build.outputs.docker-version || 'N/A' }}
-- BuildKit Version: ${{ steps.build.outputs.buildkit-version || 'N/A' }}`;
+- Docker Version: ${dockerVersion}
+- BuildKit Version: ${buildkitVersion}`;
             
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
