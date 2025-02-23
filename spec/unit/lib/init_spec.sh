@@ -60,11 +60,7 @@ Describe 'init.sh'
                     fi
                     echo "[]"
                     return 0
-                  else
-                    echo "[]"
-                    return 0
                   fi
-                  return 0
                   ;;
                 "create")
                   echo "/subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad"
