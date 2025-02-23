@@ -142,7 +142,7 @@ Describe 'init.sh'
       End
 
       It 'should skip creation when resource group exists'
-        export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
+        export mock_group_list='[{"name": "test-launchpad", "tags": {"caf_environment": "test", "caf_tfstate": "level0"}}]'
         When call init
         The output should include "Launchpad already deployed in"
         The status should eq 0
@@ -150,7 +150,7 @@ Describe 'init.sh'
 
       It 'should handle clean command when resource group exists'
         export tf_command="--clean"
-        export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
+        export mock_group_list='[{"name": "test-launchpad", "tags": {"caf_environment": "test", "caf_tfstate": "level0"}}]'
         When call init
         The output should include "Deleting launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad"
         The output should include "Resource group deleted"
@@ -160,7 +160,7 @@ Describe 'init.sh'
 
       It 'should handle clean command when resource group does not exist'
         export tf_command="--clean"
-        export mock_group_list="[]"
+        export mock_group_list='[]'
         When call init
         The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad has been clean-up."
         The status should eq 0
