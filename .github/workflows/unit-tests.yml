@@ -28,9 +28,6 @@ jobs:
           mkdir -p spec/unit/lib/tfcloud
           mkdir -p spec/support
           
-          # Copy spec_helper.sh to support directory
-          cp spec/unit/lib/spec_helper.sh spec/support/
-          
           # Copy scripts to test directory
           cp -r scripts/lib/* spec/unit/lib/
           cp -r scripts/tfcloud/* spec/unit/lib/tfcloud/
@@ -46,6 +43,9 @@ jobs:
           cp scripts/backend.hcl.tf spec/unit/lib/
           cp scripts/backend.azurerm.tf spec/unit/lib/
           cp scripts/task.sh spec/unit/lib/
+          
+          # Move spec_helper.sh to support directory after copying all scripts
+          mv spec/unit/lib/spec_helper.sh spec/support/ || true
           
           # Set up permissions
           chmod +x spec/unit/lib/*.sh || true
