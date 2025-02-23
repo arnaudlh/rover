@@ -60,9 +60,9 @@ Describe 'init.sh'
                     fi
                     echo "[]"
                     return 0
-                    fi
                   else
                     echo "[]"
+                    return 0
                   fi
                   return 0
                   ;;
