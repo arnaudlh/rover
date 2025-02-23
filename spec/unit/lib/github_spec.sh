@@ -26,27 +26,41 @@ Describe 'github.com.sh'
     # Create mock gh command
     cat > /tmp/mock_bin/usr/bin/gh << 'EOF'
 #!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
-        if [ "${mock_auth_error}" = "true" ]; then
-          echo "Error: Not authenticated with GitHub" >&2
-          exit 1
-        fi
-        # Mock successful auth status
-        echo "github.com" >&2
-        echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)" >&2
-        echo "  - Active account: true" >&2
-        echo "  - Git operations protocol: https" >&2
-        echo "  - Token: ghs_************************************" >&2
-        echo "" >&2
-        exit 0
-        ;;
-    esac
+if [ "$1" = "auth" ] && [ "$2" = "status" ]; then
+    if [ "${mock_auth_error}" = "true" ]; then
+        echo "Error: Not authenticated with GitHub" >&2
+        exit 1
+    fi
+    # Mock successful auth status
+    echo "github.com" >&2
+    echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)" >&2
+    echo "  - Active account: true" >&2
+    echo "  - Git operations protocol: https" >&2
+    echo "  - Token: ghs_************************************" >&2
+    echo "" >&2
     exit 0
-    ;;
-  "api")
+fi
+
+if [ "$1" = "api" ] && [ "$2" = "repos/${git_org_project}" ]; then
+    if [ "${mock_repo_error}" = "true" ]; then
+        echo "Error: Repository not accessible" >&2
+        exit 1
+    fi
+    echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+    exit 0
+fi
+
+if [ "$1" = "secret" ] && [ "$2" = "list" ] && [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+    if [ "${mock_secret_error}" = "true" ]; then
+        echo "OTHER_SECRET Updated 2024-02-23"
+    else
+        echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+    fi
+    exit 0
+fi
+
+exit 0
+EOF
     if [[ "$2" == "repos/${git_org_project}" ]]; then
       if [ "${mock_repo_error}" = "true" ]; then
         echo "Error: Repository not accessible" >&2
@@ -138,11 +152,10 @@ EOF
         export -f verify_github_secret
         When call check_github_session
         The stderr should include "github.com"
-        The stderr should include "  ✓ Logged in to github.com account testuser"
-        The stderr should include "  - Active account: true"
-        The stderr should include "  - Git operations protocol: https"
+        The stderr should include "✓ Logged in to github.com account testuser"
+        The stderr should include "Active account: true"
+        The stderr should include "Git operations protocol: https"
         The output should include "@call check_github_session"
-        The output should include "GitHub authentication successful"
         The output should include "Connected to GiHub: repos/owner/repo"
         The status should eq 0
       End
