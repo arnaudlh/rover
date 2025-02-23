@@ -7,9 +7,51 @@ Describe 'github.com.sh'
   setup() {
     setup_test_env
     export script_path="$PWD"
+    
+    # Create mock bin directory
+    mkdir -p /tmp/mock_bin
+    export PATH="/tmp/mock_bin:$PATH"
+    
+    # Create mock gh command
+    cat > /tmp/mock_bin/gh << 'EOF'
+#!/bin/bash
+case "$1" in
+  "auth")
+    case "$2" in
+      "status")
+        echo "Logged in to github.com as testuser"
+        return 0
+        ;;
+    esac
+    ;;
+  "api")
+    if [[ "$2" == "repos/owner/repo" ]]; then
+      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+      return 0
+    fi
+    if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
+      echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
+      return 0
+    fi
+    ;;
+  "secret")
+    case "$2" in
+      "list")
+        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+          return 0
+        fi
+        ;;
+    esac
+    ;;
+esac
+return 0
+EOF
+    chmod +x /tmp/mock_bin/gh
   }
   cleanup() {
     cleanup_test_env
+    rm -rf /tmp/mock_bin
   }
   BeforeEach 'setup'
   AfterEach 'cleanup'
@@ -101,48 +143,9 @@ Describe 'github.com.sh'
 
     Context "Authentication verification"
       It 'should verify GitHub authentication successfully'
-        PATH="/tmp/mock_bin:$PATH"
         export git_org_project="owner/repo"
         export mock_secret_error="false"
         export GITHUB_TOKEN="dummy_token"
-        
-        # Create mock gh command
-        mkdir -p /tmp/mock_bin
-        cat > /tmp/mock_bin/gh << 'EOF'
-#!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
-        echo "Logged in to github.com as testuser"
-        return 0
-        ;;
-    esac
-    ;;
-  "api")
-    if [[ "$2" == "repos/owner/repo" ]]; then
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
-    if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
-      echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
-      return 0
-    fi
-    ;;
-  "secret")
-    case "$2" in
-      "list")
-        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          return 0
-        fi
-        ;;
-    esac
-    ;;
-esac
-return 0
-EOF
-        chmod +x /tmp/mock_bin/gh
         
         # Mock git commands for this specific test
         git() {
