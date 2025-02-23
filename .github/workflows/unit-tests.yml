@@ -74,7 +74,7 @@ jobs:
           
           # Set SHELLSPEC environment variables
           export SHELLSPEC_HELPERDIR="$PWD/spec/support"
-          export SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib"
+          export SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib:$PWD/spec/unit/lib/scripts"
           
           # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
@@ -135,7 +135,7 @@ jobs:
           
           # Run unit tests
           echo "Running unit tests..."
-          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib" shellspec \
+          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/spec/unit/lib/scripts" shellspec \
             --format documentation \
             --shell bash \
             --no-banner \
