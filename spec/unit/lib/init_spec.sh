@@ -219,8 +219,11 @@ Describe 'init.sh'
         When call init
         The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
         The output should include "...created"
+        The output should include "Creating storage account: st${TF_VAR_environment}"
         The output should include "stg created"
         The output should include "role"
+        The output should include "Creating keyvault: kv${TF_VAR_environment}"
+        The output should include "...created"
         The output should include "Instructions displayed"
         The status should eq 0
       End
@@ -234,6 +237,12 @@ Describe 'init.sh'
 
       It 'should handle clean command'
         export tf_command="--clean"
+        export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
+        When call init
+        The output should include "Deleting launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad"
+        The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in ${TF_VAR_environment}-launchpad destroyed."
+        The status should eq 0
+      End
         export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
         When call init
         The output should include "Deleting launchpad"
