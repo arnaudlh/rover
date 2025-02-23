@@ -263,13 +263,11 @@ jobs:
   msdo-scan:
     needs: [build-agents]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [linux/amd64]
-        agent: [github]
-      fail-fast: false
     permissions:
       security-events: write
+      contents: read
+      id-token: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
       
@@ -280,14 +278,14 @@ jobs:
         with:
           tools: trivy
           categories: containers
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-amd64
           
       - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-          category: 'MSDO-${{ matrix.platform }}-${{ matrix.agent }}'
+          category: 'MSDO-Base'
           wait-for-processing: true
           
   build-report:
