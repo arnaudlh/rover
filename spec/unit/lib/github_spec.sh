@@ -121,7 +121,7 @@ EOF
         export -f verify_github_secret
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
-        The output should include "✓ Logged in to github.com"
+        The stderr should include "✓ Logged in to github.com"
         The status should eq 0
       End
 
