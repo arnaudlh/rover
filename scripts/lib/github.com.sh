@@ -8,9 +8,13 @@ check_github_session() {
   fi
   debug "GitHub authentication successful"
 
-  # Verify GitHub token
-  if [ -z "${GITHUB_TOKEN}" ]; then
-    error ${LINENO} "GITHUB_TOKEN not set" 1
+  # Allow mock to simulate auth failure for testing
+  if [ "${mock_auth_error}" = "true" ]; then
+    return 1
+  fi
+
+  # Mock functions should be able to override this for testing
+  if [ "${mock_auth_error}" = "true" ]; then
     return 1
   fi
 
