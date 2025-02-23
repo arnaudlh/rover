@@ -37,33 +37,35 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
 
-      - name: Build Docker image
-        run: |
-          docker build \
-            --build-arg TARGETARCH=amd64 \
-            --build-arg TARGETOS=linux \
-            --build-arg USER_UID=1000 \
-            --build-arg USER_GID=1000 \
-            --build-arg USERNAME=vscode \
-            --build-arg versionVault=1.15.0 \
-            --build-arg versionGolang=1.21.6 \
-            --build-arg versionKubectl=1.28.4 \
-            --build-arg versionKubelogin=0.1.0 \
-            --build-arg versionDockerCompose=2.24.1 \
-            --build-arg versionTerraformDocs=0.17.0 \
-            --build-arg versionPacker=1.10.0 \
-            --build-arg versionPowershell=7.4.1 \
-            --build-arg versionAnsible=2.16.2 \
-            --build-arg extensionsAzureCli=aks-preview \
-            --build-arg versionTerrascan=1.18.3 \
-            --build-arg versionTfupdate=0.7.2 \
-            --target base \
-            -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
-            .
-
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
+          target: base
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            TARGETARCH=amd64
+            TARGETOS=linux
+            USER_UID=1000
+            USER_GID=1000
+            USERNAME=vscode
+            versionVault=1.15.0
+            versionGolang=1.21.6
+            versionKubectl=1.28.4
+            versionKubelogin=0.1.0
+            versionDockerCompose=2.24.1
+            versionTerraformDocs=0.17.0
+            versionPacker=1.10.0
+            versionPowershell=7.4.1
+            versionAnsible=2.16.2
+            extensionsAzureCli=aks-preview
+            versionTerrascan=1.18.3
+            versionTfupdate=0.7.2
           
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
