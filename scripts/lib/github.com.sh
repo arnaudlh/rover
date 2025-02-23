@@ -1,4 +1,6 @@
 check_github_session() {
+  information "@call check_github_session"
+  
   # Check GitHub token first
   if [ -z "${GITHUB_TOKEN}" ]; then
     echo "GITHUB_TOKEN not set" >&2
