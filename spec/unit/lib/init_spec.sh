@@ -51,6 +51,8 @@ Describe 'init.sh'
                   return 0
                   ;;
                 "create")
+                  ;;
+                "create")
                   echo "/subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad"
                   return 0
                   ;;
