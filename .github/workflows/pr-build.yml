@@ -4,9 +4,7 @@ on:
   pull_request:
     branches: [ main ]
   push:
-    branches:
-      - '**'
-      - '!main'  # Exclude main branch to avoid duplicate runs on PRs
+    branches: [ devin/1740289687-ghcr-migration ]
 
 permissions:
   contents: read
