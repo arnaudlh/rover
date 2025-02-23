@@ -268,20 +268,21 @@ jobs:
         platform: [linux/amd64, linux/arm64]
         agent: [github, tfc, gitlab, azure_devops]
       fail-fast: false
-    env:
-      DOCKER_BUILDKIT: 1
-      BUILDKIT_PROGRESS: plain
     steps:
       - uses: actions/checkout@v4
       
       # Scan base image
-      - uses: microsoft/security-devops-action@v1
+      - name: Run MSDO scan
+        uses: microsoft/security-devops-action@v1
         id: msdo
         with:
           tools: trivy,bandit,binskim,templateanalyzer
           categories: IaC,containers,python,general
           image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
-      - uses: github/codeql-action/upload-sarif@v3
+          
+      - name: Upload MSDO scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
           category: 'MSDO-${{ matrix.platform }}-${{ matrix.agent }}'
