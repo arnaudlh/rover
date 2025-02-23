@@ -1,4 +1,4 @@
-FROM rover:local
+FROM localhost/rover:local
 
 ARG AGENT_NAME
 ARG AGENT_TOKEN

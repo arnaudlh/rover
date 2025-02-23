@@ -1,4 +1,4 @@
-FROM rover:local
+FROM localhost/rover:local
 
 ARG versionTfc
 ARG TFC_AGENT_TOKEN
