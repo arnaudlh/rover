@@ -149,7 +149,17 @@ function build_base_rover_image {
                 --set "*.args.versionTerraform=${versionTerraform}" \
                 --set "*.tags=rover:local" \
                 --load \
-                rover_local
+                rover_local && \
+            # Build agents using local image
+            docker buildx bake \
+                --allow=fs.read=/tmp/.buildx-cache \
+                --allow=fs.write=/tmp/.buildx-cache-new \
+                -f docker-bake-agents.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.platform=linux/amd64" \
+                --set "*.args.versionRover=rover:local" \
+                --load \
+                rover_agents
             # Local build complete
             echo "Local build completed successfully"
             ;;
