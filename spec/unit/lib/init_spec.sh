@@ -127,14 +127,15 @@ Describe 'init.sh'
       BeforeEach 'setup'
 
       It 'should create new resource group when none exists'
-        export mock_group_list='[]'
+        unset mock_group_list
+        export tf_command=""
         When call init
-        The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
+        The output should include "Creating resource group: test-launchpad"
         The output should include "...created"
-        The output should include "Creating storage account: st${TF_VAR_environment}"
+        The output should include "Creating storage account: sttest"
         The output should include "stg created"
         The output should include "role"
-        The output should include "Creating keyvault: kv${TF_VAR_environment}"
+        The output should include "Creating keyvault: kvtest"
         The output should include "...created"
         The output should include "Instructions displayed"
         The status should eq 0
