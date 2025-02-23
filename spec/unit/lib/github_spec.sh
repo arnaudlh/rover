@@ -95,34 +95,15 @@ Describe 'github.com.sh'
       export git_org_project="owner/repo"
       export GITHUB_TOKEN="dummy_token"
       export mock_secret_error="false"
-      export -f gh
     }
 
     BeforeEach 'setup'
 
     Context "Authentication verification"
       It 'should verify GitHub authentication successfully'
-        # Mock git config and commands
-        git() {
-          case "$1" in
-            "config")
-              case "$2" in
-                "--get")
-                  echo "https://github.com/owner/repo.git"
-                  return 0
-                  ;;
-              esac
-              ;;
-            "rev-parse")
-              echo "/home/runner/work/rover/rover"
-              return 0
-              ;;
-          esac
-          return 0
-        }
-        export -f git
         PATH="/tmp/mock_bin:$PATH"
         export git_org_project="owner/repo"
+        export mock_secret_error="false"
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
