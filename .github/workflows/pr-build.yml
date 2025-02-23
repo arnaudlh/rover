@@ -225,7 +225,7 @@ jobs:
             });
 
   build-agents:
-    needs: [matrix-prep, build-base]
+    needs: [build-base]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -366,7 +366,7 @@ jobs:
             });
 
   msdo:
-    needs: [build-base, build-agents]
+    needs: [build-agents]
     runs-on: ubuntu-latest
     strategy:
       matrix:
