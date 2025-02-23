@@ -49,7 +49,7 @@ Describe 'init.sh'
                       echo "[]"
                     fi
                   else
-                    echo '[{"name": "test-launchpad", "tags": {"caf_environment": "test", "caf_tfstate": "level0"}}]'
+                    echo '[]'
                   fi
                   return 0
                   ;;
