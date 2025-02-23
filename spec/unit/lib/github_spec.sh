@@ -55,14 +55,10 @@ case "$1" in
       "list")
         if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
           if [ "${mock_secret_error}" = "true" ]; then
-            echo "Error: Secret not found" >&2
-            return 1
-          fi
-          if [ "$5" = "BOOTSTRAP_TOKEN" ]; then
-            echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+            echo "MISSING_SECRET Updated 2024-02-23"
             return 0
           fi
-          echo "test_secret"
+          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
           return 0
         fi
         ;;
@@ -154,25 +150,25 @@ EOF
 
     Context "Secret validation"
       It 'should verify secret exists successfully'
-        When call verify_github_secret "test_secret"
-        The output should include "test_secret"
+        When call verify_github_secret "actions" "BOOTSTRAP_TOKEN"
+        The output should include "BOOTSTRAP_TOKEN"
         The status should eq 0
       End
 
       It 'should handle missing secret'
         export mock_secret_error="true"
-        When call verify_github_secret "missing_secret"
+        When call verify_github_secret "actions" "BOOTSTRAP_TOKEN"
         The status should eq 1
-        The stderr should include "Error: Secret not found"
+        The stderr should include "You need to set the actions/BOOTSTRAP_TOKEN in your project as per instructions in the documentation"
       End
     End
 
     Context "Error handling"
       It 'should handle GitHub CLI errors'
         gh() { return 1; }
-        When call verify_github_secret "test_secret"
+        When call verify_github_secret "actions" "BOOTSTRAP_TOKEN"
         The status should eq 1
-        The stderr should include "Error accessing GitHub secrets"
+        The stderr should include "You need to set the actions/BOOTSTRAP_TOKEN in your project as per instructions in the documentation"
       End
     End
   End
