@@ -67,13 +67,7 @@ jobs:
             --build-arg versionTfupdate=0.7.2 \
             --platform linux/amd64 \
             --push \
-            -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
-            .
-            versionPowershell=7.4.1
-            versionAnsible=2.16.2
-            extensionsAzureCli=aks-preview
-            versionTerrascan=1.18.3
-            versionTfupdate=0.7.2
+            -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} .
           
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
