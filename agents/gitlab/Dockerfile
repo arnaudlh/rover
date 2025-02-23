@@ -1,4 +1,4 @@
-FROM localhost/rover:local
+FROM rover:local
 
 ARG AGENT_KEYVAULT_NAME
 ARG AGENT_KEYVAULT_SECRET
