@@ -26,63 +26,34 @@ Describe 'github.com.sh'
     # Create mock gh command
     cat > /tmp/mock_bin/usr/bin/gh << 'EOF'
 #!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
-        if [ "${mock_auth_error}" = "true" ]; then
-          echo "Error: Not authenticated with GitHub" >&2
-          exit 1
-        fi
-        echo "github.com" >&2
-        echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)" >&2
-        echo "  - Active account: true" >&2
-        echo "  - Git operations protocol: https" >&2
-        echo "  - Token: ghs_************************************" >&2
-        echo "" >&2
-        exit 0
-        ;;
-      *)
+if [ "$1" = "auth" ] && [ "$2" = "status" ]; then
+    if [ "${mock_auth_error}" = "true" ]; then
+        echo "Error: Not authenticated with GitHub" >&2
         exit 1
-        ;;
-    esac
-    ;;
-  "api")
-    case "$2" in
-      "repos/${git_org_project}")
-        if [ "${mock_repo_error}" = "true" ]; then
-          echo "Error: Repository not accessible" >&2
-          exit 1
-        fi
-        echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-        exit 0
-        ;;
-      *)
+    fi
+    echo "github.com" >&2
+    echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)" >&2
+    echo "  - Active account: true" >&2
+    echo "  - Git operations protocol: https" >&2
+    echo "  - Token: ghs_************************************" >&2
+    echo "" >&2
+    exit 0
+elif [ "$1" = "api" ] && [ "$2" = "repos/${git_org_project}" ]; then
+    if [ "${mock_repo_error}" = "true" ]; then
+        echo "Error: Repository not accessible" >&2
         exit 1
-        ;;
-    esac
-    ;;
-  "secret")
-    case "$2" in
-      "list")
-        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          if [ "${mock_secret_error}" = "true" ]; then
-            echo "OTHER_SECRET Updated 2024-02-23"
-          else
-            echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          fi
-          exit 0
-        fi
-        ;;
-      *)
-        exit 1
-        ;;
-    esac
-    ;;
-  *)
-    exit 1
-    ;;
-esac
+    fi
+    echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+    exit 0
+elif [ "$1" = "secret" ] && [ "$2" = "list" ] && [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+    if [ "${mock_secret_error}" = "true" ]; then
+        echo "OTHER_SECRET Updated 2024-02-23"
+    else
+        echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+    fi
+    exit 0
+fi
+exit 1
 EOF
     chmod +x /tmp/mock_bin/usr/bin/gh
     export PATH="/tmp/mock_bin/usr/bin:$PATH"
