@@ -6,7 +6,7 @@ check_github_session() {
     error ${LINENO} "GitHub authentication failed" 1
     return 1
   fi
-  success "GitHub authentication successful"
+  debug "GitHub authentication successful"
 
   url=$(git config --get remote.origin.url)
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')

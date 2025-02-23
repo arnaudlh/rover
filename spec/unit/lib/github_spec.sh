@@ -33,7 +33,7 @@ case "$1" in
       "status")
         if [ "${mock_auth_error}" = "true" ]; then
           echo "Error: Not authenticated with GitHub" >&2
-          return 1
+          exit 1
         fi
         # Mock successful auth status
         echo "github.com" >&2
@@ -42,10 +42,9 @@ case "$1" in
         echo "  - Git operations protocol: https" >&2
         echo "  - Token: ghs_************************************" >&2
         echo "" >&2
-        return 0
+        exit 0
         ;;
     esac
-    return 0
     ;;
   "api")
     if [[ "$2" == "repos/${git_org_project}" ]]; then
