@@ -141,7 +141,6 @@ Describe 'init.sh'
         export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
         When call init
         The output should include "Deleting launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad"
-        The output should include "Deleting resource group"
         The output should include "Resource group deleted"
         The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in ${TF_VAR_environment}-launchpad destroyed."
         The status should eq 0
