@@ -259,7 +259,7 @@ jobs:
             trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif
 
   msdo-scan:
-    needs: [build-agents]
+    needs: [build-base, build-agents]
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -287,7 +287,7 @@ jobs:
           wait-for-processing: true
           
   build-report:
-    needs: [msdo-scan]
+    needs: [build-base, build-agents, msdo-scan]
     permissions:
       checks: write
       pull-requests: write
