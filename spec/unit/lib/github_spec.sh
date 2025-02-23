@@ -218,16 +218,6 @@ EOF
           return 0
         }
         export -f verify_github_secret
-        echo "Logged in to github.com as testuser"
-        return 0
-        ;;
-    esac
-    ;;
-  "api")
-    if [[ "$2" == "repos/owner/repo" ]]; then
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
     ;;
   "secret")
     case "$2" in
