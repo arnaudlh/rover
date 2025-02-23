@@ -133,16 +133,16 @@ jobs:
 Build Information:
 - Platforms: linux/amd64
 - SHA: ${context.sha}
-- Build ID: ${{ steps.docker_build.outputs.digest || 'N/A' }}
+- Build ID: ${{ steps.build.outputs.digest || 'N/A' }}
 - Security: Trivy scan results uploaded to Security tab
 
 Status Details:
 - Build: ${status}
-- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}
+- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}`;
 
 Debug Information:
-- Docker Version: \`${{ steps.docker_build.outputs.docker-version || 'N/A' }}\`
-- BuildKit Version: \`${{ steps.docker_build.outputs.buildkit-version || 'N/A' }}\``;
+- Docker Version: ${{ steps.build.outputs.docker-version || 'N/A' }}
+- BuildKit Version: ${{ steps.build.outputs.buildkit-version || 'N/A' }}`;
             
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
