@@ -41,6 +41,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
           
+      - name: Set up Docker Buildx cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Build and cache
         uses: docker/build-push-action@v5
         with:
@@ -50,6 +58,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          target: base
           
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
