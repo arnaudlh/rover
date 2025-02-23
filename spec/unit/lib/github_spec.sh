@@ -59,44 +59,6 @@ fi
 
 exit 0
 EOF
-    if [[ "$2" == "repos/${git_org_project}" ]]; then
-      if [ "${mock_repo_error}" = "true" ]; then
-        echo "Error: Repository not accessible" >&2
-        return 1
-      fi
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
-    ;;
-  *)
-    if [[ "$2" == "repos/${git_org_project}" ]]; then
-      if [ "${mock_repo_error}" = "true" ]; then
-        echo "Error: Repository not accessible" >&2
-        return 1
-      fi
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
-    ;;
-  "secret")
-    case "$2" in
-      "list")
-        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          if [ "${mock_secret_error}" = "true" ]; then
-            echo "OTHER_SECRET Updated 2024-02-23"
-          else
-            echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          fi
-          return 0
-        fi
-        ;;
-    esac
-    ;;
-  *)
-    return 1
-    ;;
-esac
-return 0
 EOF
     chmod +x /tmp/mock_bin/usr/bin/gh
     export PATH="/tmp/mock_bin/usr/bin:$PATH"
