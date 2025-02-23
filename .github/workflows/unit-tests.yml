@@ -26,11 +26,24 @@ jobs:
           
           # Copy scripts to test directory
           cp -r scripts/lib/* spec/unit/lib/
+          mkdir -p spec/unit/lib/tfcloud
+          cp -r scripts/tfcloud/* spec/unit/lib/tfcloud/
           cp scripts/functions.sh spec/unit/lib/
           cp scripts/rover.sh spec/unit/lib/
+          cp scripts/tfstate.sh spec/unit/lib/
+          cp scripts/remote.sh spec/unit/lib/
+          cp scripts/parse_command.sh spec/unit/lib/
+          cp scripts/banner.sh spec/unit/lib/
+          cp scripts/clone.sh spec/unit/lib/
+          cp scripts/walkthrough.sh spec/unit/lib/
+          cp scripts/sshd.sh spec/unit/lib/
+          cp scripts/backend.hcl.tf spec/unit/lib/
+          cp scripts/backend.azurerm.tf spec/unit/lib/
+          cp scripts/task.sh spec/unit/lib/
           
           # Set up permissions
           chmod +x spec/unit/lib/*.sh || true
+          chmod +x spec/unit/lib/tfcloud/*.sh || true
           
           # Debug information
           echo "Test environment structure:"
