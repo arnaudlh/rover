@@ -80,7 +80,7 @@ jobs:
           
           # Run unit tests
           echo "Running unit tests..."
-          SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib" shellspec \
+          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib" shellspec \
             --format documentation \
             --shell bash \
             --no-banner \
@@ -91,7 +91,7 @@ jobs:
           
           # Run integration tests
           echo "Running integration tests..."
-          SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib" shellspec \
+          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib" shellspec \
             --format documentation \
             --shell bash \
             --no-banner \
