@@ -35,6 +35,14 @@ Describe 'github.com.sh'
               echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
               return 0
             fi
+            if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
+              if [ "${mock_secret_error}" = "true" ]; then
+                echo "Error: Resource not accessible by integration" >&2
+                return 1
+              fi
+              echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
+              return 0
+            fi
             ;;
           "secret")
             case "$2" in
