@@ -37,11 +37,7 @@ case "$1" in
         fi
         # Mock gh auth status
         if [ "$1" = "auth" ] && [ "$2" = "status" ]; then
-          echo "github.com"
-          echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)"
-          echo "  - Active account: true"
-          echo "  - Git operations protocol: https"
-          echo "  - Token: ghs_************************************"
+          /usr/bin/gh auth status
           return 0
         fi
         # Mock gh api calls
