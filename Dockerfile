@@ -1,7 +1,7 @@
 ###########################################################
 # base tools and dependencies
 ###########################################################
-FROM ubuntu:22.04 AS base
+FROM ubuntu:22.04@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e AS base
 
 SHELL ["/bin/bash", "-c"]
 
@@ -25,6 +25,12 @@ ARG versionAnsible=2.16.2
 ARG extensionsAzureCli=aks-preview
 ARG versionTerrascan=1.18.3
 ARG versionTfupdate=0.7.2
+
+# Set noninteractive installation
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 # Base configuration environment variables
 ENV USERNAME=${USERNAME} \
@@ -65,37 +71,45 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 RUN set -ex && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-    apt-transport-https \
-    apt-utils \
-    bsdmainutils \
-    ca-certificates \
-    curl \
-    fonts-powerline \
-    gcc \
-    gettext \
-    git \
-    gpg \
-    gpg-agent \
-    jq \
-    less \
-    locales \
-    make \
+    apt-transport-https=2.4.10 \
+    apt-utils=2.4.10 \
+    bsdmainutils=12.1.7+nmu3ubuntu2 \
+    ca-certificates=20230311ubuntu0.22.04.1 \
+    curl=7.81.0-1ubuntu1.15 \
+    fonts-powerline=2.8.3-1 \
+    gcc=4:11.2.0-1ubuntu1 \
+    gettext=0.21-4ubuntu4 \
+    git=1:2.34.1-1ubuntu1.10 \
+    gpg=2.2.27-3ubuntu2.1 \
+    gpg-agent=2.2.27-3ubuntu2.1 \
+    jq=1.6-2.1ubuntu3 \
+    less=590-1ubuntu0.22.04.1 \
+    locales=2.35-0ubuntu3.6 \
+    make=4.3-4.1build1 \
     # Networking tools
-    dnsutils net-tools iputils-ping traceroute \
-    python3-dev \
-    python3-pip \
-    rsync \
-    # openvpn client and ipsec tools to generate certificates
-    openvpn network-manager-openvpn strongswan strongswan-pki libstrongswan-extra-plugins libtss2-tcti-tabrmd0 openssh-client \
-    #
-    software-properties-common \
-    gosu \
-    sudo \
-    unzip \
-    vim \
-    wget \
-    zsh \
-    zip && \
+    dnsutils=1:9.18.18-0ubuntu0.22.04.1 \
+    net-tools=1.60+git20181103.0eebece-1ubuntu5 \
+    iputils-ping=3:20211215-1 \
+    traceroute=1:2.1.0-2 \
+    python3-dev=3.10.6-1~22.04 \
+    python3-pip=22.0.2+dfsg-1ubuntu0.4 \
+    rsync=3.2.7-0ubuntu0.22.04.2 \
+    # openvpn client and ipsec tools
+    openvpn=2.5.5-1ubuntu3.2 \
+    network-manager-openvpn=1.8.18-1 \
+    strongswan=5.9.5-1ubuntu2.3 \
+    strongswan-pki=5.9.5-1ubuntu2.3 \
+    libstrongswan-extra-plugins=5.9.5-1ubuntu2.3 \
+    libtss2-tcti-tabrmd0=3.0.3-2ubuntu2 \
+    openssh-client=1:8.9p1-3ubuntu0.6 \
+    software-properties-common=0.99.22.9 \
+    gosu=1.14-1ubuntu1 \
+    sudo=1.9.9-1ubuntu2.4 \
+    unzip=6.0-26ubuntu3.1 \
+    vim=2:8.2.3995-1ubuntu2.15 \
+    wget=1.21.2-2ubuntu1 \
+    zsh=5.8.1-1 \
+    zip=3.0-12build2 && \
     #
     # Create USERNAME
     #
