@@ -125,7 +125,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}'
+          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
           format: 'table'
           output: 'trivy-results.txt'
           exit-code: '1'
@@ -213,8 +213,6 @@ jobs:
             type=gha,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
             type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
-          provenance: false
-          sbom: false
           provenance: false
           sbom: false
           build-args: |
