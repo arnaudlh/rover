@@ -51,12 +51,15 @@ Describe 'init.sh'
               case "$2" in
                 "list")
                   # Return mock data or empty array based on environment variables
+                  local output
                   if [ ! -z "${mock_group_list}" ]; then
-                    echo "${mock_group_list}"
+                    output="${mock_group_list}"
                   else
-                    echo "[]"
+                    output="[]"
                   fi
-                  debug "az group list output: ${mock_group_list:-[]}"
+                  debug "az group list command: $*"
+                  debug "az group list output: ${output}"
+                  echo "${output}"
                   return 0
                   ;;
                 "create")
