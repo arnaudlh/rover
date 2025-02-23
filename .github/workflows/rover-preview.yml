@@ -24,4 +24,17 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
-        target: base
+        target: rover
+        build-args: |
+          versionVault=1.15.4
+          versionKubectl=1.29
+          versionKubelogin=0.1.1
+          versionDockerCompose=2.24.5
+          versionPowershell=7.4.1
+          versionPacker=1.10.0
+          versionGolang=1.22.0
+          versionTerraformDocs=0.17.0
+          versionAnsible=2.16.3
+          versionTerrascan=1.18.11
+          versionTfupdate=0.7.2
+          extensionsAzureCli=aks-preview
