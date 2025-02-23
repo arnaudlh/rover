@@ -46,7 +46,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build \
+          docker buildx build \
             --target base \
             --build-arg TARGETARCH=amd64 \
             --build-arg TARGETOS=linux \
@@ -65,12 +65,10 @@ jobs:
             --build-arg extensionsAzureCli=aks-preview \
             --build-arg versionTerrascan=1.18.3 \
             --build-arg versionTfupdate=0.7.2 \
+            --platform linux/amd64 \
+            --push \
             -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
             .
-
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
           build-args: |
             TARGETARCH=amd64
             TARGETOS=linux
