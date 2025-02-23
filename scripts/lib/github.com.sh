@@ -2,10 +2,12 @@ check_github_session() {
   information "@call check_github_session"
   
   # Check GitHub authentication first
+  # Check GitHub authentication first
   if ! /usr/bin/gh auth status >/dev/null 2>&1; then
     error ${LINENO} "GitHub authentication failed" 1
     return 1
   fi
+  success "GitHub authentication successful"
 
   url=$(git config --get remote.origin.url)
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')

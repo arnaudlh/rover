@@ -56,6 +56,16 @@ case "$1" in
       return 0
     fi
     ;;
+  *)
+    if [[ "$2" == "repos/${git_org_project}" ]]; then
+      if [ "${mock_repo_error}" = "true" ]; then
+        echo "Error: Repository not accessible" >&2
+        return 1
+      fi
+      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+      return 0
+    fi
+    ;;
   "secret")
     case "$2" in
       "list")
@@ -126,11 +136,11 @@ EOF
         }
         export -f verify_github_secret
         When call check_github_session
-        The output should include "Connected to GiHub: repos/owner/repo"
         The stderr should include "github.com"
         The stderr should include "  ✓ Logged in to github.com account testuser"
         The stderr should include "  - Active account: true"
         The stderr should include "  - Git operations protocol: https"
+        The output should include "Connected to GiHub: repos/owner/repo"
         The status should eq 0
       End
 
