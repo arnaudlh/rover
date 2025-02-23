@@ -28,7 +28,7 @@ Describe 'azure_ad.sh'
                       return 1
                     fi
                     # Handle --query id -o tsv --only-show-errors flags
-                    if [[ "$*" =~ "--query id" && "$*" =~ "-o tsv" ]]; then
+                    if [[ "$4" = "--query" && "$5" = "id" && "$6" = "-o" && "$7" = "tsv" && "$8" = "--only-show-errors" ]]; then
                       echo "user123"
                     else
                       echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
