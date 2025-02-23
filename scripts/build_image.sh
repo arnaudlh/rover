@@ -190,14 +190,17 @@ function build_base_rover_image {
                 --push rover_registry
             ;;
         *)
-            echo "Building rover image and pushing to Docker Hub"
-            registry="${registry}" \
+            echo "Building rover image and pushing to GHCR"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/" \
             versionRover="${rover_base}:${tag}" \
             versionTerraform=${versionTerraform} \
-            tag="${rover}" \
+            tag="${tag}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                -f docker-bake.override.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --push rover_registry
             ;;
     esac
