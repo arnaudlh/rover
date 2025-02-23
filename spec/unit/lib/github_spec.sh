@@ -24,9 +24,6 @@ Describe 'github.com.sh'
     mkdir -p /tmp/mock_bin/usr/bin
     export PATH="/tmp/mock_bin:$PATH"
     
-    # Initialize logger
-    init_logger
-    
     # Create mock gh command
     cat > /tmp/mock_bin/gh << 'EOF'
 #!/bin/bash
@@ -66,6 +63,9 @@ case "$1" in
         fi
         ;;
     esac
+    ;;
+  *)
+    return 1
     ;;
 esac
 return 0
