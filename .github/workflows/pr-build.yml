@@ -1,6 +1,13 @@
 name: PR Build & Test
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - devin/1740289687-ghcr-migration
+      - main
 
 permissions:
   contents: write
