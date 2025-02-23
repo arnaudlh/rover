@@ -218,11 +218,6 @@ EOF
           return 0
         }
         export -f verify_github_secret
-          case "$1" in
-            "config")
-              case "$2" in
-                "--get")
-                  if [[ "$3" == "remote.origin.url" ]]; then
                     echo "https://github.com/owner/repo.git"
                     return 0
                   fi
