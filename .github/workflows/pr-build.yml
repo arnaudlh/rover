@@ -1,8 +1,12 @@
 name: PR Build & Test
 
+# Trigger on pull request events and pushes to specific branches
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
   push:
     branches:
       - devin/1740289687-ghcr-migration
@@ -11,6 +15,7 @@ on:
       - '**.md'
       - '.gitignore'
 
+# Required permissions for GitHub Actions
 permissions:
   contents: write
   packages: write
@@ -21,10 +26,12 @@ permissions:
   statuses: write
   security-events: write
 
+# Environment variables
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/rover
   BUILDX_NO_DEFAULT_LOAD: true
+  DOCKER_BUILDKIT: 1
 
 jobs:
   build:
