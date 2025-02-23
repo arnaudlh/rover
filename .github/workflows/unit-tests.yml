@@ -52,7 +52,7 @@ jobs:
           
           # Set SHELLSPEC environment variables
           export SHELLSPEC_HELPERDIR="$PWD/spec/unit/lib"
-          export SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib"
+          export SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud"
           
           # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
