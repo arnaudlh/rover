@@ -41,7 +41,7 @@ target "common" {
 target "rover_local" {
   inherits = ["common"]
   tags = ["rover:local"]
-  platforms = ["linux/amd64"]
+  platforms = ["${TARGETOS}/${TARGETARCH}"]
   output = ["type=docker"]
   target = "base"
   no-cache = false
