@@ -8,6 +8,12 @@ Describe 'init.sh'
     setup_test_env
     mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
     export script_path="$PWD"
+    export TF_VAR_environment="test"
+    export TF_VAR_workspace="default"
+    export location="eastus"
+    export TF_VAR_level="level0"
+    export TF_VAR_tfstate_subscription_id="sub123"
+    export TF_VAR_landingzone_name="test-launchpad"
   }
   cleanup() {
     cleanup_test_env
@@ -43,7 +49,7 @@ Describe 'init.sh'
                       echo "[]"
                     fi
                   else
-                    echo "[]"
+                    echo '[{"name": "test-launchpad", "tags": {"caf_environment": "test", "caf_tfstate": "level0"}}]'
                   fi
                   return 0
                   ;;
