@@ -48,13 +48,17 @@ elif [ "$1" = "api" ] && [ "$2" = "repos/${git_org_project}" ]; then
 elif [ "$1" = "secret" ] && [ "$2" = "list" ] && [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
     if [ "${mock_secret_error}" = "true" ]; then
         echo "OTHER_SECRET Updated 2024-02-23"
+        exit 0
     else
         echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+        exit 0
     fi
-    exit 0
 fi
 exit 1
 EOF
+    chmod +x /tmp/mock_bin/usr/bin/gh
+    export PATH="/tmp/mock_bin/usr/bin:$PATH"
+    export GITHUB_TOKEN="dummy_token"
     chmod +x /tmp/mock_bin/usr/bin/gh
     export PATH="/tmp/mock_bin/usr/bin:$PATH"
     export GITHUB_TOKEN="dummy_token"
