@@ -151,9 +151,8 @@ function build_base_rover_image {
                 --load \
                 rover_local && \
             # Ensure the local image is available
-            docker tag rover:local localhost:5000/rover:local && \
             # Build agents using local image
-            docker buildx bake \
+            DOCKER_BUILDKIT=1 docker buildx bake \
                 --allow=fs.read=/tmp/.buildx-cache \
                 --allow=fs.write=/tmp/.buildx-cache-new \
                 -f docker-bake-agents.hcl \
