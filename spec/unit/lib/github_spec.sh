@@ -104,6 +104,35 @@ Describe 'github.com.sh'
         PATH="/tmp/mock_bin:$PATH"
         export git_org_project="owner/repo"
         export mock_secret_error="false"
+        export GITHUB_TOKEN="dummy_token"
+        
+        # Mock git commands for this specific test
+        git() {
+          case "$1" in
+            "config")
+              case "$2" in
+                "--get")
+                  if [[ "$3" == "remote.origin.url" ]]; then
+                    echo "https://github.com/owner/repo.git"
+                    return 0
+                  fi
+                  ;;
+              esac
+              ;;
+            "rev-parse")
+              if [[ "$2" == "--show-toplevel" ]]; then
+                echo "/home/runner/work/rover/rover"
+                return 0
+              fi
+              ;;
+            "status")
+              echo "On branch main"
+              return 0
+              ;;
+          esac
+          return 0
+        }
+        export -f git
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
