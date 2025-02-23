@@ -1,8 +1,8 @@
 Describe 'azure_ad.sh'
   Include spec/support/spec_helper.sh
-  Include scripts/lib/azure_ad.sh
-  Include scripts/lib/logger.sh
-  Include scripts/lib/functions.sh
+  Include spec/unit/lib/azure_ad.sh
+  Include spec/unit/lib/logger.sh
+  Include spec/unit/lib/functions.sh
 
   setup() {
     setup_test_env
