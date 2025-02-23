@@ -141,8 +141,8 @@ Status Details:
 - Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}
 
 Debug Information:
-- Docker Version: ${{ steps.build.outputs.docker-version || 'N/A' }}
-- BuildKit Version: ${{ steps.build.outputs.buildkit-version || 'N/A' }}`;
+- Docker Version: ${process.env.DOCKER_VERSION || 'N/A'}
+- BuildKit Version: ${process.env.BUILDKIT_VERSION || 'N/A'}`;
             
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
