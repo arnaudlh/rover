@@ -336,8 +336,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
-            const jobStatus = '${{ job.status }}';
-            const status = jobStatus.toLowerCase() === 'success' ? '✅' : '❌';
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
             
             const buildSummary = [
               '# Build & Security Report',
@@ -375,7 +374,7 @@ jobs:
               name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: jobStatus.toLowerCase(),
+              conclusion: '${{ job.status }}' === 'success' ? 'success' : 'failure',
               output: {
                 title: `Build Report ${status}`,
                 summary: buildSummary
