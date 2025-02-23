@@ -268,6 +268,8 @@ jobs:
         platform: [linux/amd64]
         agent: [github]
       fail-fast: false
+    permissions:
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       
@@ -282,10 +284,11 @@ jobs:
           
       - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success() || failure()
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
           category: 'MSDO-${{ matrix.platform }}-${{ matrix.agent }}'
+          wait-for-processing: true
           
   build-report:
     needs: [msdo-scan]
