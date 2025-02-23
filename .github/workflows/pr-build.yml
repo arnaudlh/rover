@@ -9,13 +9,14 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   checks: write
   pull-requests: write
-  actions: read
+  actions: write
   id-token: write
   statuses: write
+  security-events: write
 
 jobs:
   build:
