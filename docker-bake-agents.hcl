@@ -27,53 +27,52 @@ group "rover_agents" {
   targets = ["github", "tfc", "azdo", "gitlab"]
 }
 
+target "common_agent" {
+  context = "."
+  args = {
+    USERNAME = "vscode"
+  }
+  platforms = ["linux/amd64"]
+  output = ["type=docker"]
+  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
+}
+
 target "github" {
+  inherits = ["common_agent"]
   dockerfile = "./agents/github/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}github"]
+  tags = ["rover-agent:local-github"]
   args = {
     versionGithubRunner = versionGithubRunner
-    versionRover        = versionRover
-    USERNAME            = USERNAME
+    versionRover = "rover:local"
   }
-  platforms = ["linux/amd64","linux/arm64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "azdo" {
+  inherits = ["common_agent"]
   dockerfile = "./agents/azure_devops/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}azdo"]
+  tags = ["rover-agent:local-azdo"]
   args = {
-    versionAzdo  = versionAzdo
-    versionRover = versionRover
-    USERNAME     = USERNAME
+    versionAzdo = versionAzdo
+    versionRover = "rover:local"
   }
-  platforms = ["linux/amd64","linux/arm64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "tfc" {
+  inherits = ["common_agent"]
   dockerfile = "./agents/tfc/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}tfc"]
+  tags = ["rover-agent:local-tfc"]
   args = {
-    versionTfc   = versionTfc
-    versionRover = versionRover
-    USERNAME     = USERNAME
+    versionTfc = versionTfc
+    versionRover = "rover:local"
   }
-  platforms = ["linux/amd64" ]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
 
 target "gitlab" {
+  inherits = ["common_agent"]
   dockerfile = "./agents/gitlab/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}gitlab"]
+  tags = ["rover-agent:local-gitlab"]
   args = {
-    versionRover = versionRover
-    USERNAME     = USERNAME
+    versionRover = "rover:local"
   }
-  platforms = ["linux/amd64","linux/arm64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
 }
