@@ -17,15 +17,12 @@ Describe 'github.com.sh'
     export GH_TOKEN="dummy_token"
     unset CODESPACES
     
-    # Create /usr/bin directory in mock path
+    # Create mock bin directory and /usr/bin symlink path
     mkdir -p /tmp/mock_bin/usr/bin
+    export PATH="/tmp/mock_bin:$PATH"
     
     # Initialize logger
     init_logger
-    
-    # Create mock bin directory
-    mkdir -p /tmp/mock_bin
-    export PATH="/tmp/mock_bin:$PATH"
     
     # Create mock gh command
     cat > /tmp/mock_bin/gh << 'EOF'
@@ -61,7 +58,11 @@ case "$1" in
             echo "Error: Secret not found" >&2
             return 1
           fi
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+          if [ "$5" = "BOOTSTRAP_TOKEN" ]; then
+            echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+            return 0
+          fi
+          echo "test_secret"
           return 0
         fi
         ;;
@@ -71,7 +72,6 @@ esac
 return 0
 EOF
     chmod +x /tmp/mock_bin/gh
-    mkdir -p /tmp/mock_bin/usr/bin
     ln -sf $(readlink -f /tmp/mock_bin/gh) /tmp/mock_bin/usr/bin/gh
     
     # Mock git command
@@ -150,26 +150,6 @@ EOF
   End
 
   Describe "verify_github_secret"
-    setup() {
-      # Mock GitHub CLI commands
-      gh() {
-        case "$1" in
-          "secret")
-            case "$2" in
-              "list")
-                if [ "${mock_secret_error}" = "true" ]; then
-                  return 1
-                fi
-                echo "test_secret"
-                return 0
-                ;;
-            esac
-            ;;
-        esac
-        return 0
-      }
-    }
-
     BeforeEach 'setup'
 
     Context "Secret validation"
