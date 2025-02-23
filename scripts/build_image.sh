@@ -175,14 +175,17 @@ function build_base_rover_image {
             echo "Local build completed successfully"
             ;;
         "dev")
-            echo "Building rover developer image and pushing to Docker Hub"
-            registry="${registry}" \
+            echo "Building rover developer image and pushing to GHCR"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/" \
             versionRover="${rover_base}:${tag}" \
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                -f docker-bake.override.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${architecture} \
                 --push rover_registry
             ;;
