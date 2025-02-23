@@ -42,7 +42,8 @@ Describe 'init.sh'
             "group")
               case "$2" in
                 "list")
-                  if [[ "$*" == *"--query"* ]] && [[ "$*" == *"-o json"* ]]; then
+                  # Match the exact query format from init.sh
+                  if [[ "$*" == *"--query"* ]] && [[ "$*" == *"[?tags.caf_environment=='${TF_VAR_environment}'"* ]] && [[ "$*" == *"tags.caf_tfstate=='${TF_VAR_level}'"* ]] && [[ "$*" == *"-o json"* ]]; then
                     if [ ! -z "${mock_group_list}" ]; then
                       echo "${mock_group_list}"
                     else
