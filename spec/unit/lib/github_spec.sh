@@ -10,6 +10,11 @@ Describe 'github.com.sh'
     export LOG_TO_FILE="false"
     export LOG_LEVEL="INFO"
     export GITHUB_TOKEN="dummy_token"
+    export mock_auth_error="false"
+    export mock_repo_error="false"
+    export mock_secret_error="false"
+    export git_org_project="owner/repo"
+    export GH_TOKEN="dummy_token"
     
     # Initialize logger
     init_logger
@@ -25,6 +30,10 @@ case "$1" in
   "auth")
     case "$2" in
       "status")
+        if [ "${mock_auth_error}" = "true" ]; then
+          echo "Error: Not authenticated with GitHub" >&2
+          return 1
+        fi
         echo "Logged in to github.com as testuser"
         return 0
         ;;
@@ -32,6 +41,10 @@ case "$1" in
     ;;
   "api")
     if [[ "$2" == "repos/owner/repo" ]]; then
+      if [ "${mock_repo_error}" = "true" ]; then
+        echo "Error: Repository not accessible" >&2
+        return 1
+      fi
       echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
       return 0
     fi
@@ -40,6 +53,10 @@ case "$1" in
     case "$2" in
       "list")
         if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+          if [ "${mock_secret_error}" = "true" ]; then
+            echo "Error: Secret not found" >&2
+            return 1
+          fi
           echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
           return 0
         fi
@@ -78,8 +95,6 @@ EOF
       return 0
     }
     export -f git
-    
-
   }
   cleanup() {
     cleanup_test_env
@@ -89,25 +104,39 @@ EOF
   AfterEach 'cleanup'
 
   Describe "check_github_session"
-    setup() {
-      # Set up test environment
-      export git_org_project="owner/repo"
-      export GITHUB_TOKEN="dummy_token"
-      export mock_secret_error="false"
-    }
-
     BeforeEach 'setup'
 
     Context "Authentication verification"
       It 'should verify GitHub authentication successfully'
-        export git_org_project="owner/repo"
-        export mock_secret_error="false"
-        
         # Mock verify_github_secret function
         verify_github_secret() {
           return 0
         }
         export -f verify_github_secret
+        
+        # Mock gh auth status to succeed
+        cat > /tmp/mock_bin/gh << 'EOF'
+#!/bin/bash
+case "$1" in
+  "auth")
+    case "$2" in
+      "status")
+        echo "Logged in to github.com as testuser"
+        return 0
+        ;;
+    esac
+    ;;
+  "api")
+    if [[ "$2" == "repos/owner/repo" ]]; then
+      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+      return 0
+    fi
+    ;;
+esac
+return 0
+EOF
+        chmod +x /tmp/mock_bin/gh
+        
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
