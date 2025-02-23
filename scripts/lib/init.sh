@@ -5,6 +5,12 @@ init() {
   location=${location:=australiaeast}
 
   current_rg=$(az group list --query "[?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']" -o json 2>/dev/null || echo "[]")
+  debug "Resource group query result: ${current_rg}"
+  
+  # Ensure current_rg is treated as JSON array
+  if [ "${current_rg}" == "" ]; then
+    current_rg="[]"
+  fi
 
   if [ "${tf_command}" == "--clean" ]; then
     if [ "${current_rg}" != "[]" ]; then
