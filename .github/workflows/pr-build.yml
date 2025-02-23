@@ -125,7 +125,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}"
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'table'
           output: 'trivy-results.txt'
           exit-code: '1'
@@ -144,7 +144,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         if: always()
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}'
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '0'
@@ -223,7 +223,7 @@ jobs:
       - name: Run Trivy vulnerability scanner for agent
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}'
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
           format: 'table'
           output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt'
           exit-code: '1'
@@ -242,7 +242,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         if: always()
         with:
-          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}'
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
           format: 'sarif'
           output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
           exit-code: '0'
@@ -283,7 +283,7 @@ jobs:
         with:
           tools: trivy,bandit,binskim,templateanalyzer
           categories: IaC,containers,python,general
-          image: "${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}"
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
