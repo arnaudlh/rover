@@ -217,13 +217,7 @@ EOF
         verify_github_secret() {
           return 0
         }
-        export -f verify_github_secret
-        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          return 0
-        fi
-        ;;
-    esac
+        export -f verify_github_secret    esac
     ;;
 esac
 return 0
