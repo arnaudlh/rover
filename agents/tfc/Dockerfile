@@ -1,5 +1,5 @@
-ARG versionRover=${versionRover}
-FROM ${versionRover}
+ARG versionRover
+FROM rover:local
 
 ARG versionTfc
 ARG TFC_AGENT_TOKEN
