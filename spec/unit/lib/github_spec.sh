@@ -42,6 +42,9 @@ case "$1" in
         echo "" >&2
         exit 0
         ;;
+      *)
+        exit 1
+        ;;
     esac
     ;;
   "api")
@@ -53,6 +56,9 @@ case "$1" in
         fi
         echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
         exit 0
+        ;;
+      *)
+        exit 1
         ;;
     esac
     ;;
@@ -68,10 +74,15 @@ case "$1" in
           exit 0
         fi
         ;;
+      *)
+        exit 1
+        ;;
     esac
     ;;
+  *)
+    exit 1
+    ;;
 esac
-exit 1
 EOF
     chmod +x /tmp/mock_bin/usr/bin/gh
     export PATH="/tmp/mock_bin/usr/bin:$PATH"
