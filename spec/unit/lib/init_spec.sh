@@ -102,40 +102,6 @@ Describe 'init.sh'
 
     Context "Resource creation"
       setup() {
-        # Core environment variables
-        export TF_VAR_environment="test"
-        export TF_VAR_level="level0"
-        export tf_command=""
-        export TF_VAR_tfstate_subscription_id="sub123"
-        export location="eastus"
-        export TF_VAR_workspace="default"
-        export TF_DATA_DIR="/tmp/test"
-        
-        # Azure authentication
-        export ARM_CLIENT_ID="test-client"
-        export ARM_CLIENT_SECRET="test-secret"
-        export ARM_SUBSCRIPTION_ID="sub123"
-        export ARM_TENANT_ID="tenant123"
-        export TF_VAR_tenant_id="tenant123"
-        
-        # Resource naming
-        export TF_VAR_tfstate_container_name="tfstate"
-        export TF_VAR_tfstate_key="test.tfstate"
-        export TF_VAR_logged_user_objectId="user123"
-        export TF_VAR_landingzone_name="test-launchpad"
-        export TF_VAR_random_length="5"
-        export TF_VAR_prefix="test"
-        
-        # Clear mocks
-        unset mock_group_list
-
-        # Create required directories
-        mkdir -p "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
-      }
-
-      BeforeEach 'setup'
-
-      setup() {
         # Mock functions
         display_instructions() { echo "Instructions displayed"; }
         az() {
@@ -151,7 +117,19 @@ Describe 'init.sh'
                   return 0
                   ;;
                 "wait")
-                  echo "Operation completed"
+                  case "$3" in
+                    "--deleted")
+                      echo "Resource group deleted"
+                      return 0
+                      ;;
+                    "--created")
+                      echo "Resource group created"
+                      return 0
+                      ;;
+                  esac
+                  ;;
+                "delete")
+                  echo "Deleting resource group"
                   return 0
                   ;;
               esac
@@ -235,7 +213,7 @@ Describe 'init.sh'
         The status should eq 0
       End
 
-      It 'should handle clean command'
+      It 'should handle clean command when resource group exists'
         export tf_command="--clean"
         export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
         When call init
@@ -243,9 +221,14 @@ Describe 'init.sh'
         The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in ${TF_VAR_environment}-launchpad destroyed."
         The status should eq 0
       End
-        export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
+
+      It 'should handle clean command when resource group does not exist'
+        export tf_command="--clean"
+        export mock_group_list="[]"
         When call init
-        The output should include "Deleting launchpad"
+        The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad has been clean-up."
+        The status should eq 0
+      End
       End
     End
 
