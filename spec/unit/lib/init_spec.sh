@@ -48,7 +48,6 @@ Describe 'init.sh'
                     else
                       echo "[]"
                     fi
-                    fi
                   else
                     echo "[]"
                   fi
