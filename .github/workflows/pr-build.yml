@@ -69,11 +69,6 @@ jobs:
             --push \
             -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
             .
-            extensionsAzureCli=aks-preview
-            versionTerrascan=1.18.3
-            versionTfupdate=0.7.2
-            TARGETARCH=amd64
-            TARGETOS=linux
             USER_UID=1000
             USER_GID=1000
             USERNAME=vscode
