@@ -69,11 +69,6 @@ jobs:
             --push \
             -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
             .
-          build-args: |
-            TARGETARCH=amd64
-            TARGETOS=linux
-            USER_UID=1000
-            USER_GID=1000
             USERNAME=vscode
             versionVault=1.15.0
             versionGolang=1.21.6
