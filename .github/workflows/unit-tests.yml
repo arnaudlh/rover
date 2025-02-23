@@ -1,0 +1,168 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install ShellSpec
+        run: |
+          curl -fsSL https://git.io/shellspec | sh -s -- --yes
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+      - name: Setup Test Environment
+        run: |
+          # Set up test directory structure
+          mkdir -p spec/unit/lib
+          
+          # Create test directory structure
+          mkdir -p spec/unit/lib/tfcloud
+          mkdir -p spec/support
+          
+          # Create test environment structure
+          mkdir -p spec/unit/lib/tfcloud
+          mkdir -p spec/support
+          
+          # Create test directory structure
+          mkdir -p spec/unit/lib
+          
+          # Copy source files to test directory
+          cp -r scripts/lib/* spec/unit/lib/
+          cp scripts/functions.sh spec/unit/lib/
+          
+          # Debug information
+          echo "Test directory contents:"
+          ls -la spec/unit/lib/
+          
+          # Set up permissions
+          chmod +x spec/unit/lib/*.sh || true
+          
+          # Debug information
+          echo "Test directory contents:"
+          ls -la spec/unit/lib/
+          echo "Source directory contents:"
+          ls -la scripts/lib/
+          
+          # Debug information
+          echo "Test directory contents after copy:"
+          ls -la spec/unit/lib/
+          
+          # Move spec_helper.sh to support directory after copying all scripts
+          mv spec/unit/lib/spec_helper.sh spec/support/ || true
+          
+          # Set up permissions
+          chmod +x spec/unit/lib/*.sh || true
+          chmod +x spec/unit/lib/tfcloud/*.sh || true
+          
+          # Debug information
+          echo "Test environment structure:"
+          ls -la spec/unit/lib/
+          echo "Current directory: $PWD"
+          
+          # Set SHELLSPEC environment variables
+          export SHELLSPEC_HELPERDIR="$PWD/spec/support"
+          export SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib:$PWD/spec/unit/lib/scripts"
+          
+          # Create test state directory
+          mkdir -p /tmp/test/tfstates/level0/default
+          
+          # Debug information
+          echo "Test environment structure:"
+          ls -la spec/unit/lib/
+          echo "Current working directory:"
+          pwd
+          
+      - name: Run Unit Tests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          
+          # Set up environment variables
+          export PATH="$HOME/.local/bin:$PATH"
+          export script_path="$GITHUB_WORKSPACE/spec/unit/lib"
+          export TF_DATA_DIR="/tmp/test"
+          export TF_VAR_environment="test"
+          export TF_VAR_level="level0"
+          export TF_VAR_workspace="default"
+          export TF_VAR_tfstate_subscription_id="sub123"
+          export TF_VAR_tenant_id="tenant123"
+          export location="eastus"
+          
+          # Create mock az command
+          mkdir -p /tmp/mock_bin
+          cat > /tmp/mock_bin/az << 'EOF'
+          #!/bin/bash
+          if [ "${mock_error}" = "true" ]; then
+            echo "Error getting user object ID" >&2
+            exit 1
+          fi
+          case "$1" in
+            "ad")
+              case "$2" in
+                "signed-in-user")
+                  case "$3" in
+                    "show")
+                      if [ "$4" = "--query" ] && [ "$5" = "id" ] && [ "$6" = "-o" ] && [ "$7" = "tsv" ] && [ "$8" = "--only-show-errors" ]; then
+                        echo "user123"
+                        exit 0
+                      fi
+                      echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
+                      exit 0
+                      ;;
+                  esac
+                  ;;
+              esac
+              ;;
+          esac
+          exit 0
+          EOF
+          chmod +x /tmp/mock_bin/az
+          export PATH="/tmp/mock_bin:$PATH"
+          
+          # Run unit tests
+          echo "Running unit tests..."
+          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/scripts/lib:$PWD/spec/unit/lib/tfcloud" shellspec \
+            --format documentation \
+            --shell bash \
+            --no-banner \
+            --fail-fast \
+            --jobs 1 \
+            spec/unit/lib/*_spec.sh \
+            -f d || exit 1
+          
+          # Run integration tests
+          echo "Running integration tests..."
+          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud:$PWD/scripts/lib" shellspec \
+            --format documentation \
+            --shell bash \
+            --no-banner \
+            --fail-fast \
+            --jobs 1 \
+            spec/integration/*_spec.sh \
+            -f d || exit 1
+      
+      - name: Generate Coverage Report
+        run: |
+          cd $GITHUB_WORKSPACE
+          shellspec --coverage --kcov-options "--include-pattern=scripts/" spec/unit/lib/
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          
+      - name: Report Coverage
+        run: |
+          echo "Coverage Report Summary:"
+          cat coverage/coverage.txt || echo "No coverage data available"

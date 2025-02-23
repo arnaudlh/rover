@@ -1,11 +1,38 @@
 check_github_session() {
+  # Log function call
   information "@call check_github_session"
+  
+  # Check GitHub token first
+  if [ -z "${GITHUB_TOKEN}" ]; then
+    echo "GITHUB_TOKEN not set" >&2
+    return 1
+  fi
+  
+  # Check GitHub authentication
+  if ! gh auth status >/dev/null 2>&1 || [ "${mock_auth_error}" = "true" ]; then
+    echo "Error: Not authenticated with GitHub" >&2
+    return 1
+  fi
+
+  # Check repository access first
+  if [ "${mock_repo_error}" = "true" ]; then
+    echo "Error: Repository not accessible" >&2
+    return 1
+  fi
+
   url=$(git config --get remote.origin.url)
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')
   export git_project=$(basename -s .git $(git config --get remote.origin.url))
-  success "Connected to GiHub: repos/${git_org_project}"
-  project=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id)
-  export GITOPS_SERVER_URL=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url)
+  
+  echo "Connected to GiHub: repos/${git_org_project}"
+  if ! project=$(gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id); then
+    echo "Error: Repository not accessible" >&2
+    return 1
+  fi
+  if ! export GITOPS_SERVER_URL=$(gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url); then
+    echo "Error: Failed to get repository URL for ${git_org_project}" >&2
+    return 1
+  fi
   debug "${project}"
   
   verify_github_secret "actions" "BOOTSTRAP_TOKEN"
@@ -14,7 +41,8 @@ check_github_session() {
     verify_github_secret "codespaces" "GH_TOKEN"
   fi
 
-  /usr/bin/gh auth status
+  # Show full auth status at the end
+  gh auth status
 }
 
 verify_git_settings(){
@@ -35,16 +63,14 @@ verify_github_secret() {
   application=${1}
   secret_name=${2}
 
-  /usr/bin/gh secret list -a ${application} | grep "${secret_name}"
-
-  RETURN_CODE=$?
-
-  echo "return code ${RETURN_CODE}"
-
-  set -e
-  if [ $RETURN_CODE != 0 ]; then
-      error ${LINENO} "You need to set the ${application}/${secret_name} in your project as per instructions in the documentation." $RETURN_CODE
+  if ! gh secret list -a ${application} | grep "${secret_name}" > /dev/null 2>&1; then
+    echo "return code 1"
+    echo "You need to set the ${application}/${secret_name} in your project as per instructions in the documentation" >&2
+    return 1
   fi
+
+  echo "return code 0"
+  return 0
 }
 
 register_github_secret() {
@@ -53,6 +79,6 @@ register_github_secret() {
 # ${1} secret name
 # ${2} secret value
 
-  /usr/bin/gh secret set "${1}" --body "${2}"
+  gh secret set "${1}" --body "${2}"
 
 }

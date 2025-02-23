@@ -13,31 +13,28 @@ jobs:
     - uses: actions/checkout@v4
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
-    - name: Docker Hub Login
-      uses: docker/login-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
       with:
-          username: aztfmod
-          password: ${{ secrets.docker_registry_password }}
-    # - name: Cache Docker layers
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: /tmp/.buildx-cache
-    #     key: ${{ runner.os }}-buildx-${{ github.sha }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-buildx-
-    - name: Build the rover
-      run: |
-        set -e
-        # Build the rover base image
-        make github
-
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@latest
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-    #   with:
-    #     tag_name: ${{ env.docker_tag }}
-    #     release_name: aztfmod/rover:${{ env.docker_tag }}
-    #     draft: false
-    #     prerelease: true
+        context: .
+        push: false
+        tags: rover:local
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        target: rover
+        build-args: |
+          versionVault=1.15.4
+          versionKubectl=1.29
+          versionKubelogin=0.1.1
+          versionDockerCompose=2.24.5
+          versionPowershell=7.4.1
+          versionPacker=1.10.0
+          versionGolang=1.22.0
+          versionTerraformDocs=0.17.0
+          versionAnsible=2.16.3
+          versionTerrascan=1.18.11
+          versionTfupdate=0.7.2
+          extensionsAzureCli=aks-preview
