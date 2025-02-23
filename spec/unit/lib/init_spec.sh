@@ -31,7 +31,11 @@ Describe 'init.sh'
                   if [ ! -z "${mock_group_list}" ]; then
                     echo "${mock_group_list}"
                   else
-                    echo "[]"
+                    if [[ "$*" == *"--query"* ]]; then
+                      echo "[]"
+                    else
+                      echo "[]"
+                    fi
                   fi
                   return 0
                   ;;
