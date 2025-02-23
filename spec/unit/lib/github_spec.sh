@@ -15,6 +15,10 @@ Describe 'github.com.sh'
     export mock_secret_error="false"
     export git_org_project="owner/repo"
     export GH_TOKEN="dummy_token"
+    unset CODESPACES
+    
+    # Create /usr/bin directory in mock path
+    mkdir -p /tmp/mock_bin/usr/bin
     
     # Initialize logger
     init_logger
@@ -66,6 +70,8 @@ case "$1" in
 esac
 return 0
 EOF
+    chmod +x /tmp/mock_bin/gh
+    ln -sf /tmp/mock_bin/gh /tmp/mock_bin/usr/bin/gh
     chmod +x /tmp/mock_bin/gh
     
     # Mock git command
