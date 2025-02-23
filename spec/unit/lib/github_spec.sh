@@ -55,7 +55,7 @@ case "$1" in
       "list")
         if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
           if [ "${mock_secret_error}" = "true" ]; then
-            echo "MISSING_SECRET Updated 2024-02-23"
+            echo "OTHER_SECRET Updated 2024-02-23"
             return 0
           fi
           echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
@@ -151,15 +151,16 @@ EOF
     Context "Secret validation"
       It 'should verify secret exists successfully'
         When call verify_github_secret "actions" "BOOTSTRAP_TOKEN"
-        The output should include "BOOTSTRAP_TOKEN"
+        The output should include "return code 0"
         The status should eq 0
       End
 
       It 'should handle missing secret'
         export mock_secret_error="true"
         When call verify_github_secret "actions" "BOOTSTRAP_TOKEN"
-        The status should eq 1
+        The output should include "return code 1"
         The stderr should include "You need to set the actions/BOOTSTRAP_TOKEN in your project as per instructions in the documentation"
+        The status should eq 1
       End
     End
 
@@ -167,8 +168,9 @@ EOF
       It 'should handle GitHub CLI errors'
         gh() { return 1; }
         When call verify_github_secret "actions" "BOOTSTRAP_TOKEN"
-        The status should eq 1
+        The output should include "return code 1"
         The stderr should include "You need to set the actions/BOOTSTRAP_TOKEN in your project as per instructions in the documentation"
+        The status should eq 1
       End
     End
   End
