@@ -31,12 +31,18 @@ Describe 'init.sh'
         display_instructions() { echo "Instructions displayed"; }
         export tf_command=""
         export mock_group_list='[]'
+        export TF_VAR_environment="test"
+        export TF_VAR_level="level0"
+        export TF_VAR_workspace="default"
+        export location="eastus"
+        export TF_VAR_tfstate_subscription_id="sub123"
+        export TF_VAR_landingzone_name="test-launchpad"
         az() {
           case "$1" in
             "group")
               case "$2" in
                 "list")
-                  if [[ "$*" == *"--query [?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']"* ]] && [[ "$*" == *"-o json"* ]]; then
+                  if [[ "$*" == *"--query \"[?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']\""* ]] && [[ "$*" == *"-o json"* ]] && [[ "$*" == *"2>/dev/null"* ]]; then
                     if [ ! -z "${mock_group_list}" ]; then
                       echo "${mock_group_list}"
                     else
