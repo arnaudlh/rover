@@ -268,7 +268,6 @@ jobs:
         platform: [linux/amd64, linux/arm64]
         agent: [github, tfc, gitlab, azure_devops]
       fail-fast: false
-      max-parallel: 2
     steps:
       - uses: actions/checkout@v4
       
@@ -276,7 +275,6 @@ jobs:
       - name: Run MSDO scan
         uses: microsoft/security-devops-action@v1
         id: msdo
-        continue-on-error: true
         with:
           tools: trivy,bandit,binskim,templateanalyzer
           categories: IaC,containers,python,general
