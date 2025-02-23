@@ -65,8 +65,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}
           target: base
           platforms: linux/amd64
           cache-from: type=gha
