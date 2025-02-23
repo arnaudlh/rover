@@ -23,23 +23,5 @@ jobs:
         tags: rover:local
         cache-from: type=gha
         cache-to: type=gha,mode=max
-    #     path: /tmp/.buildx-cache
-    #     key: ${{ runner.os }}-buildx-${{ github.sha }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-buildx-
-    - name: Build the rover
-      run: |
-        set -e
-        # Build the rover base image
-        make github
-
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@latest
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-    #   with:
-    #     tag_name: ${{ env.docker_tag }}
-    #     release_name: aztfmod/rover:${{ env.docker_tag }}
-    #     draft: false
-    #     prerelease: true
+        platforms: linux/amd64,linux/arm64
+        target: rover
