@@ -261,7 +261,7 @@ jobs:
             trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif
 
   msdo-scan:
-    needs: [build-agents, matrix-prep]
+    needs: [build-base, build-agents, matrix-prep]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -296,7 +296,7 @@ jobs:
           category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
           
   build-report:
-    needs: [msdo-scan]
+    needs: [build-base, build-agents, msdo-scan]
     permissions:
       checks: write
       pull-requests: write
