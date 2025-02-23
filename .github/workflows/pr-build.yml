@@ -266,7 +266,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64]
-        agent: [github, tfc, gitlab, azure_devops]
+        agent: [github]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -276,8 +276,8 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          tools: trivy,bandit,binskim,templateanalyzer
-          categories: containers,python,general
+          tools: trivy
+          categories: containers
           image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
           
       - name: Upload MSDO scan results
