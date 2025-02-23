@@ -1,8 +1,15 @@
 Describe 'azure_ad.sh'
   Include spec/support/spec_helper.sh
-  Include spec/unit/lib/azure_ad.sh
-  Include spec/unit/lib/logger.sh
-  Include spec/unit/lib/functions.sh
+  Include scripts/lib/azure_ad.sh
+  Include scripts/lib/logger.sh
+  Include scripts/lib/functions.sh
+  
+  # Mock logger functions to prevent extra output
+  debug() { :; }
+  error() { echo "Error: $2" >&2; }
+  warning() { :; }
+  information() { :; }
+  success() { :; }
 
   setup() {
     setup_test_env
@@ -28,7 +35,7 @@ Describe 'azure_ad.sh'
                       return 1
                     fi
                     # Handle --query id -o tsv --only-show-errors flags
-                    if [[ "$*" = "ad signed-in-user show --query id -o tsv --only-show-errors" ]]; then
+                    if [[ "$1" = "ad" && "$2" = "signed-in-user" && "$3" = "show" && "$4" = "--query" && "$5" = "id" && "$6" = "-o" && "$7" = "tsv" && "$8" = "--only-show-errors" ]]; then
                       echo "user123"
                     else
                       echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
