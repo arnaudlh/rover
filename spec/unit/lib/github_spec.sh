@@ -127,9 +127,12 @@ EOF
 
       It 'should handle authentication failure'
         export mock_auth_error="true"
+        verify_github_secret() { return 0; }
+        export -f verify_github_secret
         When call check_github_session
         The status should eq 1
         The stderr should include "Error: Not authenticated with GitHub"
+        The stderr should include "GitHub authentication failed"
       End
     End
 
