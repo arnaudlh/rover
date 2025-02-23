@@ -37,6 +37,8 @@ Describe 'init.sh'
         export location="eastus"
         export TF_VAR_tfstate_subscription_id="sub123"
         export TF_VAR_landingzone_name="test-launchpad"
+        export LOG_LEVEL="DEBUG"
+        export AZURE_CORE_OUTPUT_FORMAT="json"
         az() {
           case "$1" in
             "group")
@@ -48,6 +50,7 @@ Describe 'init.sh'
                   else
                     echo "[]"
                   fi
+                  debug "az group list output: ${mock_group_list:-[]}"
                   return 0
                   ;;
                 "create")
