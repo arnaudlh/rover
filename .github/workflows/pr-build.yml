@@ -283,11 +283,43 @@ jobs:
             trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt
             trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif
 
-  msdo:
+  msdo-scan:
     needs: [build-agents]
-    
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Scan base image
+      - uses: microsoft/security-devops-action@v1
+        id: msdo-base
+        with:
+          tools: trivy,bandit,binskim,templateanalyzer
+          categories: IaC,containers,python,general
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
+          category: 'MSDO-Base-${{ matrix.platform }}'
+          
+      # Scan agent image
+      - uses: microsoft/security-devops-action@v1
+        id: msdo-agent
+        with:
+          tools: trivy,bandit,binskim,templateanalyzer
+          categories: IaC,containers,python,general
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.msdo-agent.outputs.sarifFile }}
+          category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
+          
   build-report:
-    needs: [msdo]
+    needs: [msdo-scan]
     permissions:
       checks: write
       pull-requests: write
@@ -342,41 +374,9 @@ jobs:
               name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: '${{ job.status }}' === 'success' ? 'success' : 'failure',
+              conclusion: ${{ job.status == 'success' && 'success' || 'failure' }},
               output: {
                 title: `Build Report ${status}`,
                 summary: buildSummary
               }
             });
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
-        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-      
-      # Scan base image
-      - uses: microsoft/security-devops-action@v1
-        id: msdo-base
-        with:
-          tools: trivy,bandit,binskim,templateanalyzer
-          categories: IaC,containers,python,general
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
-          category: 'MSDO-Base-${{ matrix.platform }}'
-          
-      # Scan agent image
-      - uses: microsoft/security-devops-action@v1
-        id: msdo-agent
-        with:
-          tools: trivy,bandit,binskim,templateanalyzer
-          categories: IaC,containers,python,general
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ steps.msdo-agent.outputs.sarifFile }}
-          category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
