@@ -109,7 +109,11 @@ Describe 'init.sh'
             "group")
               case "$2" in
                 "list")
-                  echo "${mock_group_list:-[]}"
+                  if [ ! -z "${mock_group_list}" ]; then
+                    echo "${mock_group_list}"
+                  else
+                    echo "[]"
+                  fi
                   return 0
                   ;;
                 "create")
@@ -245,8 +249,8 @@ Describe 'init.sh'
       BeforeEach 'setup'
 
       It 'should create storage account with valid name'
-        When call storage_account "test-rg" "eastus"
-        The output should include "Creating storage account: "
+        When call storage_account "${TF_VAR_environment}-launchpad" "eastus"
+        The output should include "Creating storage account: st${TF_VAR_environment}"
         The output should include "stg created"
         The output should include "role"
         The status should eq 0
@@ -263,8 +267,8 @@ Describe 'init.sh'
       BeforeEach 'setup'
 
       It 'should create keyvault when none exists'
-        When call keyvault "test-rg" "eastus"
-        The output should include "Creating keyvault: "
+        When call keyvault "${TF_VAR_environment}-launchpad" "eastus"
+        The output should include "Creating keyvault: kv${TF_VAR_environment}"
         The output should include "...created"
         The status should eq 0
       End
