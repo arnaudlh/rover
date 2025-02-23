@@ -51,8 +51,8 @@ jobs:
           echo "Current directory: $PWD"
           
           # Set SHELLSPEC environment variables
-          export SHELLSPEC_HELPERDIR="$PWD/spec/unit/lib"
-          export SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud"
+          export SHELLSPEC_HELPERDIR="$PWD/spec/support"
+          export SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/tfcloud"
           
           # Create test state directory
           mkdir -p /tmp/test/tfstates/level0/default
