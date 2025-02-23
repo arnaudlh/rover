@@ -35,32 +35,19 @@ case "$1" in
           echo "Error: Not authenticated with GitHub" >&2
           return 1
         fi
-        # Mock gh auth status
-        if [ "$1" = "auth" ] && [ "$2" = "status" ]; then
-          # Mock successful auth status
-          echo "github.com"
-          echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)"
-          echo "  - Active account: true"
-          echo "  - Git operations protocol: https"
-          echo "  - Token: ghs_************************************"
-          return 0
-        fi
-        # Mock gh api calls
-        if [ "$1" = "api" ] && [[ "$2" == "repos/${git_org_project}" ]]; then
-          echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-          return 0
-        fi
-        # Mock gh secret list
-        if [ "$1" = "secret" ] && [ "$2" = "list" ] && [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          return 0
-        fi
-        return 1
+        # Mock successful auth status
+        echo "github.com"
+        echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)"
+        echo "  - Active account: true"
+        echo "  - Git operations protocol: https"
+        echo "  - Token: ghs_************************************"
+        echo ""
+        return 0
         ;;
     esac
     ;;
   "api")
-    if [[ "$2" == "repos/owner/repo" ]]; then
+    if [[ "$2" == "repos/${git_org_project}" ]]; then
       if [ "${mock_repo_error}" = "true" ]; then
         echo "Error: Repository not accessible" >&2
         return 1
