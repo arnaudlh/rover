@@ -1,8 +1,8 @@
 Describe 'init.sh'
-  Include spec_helper.sh
-  Include ./init.sh
-  Include ./logger.sh
-  Include ./functions.sh
+  Include spec/support/spec_helper.sh
+  Include scripts/lib/init.sh
+  Include scripts/lib/logger.sh
+  Include scripts/lib/functions.sh
 
   setup() {
     setup_test_env

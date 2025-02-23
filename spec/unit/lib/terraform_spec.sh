@@ -1,8 +1,8 @@
 Describe 'terraform.sh'
-  Include spec_helper.sh
-  Include ./terraform.sh
-  Include ./logger.sh
-  Include ./functions.sh
+  Include spec/support/spec_helper.sh
+  Include scripts/lib/terraform.sh
+  Include scripts/lib/logger.sh
+  Include scripts/lib/functions.sh
 
   setup() {
     setup_test_env
