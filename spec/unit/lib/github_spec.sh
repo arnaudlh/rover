@@ -37,8 +37,10 @@ case "$1" in
         fi
         # Match actual gh auth status output format
         echo "github.com"
-        echo "  ✓ Logged in to github.com"
-        echo "  - Active account: testuser"
+        echo "  ✓ Logged in to github.com account testuser (/home/ubuntu/.config/gh/hosts.yml)"
+        echo "  - Active account: true"
+        echo "  - Git operations protocol: https"
+        echo "  - Token: ghs_************************************"
         return 0
         ;;
     esac
@@ -125,7 +127,8 @@ EOF
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "github.com"
-        The output should include "  ✓ Logged in to github.com"
+        The output should include "  ✓ Logged in to github.com account"
+        The output should include "  - Git operations protocol: https"
         The status should eq 0
       End
 
