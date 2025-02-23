@@ -135,7 +135,9 @@ function build_base_rover_image {
             versionTerrascan=1.18.3 \
             versionTfupdate=0.7.2 \
             mkdir -p /tmp/.buildx-cache && \
-            docker buildx create --name rover --use || true && \
+            docker buildx rm rover || true && \
+            docker buildx create --name rover --driver docker-container --use && \
+            docker buildx inspect --bootstrap && \
             docker buildx bake \
                 -f docker-bake.hcl \
                 -f docker-bake.override.hcl \
