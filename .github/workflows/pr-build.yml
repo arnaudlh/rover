@@ -366,7 +366,7 @@ jobs:
             });
 
   msdo:
-    needs: matrix-prep
+    needs: [build-base, build-agents]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -375,12 +375,27 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+      
+      # Scan base image
       - uses: microsoft/security-devops-action@v1
-        id: msdo
+        id: msdo-base
         with:
           tools: trivy,bandit,binskim,templateanalyzer
           categories: IaC,containers,python,general
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}
       - uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-          category: 'MSDO-${{ matrix.platform }}-${{ matrix.agent }}'
+          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
+          category: 'MSDO-Base-${{ matrix.platform }}'
+          
+      # Scan agent image
+      - uses: microsoft/security-devops-action@v1
+        id: msdo-agent
+        with:
+          tools: trivy,bandit,binskim,templateanalyzer
+          categories: IaC,containers,python,general
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.msdo-agent.outputs.sarifFile }}
+          category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
