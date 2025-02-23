@@ -53,6 +53,9 @@ jobs:
           
       - name: Build and push
         uses: docker/build-push-action@v5
+        env:
+          BUILDKIT_PROGRESS: plain
+          DOCKER_BUILDKIT: 1
         with:
           context: ${{ github.workspace }}
           push: true
@@ -60,6 +63,8 @@ jobs:
           tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
           file: ${{ github.workspace }}/Dockerfile
           target: base
+          allow: |
+            network.host
           build-args: |
             TARGETARCH=amd64
             TARGETOS=linux
@@ -100,18 +105,11 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
 
       - name: Move cache
         run: |
