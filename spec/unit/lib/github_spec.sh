@@ -217,15 +217,7 @@ EOF
         verify_github_secret() {
           return 0
         }
-        export -f verify_github_secret    esac
-    ;;
-esac
-return 0
-EOF
-        chmod +x /tmp/mock_bin/gh
-        
-        # Mock git commands for this specific test
-        git() {
+        export -f verify_github_secret
           case "$1" in
             "config")
               case "$2" in
