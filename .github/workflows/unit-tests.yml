@@ -37,18 +37,12 @@ jobs:
           
           # Copy source files to test directory
           cp -r scripts/lib/* spec/unit/lib/
-          cp scripts/functions.sh spec/unit/lib/scripts/
-          cp scripts/rover.sh spec/unit/lib/scripts/
-          cp scripts/tfstate.sh spec/unit/lib/scripts/
-          cp scripts/remote.sh spec/unit/lib/scripts/
-          cp scripts/parse_command.sh spec/unit/lib/scripts/
-          cp scripts/banner.sh spec/unit/lib/scripts/
-          cp scripts/clone.sh spec/unit/lib/scripts/
-          cp scripts/walkthrough.sh spec/unit/lib/scripts/
-          cp scripts/sshd.sh spec/unit/lib/scripts/
-          cp scripts/backend.hcl.tf spec/unit/lib/scripts/
-          cp scripts/backend.azurerm.tf spec/unit/lib/scripts/
-          cp scripts/task.sh spec/unit/lib/scripts/
+          cp -r scripts/* spec/unit/lib/scripts/
+          
+          # Debug information
+          echo "Test directory contents:"
+          ls -la spec/unit/lib/scripts/
+          ls -la spec/unit/lib/
           
           # Debug information
           echo "Test directory contents:"
