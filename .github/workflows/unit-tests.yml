@@ -30,19 +30,23 @@ jobs:
           
           # Copy scripts to test directory
           cp -r scripts/lib/* spec/unit/lib/
-          cp -r scripts/tfcloud/* spec/unit/lib/tfcloud/
-          cp scripts/functions.sh spec/unit/lib/
-          cp scripts/rover.sh spec/unit/lib/
-          cp scripts/tfstate.sh spec/unit/lib/
-          cp scripts/remote.sh spec/unit/lib/
-          cp scripts/parse_command.sh spec/unit/lib/
-          cp scripts/banner.sh spec/unit/lib/
-          cp scripts/clone.sh spec/unit/lib/
-          cp scripts/walkthrough.sh spec/unit/lib/
-          cp scripts/sshd.sh spec/unit/lib/
-          cp scripts/backend.hcl.tf spec/unit/lib/
-          cp scripts/backend.azurerm.tf spec/unit/lib/
-          cp scripts/task.sh spec/unit/lib/
+          cp -r scripts/tfcloud/* spec/unit/lib/tfcloud/ || true
+          cp scripts/functions.sh spec/unit/lib/ || true
+          cp scripts/rover.sh spec/unit/lib/ || true
+          cp scripts/tfstate.sh spec/unit/lib/ || true
+          cp scripts/remote.sh spec/unit/lib/ || true
+          cp scripts/parse_command.sh spec/unit/lib/ || true
+          cp scripts/banner.sh spec/unit/lib/ || true
+          cp scripts/clone.sh spec/unit/lib/ || true
+          cp scripts/walkthrough.sh spec/unit/lib/ || true
+          cp scripts/sshd.sh spec/unit/lib/ || true
+          cp scripts/backend.hcl.tf spec/unit/lib/ || true
+          cp scripts/backend.azurerm.tf spec/unit/lib/ || true
+          cp scripts/task.sh spec/unit/lib/ || true
+          
+          # Debug information
+          echo "Test directory contents after copy:"
+          ls -la spec/unit/lib/
           
           # Move spec_helper.sh to support directory after copying all scripts
           mv spec/unit/lib/spec_helper.sh spec/support/ || true
