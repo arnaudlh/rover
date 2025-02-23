@@ -69,6 +69,8 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 
 # Installation of common tools
 RUN set -ex && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         apt-transport-https \
@@ -144,10 +146,12 @@ RUN set -ex && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null &&\
     #
     apt-get update && \
-    apt-get install -y --no-install-recommends \
-    docker-ce-cli \
-    kubectl \
-    gh && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        docker-ce-cli \
+        kubectl \
+        gh && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
     #
     # Install Docker Compose - required to rebuild the rover and dynamic terminal in VSCode
     #
