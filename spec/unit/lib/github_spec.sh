@@ -31,8 +31,12 @@ Describe 'github.com.sh'
             esac
             ;;
           "api")
-            if [[ "$2" == "repos/"* ]]; then
-              echo '{"id": 12345, "svn_url": "https://github.com/test/repo"}'
+            if [[ "$2" == "repos/owner/repo" ]]; then
+              echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+              return 0
+            fi
+            if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
+              echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
               return 0
             fi
             ;;
@@ -50,17 +54,26 @@ Describe 'github.com.sh'
         return 0
       }
       export -f gh
+      export -f gh
     }
 
     BeforeEach 'setup'
 
     Context "Authentication verification"
       It 'should verify GitHub authentication successfully'
-        # Mock git config
+        # Mock git config and commands
         git() {
-          case "$2" in
-            "--get")
-              echo "https://github.com/owner/repo.git"
+          case "$1" in
+            "config")
+              case "$2" in
+                "--get")
+                  echo "https://github.com/owner/repo.git"
+                  return 0
+                  ;;
+              esac
+              ;;
+            "rev-parse")
+              echo "/home/runner/work/rover/rover"
               return 0
               ;;
           esac
@@ -68,6 +81,7 @@ Describe 'github.com.sh'
         }
         export -f git
         PATH="/tmp/mock_bin:$PATH"
+        export git_org_project="owner/repo"
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
