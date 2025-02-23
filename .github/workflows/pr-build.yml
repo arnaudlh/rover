@@ -6,7 +6,7 @@ on:
     types: [opened, synchronize, reopened]
   push:
     branches:
-      - devin/1740289687-ghcr-migration
+      - 'devin/**'
       - main
 
 permissions:
@@ -24,6 +24,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}/rover
   BUILDX_NO_DEFAULT_LOAD: true
   DOCKER_BUILDKIT: 1
+  GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   build:
