@@ -141,7 +141,6 @@ function build_base_rover_image {
             docker buildx bake \
                 -f docker-bake.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
-                --set "*.platform=${os}/${architecture}" \
                 --set "*.args.TARGETARCH=${architecture}" \
                 --set "*.args.TARGETOS=${os}" \
                 --load \
