@@ -22,9 +22,6 @@ Describe 'azure_ad.sh'
           "ad")
             case "$2" in
               "signed-in-user")
-                if [ "${mock_error}" = "true" ]; then
-                  return 1
-                fi
                 case "$3" in
                   "show")
                     if [ "${mock_error}" = "true" ]; then
@@ -37,9 +34,7 @@ Describe 'azure_ad.sh'
                     fi
                     return 0
                     ;;
-                return 0
-                ;;
-            esac
+                esac
             ;;
         esac
         return 0
