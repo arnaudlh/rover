@@ -141,11 +141,11 @@ RUN set -ex && \
     #
     echo "Installing docker compose ${versionDockerCompose}..." && \
     mkdir -p /usr/libexec/docker/cli-plugins/ && \
-    if [ ${TARGETARCH} == "amd64" ]; then \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
         curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64 ; \
     else  \
         curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64 ; \
-    fi  \
+    fi \
     && chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
     #
     # Install Helm
@@ -162,22 +162,22 @@ RUN set -ex && \
     # Install terrascan
     #
     echo "Installing terrascan v${versionTerrascan} ..." && \
-    if [ ${TARGETARCH} == "amd64" ]; then \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
         curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz ; \
     else \
         curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_${TARGETARCH}.tar.gz ; \
-    fi  \
+    fi \
     && tar -xf terrascan.tar.gz terrascan && rm terrascan.tar.gz && \
     install terrascan /usr/local/bin && rm terrascan && \
     #
     # Install tfupdate
     #
     echo "Installing tfupdate v${versionTfupdate} ..." && \
-    if [ ${TARGETARCH} == "amd64" ]; then \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
         curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_amd64.tar.gz ; \
     else \
         curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_${TARGETARCH}.tar.gz ; \
-    fi  \
+    fi \
     && tar -xf tfupdate.tar.gz tfupdate && rm tfupdate.tar.gz && \
     install tfupdate /usr/local/bin && rm tfupdate && \
     #
