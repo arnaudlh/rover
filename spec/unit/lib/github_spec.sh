@@ -9,6 +9,9 @@ Describe 'github.com.sh'
     export script_path="$PWD"
     export LOG_TO_FILE="false"
     export LOG_LEVEL="INFO"
+    export log_folder_path="/tmp/rover_test_logs"
+    __log_init__
+    set_log_severity "INFO"
     export GITHUB_TOKEN="dummy_token"
     export mock_auth_error="false"
     export mock_repo_error="false"
@@ -101,6 +104,7 @@ EOF
   cleanup() {
     cleanup_test_env
     rm -rf /tmp/mock_bin
+    rm -rf /tmp/rover_test_logs
   }
   BeforeEach 'setup'
   AfterEach 'cleanup'
