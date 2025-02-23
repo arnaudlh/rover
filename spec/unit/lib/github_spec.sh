@@ -169,6 +169,12 @@ Describe 'github.com.sh'
           return 0
         }
         export -f gh
+        
+        # Mock verify_github_secret function
+        verify_github_secret() {
+          return 0
+        }
+        export -f verify_github_secret
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
