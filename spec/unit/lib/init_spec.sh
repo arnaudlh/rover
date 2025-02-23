@@ -127,7 +127,7 @@ Describe 'init.sh'
       BeforeEach 'setup'
 
       It 'should create new resource group when none exists'
-        unset mock_group_list
+        export mock_group_list='[]'
         When call init
         The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
         The output should include "...created"
