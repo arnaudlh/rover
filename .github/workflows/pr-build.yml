@@ -95,18 +95,12 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           target: base
           platforms: ${{ matrix.platform }}
-          cache-from: |
-            type=gha,scope=${{ github.ref_name }}-${{ matrix.platform }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
-          allow: |
-            network.host
-            security.insecure
-          outputs: type=image,push=true
           provenance: false
           sbom: false
           build-args: |
@@ -131,9 +125,9 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}'
+          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}'
           format: 'table'
-          output: 'trivy-results-${{ matrix.platform }}.txt'
+          output: 'trivy-results.txt'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -144,15 +138,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trivy-results-${{ matrix.platform }}
-          path: trivy-results-${{ matrix.platform }}.txt
+          path: trivy-results.txt
           
       - name: Run Trivy for SARIF output
         uses: aquasecurity/trivy-action@master
         if: always()
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}'
+          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}'
           format: 'sarif'
-          output: 'trivy-results-${{ matrix.platform }}.sarif'
+          output: 'trivy-results.sarif'
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -162,7 +156,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results-${{ matrix.platform }}.sarif'
+          sarif_file: 'trivy-results.sarif'
           category: 'Trivy-${{ matrix.platform }}'
 
       - name: Move cache
@@ -176,8 +170,8 @@ jobs:
         with:
           name: build-info-${{ matrix.platform }}
           path: |
-            trivy-results-${{ matrix.platform }}.txt
-            trivy-results-${{ matrix.platform }}.sarif
+            trivy-results.txt
+            trivy-results.sarif
 
   build-agents:
     needs: [build-base]
