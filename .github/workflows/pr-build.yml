@@ -31,9 +31,9 @@ jobs:
         with:
           platforms: linux/amd64
           driver: docker-container
-          driver-opts: |
-            image=moby/buildkit:latest
-            network=host
+          buildkitd-flags: |
+            --allow-insecure-entitlement network.host
+            --allow-insecure-entitlement security.insecure
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -55,8 +55,6 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
           sbom: false
-          allow: |
-            network.host
           build-args: |
             TARGETARCH=amd64
             TARGETOS=linux
