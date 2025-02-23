@@ -45,6 +45,7 @@ case "$1" in
         return 0
         ;;
     esac
+    return 0
     ;;
   "api")
     if [[ "$2" == "repos/${git_org_project}" ]]; then
@@ -136,13 +137,13 @@ EOF
         }
         export -f verify_github_secret
         When call check_github_session
-        The output should include "@call check_github_session"
-        The output should include "GitHub authentication successful"
-        The output should include "Connected to GiHub: repos/owner/repo"
         The stderr should include "github.com"
         The stderr should include "  ✓ Logged in to github.com account testuser"
         The stderr should include "  - Active account: true"
         The stderr should include "  - Git operations protocol: https"
+        The output should include "@call check_github_session"
+        The output should include "GitHub authentication successful"
+        The output should include "Connected to GiHub: repos/owner/repo"
         The status should eq 0
       End
 
