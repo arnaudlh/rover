@@ -70,8 +70,15 @@ function build_base_rover_image {
     echo "Terraform version - ${versionTerraform}"
 
     case "${strategy}" in
+        "ghcr")
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
+            tag=${versionTerraform}-${tag_date_release}
+            rover_base="${registry}rover"
+            rover="${rover_base}:${tag}"
+            export tag_strategy=""
+            ;;
         "github")
-            registry="aztfmod/"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
             tag=${versionTerraform}-${tag_date_release}
             rover_base="${registry}rover"
             rover="${rover_base}:${tag}"
