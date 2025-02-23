@@ -139,12 +139,15 @@ function build_base_rover_image {
             docker buildx create --name rover --driver docker-container --use && \
             docker buildx inspect --bootstrap && \
             docker buildx bake \
+                --allow=fs.read=/tmp/.buildx-cache \
+                --allow=fs.write=/tmp/.buildx-cache-new \
                 -f docker-bake.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.TARGETARCH=${architecture}" \
                 --set "*.args.TARGETOS=${os}" \
                 --set "*.args.versionRover=${rover_base}:${tag}" \
                 --set "*.args.versionTerraform=${versionTerraform}" \
+                --set "*.tags=rover:local" \
                 --load \
                 rover_local
             # Pull from in-memory local registry to local docker images
