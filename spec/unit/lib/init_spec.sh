@@ -54,6 +54,12 @@ Describe 'init.sh'
                           echo "${mock_group_list}"
                         else
                           echo "[]"
+                        fi
+                        return 0
+                      fi
+                    fi
+                    echo "[]"
+                    return 0
                     fi
                   else
                     echo "[]"
