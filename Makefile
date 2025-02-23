@@ -11,7 +11,7 @@ github:
 # make local
 local:
 	echo ${arch}
-	DOCKER_BUILDX_BAKE_FLAGS="--allow=network.host" @bash "$(CURDIR)/scripts/build_image.sh" "local" ${arch} ${agent}
+	DOCKER_BUILDX_BAKE_FLAGS="--allow=network.host" bash "$(CURDIR)/scripts/build_image.sh" "local" ${arch} ${agent}
 
 dev:
 	@bash "$(CURDIR)/scripts/build_image.sh" "dev" ${arch} ${agent}
