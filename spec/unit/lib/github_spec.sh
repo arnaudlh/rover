@@ -218,11 +218,6 @@ EOF
           return 0
         }
         export -f verify_github_secret
-#!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
         echo "Logged in to github.com as testuser"
         return 0
         ;;
