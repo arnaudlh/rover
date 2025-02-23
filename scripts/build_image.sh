@@ -85,14 +85,14 @@ function build_base_rover_image {
             export tag_strategy=""
             ;;
         "alpha")
-            registry="aztfmod/"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
             tag=${versionTerraform}-${tag_date_preview}
             rover_base="${registry}rover-alpha"
             rover="${rover_base}:${tag}"
             export tag_strategy="alpha-"
             ;;
         "dev")
-            registry="aztfmod/"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
             tag=${versionTerraform}-${tag_date_preview}
             rover_base="${registry}rover-preview"
             export rover="${rover_base}:${tag}"
