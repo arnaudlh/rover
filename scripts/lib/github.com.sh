@@ -8,6 +8,12 @@ check_github_session() {
   fi
   debug "GitHub authentication successful"
 
+  # Verify GitHub token
+  if [ -z "${GITHUB_TOKEN}" ]; then
+    error ${LINENO} "GITHUB_TOKEN not set" 1
+    return 1
+  fi
+
   url=$(git config --get remote.origin.url)
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')
   export git_project=$(basename -s .git $(git config --get remote.origin.url))

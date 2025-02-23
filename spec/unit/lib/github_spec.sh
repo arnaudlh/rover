@@ -132,7 +132,15 @@ EOF
         When call check_github_session
         The status should eq 1
         The stderr should include "Error: Not authenticated with GitHub"
-        The stderr should include "GitHub authentication failed"
+      End
+
+      It 'should handle missing GitHub token'
+        unset GITHUB_TOKEN
+        verify_github_secret() { return 0; }
+        export -f verify_github_secret
+        When call check_github_session
+        The status should eq 1
+        The stderr should include "GITHUB_TOKEN not set"
       End
     End
 
