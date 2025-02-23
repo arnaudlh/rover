@@ -22,10 +22,8 @@ Describe 'github.com.sh'
     
     # Create mock bin directory and /usr/bin symlink path
     mkdir -p /tmp/mock_bin/usr/bin
-    export PATH="/tmp/mock_bin:$PATH"
     
     # Create mock gh command
-    mkdir -p /tmp/mock_bin/usr/bin
     cat > /tmp/mock_bin/usr/bin/gh << 'EOF'
 #!/bin/bash
 case "$1" in
@@ -90,6 +88,7 @@ return 0
 EOF
     chmod +x /tmp/mock_bin/usr/bin/gh
     export PATH="/tmp/mock_bin/usr/bin:$PATH"
+    export GITHUB_TOKEN="dummy_token"
     
     # Mock git command
     git() {
