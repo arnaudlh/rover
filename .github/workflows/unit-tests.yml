@@ -83,6 +83,8 @@ jobs:
           pwd
           
       - name: Run Unit Tests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           cd $GITHUB_WORKSPACE
           
