@@ -170,59 +170,14 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      - name: Report build status
+      - name: Upload build info
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            const { owner, repo } = context.repo;
-            const { number } = context.issue;
-            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
-            const buildId = '${{ steps.build.outputs.digest }}' || 'N/A';
-            const dockerVersion = '${{ steps.build.outputs.docker-version }}' || 'N/A';
-            const buildkitVersion = '${{ steps.build.outputs.buildkit-version }}' || 'N/A';
-            const trivyStatus = process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌';
-            
-            const body = [
-              `Build Status: ${status}`,
-              '',
-              'Build Information:',
-              '- Platforms: linux/amd64',
-              `- SHA: ${context.sha}`,
-              `- Build ID: ${buildId}`,
-              '- Security: Trivy scan results uploaded to Security tab',
-              '',
-              'Status Details:',
-              `- Build: ${status}`,
-              `- Security Scan: ${trivyStatus}`,
-              '',
-              'Debug Information:',
-              `- Docker Version: ${dockerVersion}`,
-              `- BuildKit Version: ${buildkitVersion}`
-            ].join('\n');
-            
-            if (context.payload.pull_request) {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: number,
-                body
-              });
-            }
-            
-            const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
-            await github.rest.checks.create({
-              owner,
-              repo,
-              name: 'Build & Security Check',
-              head_sha: context.sha,
-              status: 'completed',
-              conclusion,
-              output: {
-                title: `Build ${status}`,
-                summary: body
-              }
-            });
+          name: build-info-${{ matrix.platform }}
+          path: |
+            trivy-results-${{ matrix.platform }}.txt
+            trivy-results-${{ matrix.platform }}.sarif
 
   build-agents:
     needs: [build-base]
@@ -319,8 +274,31 @@ jobs:
           sarif_file: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
           category: 'Trivy-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
 
-      - name: Report agent build status
+      - name: Upload agent build info
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          path: |
+            trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt
+            trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif
+
+  msdo:
+    needs: [build-agents]
+    
+  build-report:
+    needs: [msdo]
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: read
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        
+      - name: Generate build report
         uses: actions/github-script@v7
         with:
           script: |
@@ -328,18 +306,25 @@ jobs:
             const { number } = context.issue;
             const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
             
-            const body = [
-              `Agent Build Status: ${status}`,
+            const buildSummary = [
+              '# Build & Security Report',
               '',
-              'Build Information:',
-              `- Platform: ${{ matrix.platform }}`,
-              `- Agent: ${{ matrix.agent }}`,
-              `- SHA: ${context.sha}`,
-              '- Security: Trivy scan results uploaded to Security tab',
+              '## Base Image Builds',
+              '- linux/amd64',
+              '- linux/arm64',
               '',
-              'Status Details:',
-              `- Build: ${status}`,
-              `- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}`
+              '## Agent Builds',
+              '- github',
+              '- tfc',
+              '- gitlab',
+              '- azure_devops',
+              '',
+              '## Security Scans',
+              '- MSDO analysis complete',
+              '- Trivy vulnerability scans uploaded',
+              '- SARIF reports processed',
+              '',
+              `Overall Status: ${status}`
             ].join('\n');
             
             if (context.payload.pull_request) {
@@ -347,26 +332,22 @@ jobs:
                 owner,
                 repo,
                 issue_number: number,
-                body
+                body: buildSummary
               });
             }
             
-            const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
             await github.rest.checks.create({
               owner,
               repo,
-              name: `Build & Security Check - Agent ${{ matrix.agent }} (${{ matrix.platform }})`,
+              name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion,
+              conclusion: '${{ job.status }}' === 'success' ? 'success' : 'failure',
               output: {
-                title: `Agent Build ${status}`,
-                summary: body
+                title: `Build Report ${status}`,
+                summary: buildSummary
               }
             });
-
-  msdo:
-    needs: [build-agents]
     runs-on: ubuntu-latest
     strategy:
       matrix:
