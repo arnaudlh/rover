@@ -2,7 +2,7 @@ check_github_session() {
   information "@call check_github_session"
   
   # Check GitHub authentication first
-  if ! /usr/bin/gh auth status >/dev/null 2>&1; then
+  if ! gh auth status >/dev/null 2>&1; then
     error ${LINENO} "GitHub authentication failed" 1
     return 1
   fi
@@ -12,11 +12,11 @@ check_github_session() {
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')
   export git_project=$(basename -s .git $(git config --get remote.origin.url))
   success "Connected to GiHub: repos/${git_org_project}"
-  if ! project=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id); then
+  if ! project=$(gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id); then
     error ${LINENO} "Failed to access GitHub repository ${git_org_project}" 1
     return 1
   fi
-  if ! export GITOPS_SERVER_URL=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url); then
+  if ! export GITOPS_SERVER_URL=$(gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url); then
     error ${LINENO} "Failed to get repository URL for ${git_org_project}" 1
     return 1
   fi
@@ -29,7 +29,7 @@ check_github_session() {
   fi
 
   # Show full auth status at the end
-  /usr/bin/gh auth status
+  gh auth status
 }
 
 verify_git_settings(){
@@ -50,7 +50,7 @@ verify_github_secret() {
   application=${1}
   secret_name=${2}
 
-  /usr/bin/gh secret list -a ${application} | grep "${secret_name}"
+  gh secret list -a ${application} | grep "${secret_name}"
 
   RETURN_CODE=$?
 
@@ -68,6 +68,6 @@ register_github_secret() {
 # ${1} secret name
 # ${2} secret value
 
-  /usr/bin/gh secret set "${1}" --body "${2}"
+  gh secret set "${1}" --body "${2}"
 
 }
