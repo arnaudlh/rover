@@ -70,46 +70,44 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 # Installation of common tools
 RUN set -ex && \
     apt-get update && \
-    apt-get install -y --no-install-recommends \
-    apt-transport-https \
-    apt-utils \
-    bsdmainutils \
-    ca-certificates \
-    curl \
-    fonts-powerline \
-    gcc \
-    gettext \
-    git \
-    gpg \
-    gpg-agent \
-    jq \
-    less \
-    locales \
-    make \
-    # Networking tools
-    dnsutils \
-    net-tools \
-    iputils-ping \
-    traceroute \
-    python3-dev \
-    python3-pip \
-    rsync \
-    # openvpn client and ipsec tools
-    openvpn \
-    network-manager-openvpn \
-    strongswan \
-    strongswan-pki \
-    libstrongswan-extra-plugins \
-    libtss2-tcti-tabrmd0 \
-    openssh-client \
-    software-properties-common \
-    gosu \
-    sudo \
-    unzip \
-    vim \
-    wget \
-    zsh \
-    zip && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        apt-utils \
+        bsdmainutils \
+        ca-certificates \
+        curl \
+        fonts-powerline \
+        gcc \
+        gettext \
+        git \
+        gpg \
+        gpg-agent \
+        jq \
+        less \
+        locales \
+        make \
+        dnsutils \
+        net-tools \
+        iputils-ping \
+        traceroute \
+        python3-dev \
+        python3-pip \
+        rsync \
+        openvpn \
+        network-manager-openvpn \
+        strongswan \
+        strongswan-pki \
+        libstrongswan-extra-plugins \
+        libtss2-tcti-tabrmd0 \
+        openssh-client \
+        software-properties-common \
+        gosu \
+        sudo \
+        unzip \
+        vim \
+        wget \
+        zsh \
+        zip && \
     #
     # Create USERNAME
     #
@@ -128,18 +126,18 @@ RUN set -ex && \
     #
     # Add Microsoft repository
     #
-    echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | tee /etc/apt/sources.list.d/microsoft.list > /dev/null && \
+    echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | tee /etc/apt/sources.list.d/microsoft.list > /dev/null && \
     #
     # Add Docker repository
     #
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/docker-archive-keyring.gpg && \
-    echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+    echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
     #
     # Kubernetes repo
     #
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-    echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list > /dev/null && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list > /dev/null && \
     #
     # Github shell
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gosu root dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
