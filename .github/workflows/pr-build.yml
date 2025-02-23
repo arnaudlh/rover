@@ -102,8 +102,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
           provenance: false
           sbom: false
-          outputs: type=docker,dest=/tmp/myimage.tar
-          load: true
           build-args: |
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
@@ -122,10 +120,6 @@ jobs:
             extensionsAzureCli=aks-preview
             versionTerrascan=1.18.3
             versionTfupdate=0.7.2
-          
-      - name: Load image for scanning
-        run: |
-          docker load < /tmp/myimage.tar
           
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
