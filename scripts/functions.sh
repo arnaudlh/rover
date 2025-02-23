@@ -543,6 +543,13 @@ function workspace_delete {
     echo ""
 }
 
+function tfstate_cleanup() {
+    echo "@calling tfstate_cleanup"
+    if [ -d "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}" ]; then
+        rm -rf "${TF_DATA_DIR}/tfstates/${TF_VAR_level}/${TF_VAR_workspace}"
+    fi
+}
+
 function clean_up_variables {
     echo "@calling clean_up_variables"
 
