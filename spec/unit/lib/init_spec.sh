@@ -45,6 +45,27 @@ Describe 'init.sh'
         __log_init__
         set_log_severity "DEBUG"
         debug "Test setup complete"
+        # Mock functions
+        resource_group_create() {
+          debug "Creating resource group: $1 in $2"
+          echo "...created"
+          return 0
+        }
+        resource_group_delete() {
+          debug "Deleting resource group: $1 in $2"
+          echo "Resource group deleted"
+          return 0
+        }
+        storage_account() {
+          debug "Creating storage account in $1"
+          echo "stg created"
+          return 0
+        }
+        keyvault() {
+          debug "Creating keyvault in $1"
+          echo "...created"
+          return 0
+        }
         az() {
           case "$1" in
             "group")
