@@ -172,6 +172,7 @@ Describe 'init.sh'
         The output should include "Creating storage account: st${TF_VAR_environment}"
         The output should include "stg created"
         The output should include "role"
+        The output should include "created"
         The status should eq 0
       End
     End
