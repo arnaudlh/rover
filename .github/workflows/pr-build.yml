@@ -128,7 +128,7 @@ jobs:
             const { number } = context.issue;
             const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
             
-            let body = `Build Status: ${status}
+            const body = `Build Status: ${status}
 
 Build Information:
 - Platforms: linux/amd64
@@ -138,7 +138,7 @@ Build Information:
 
 Status Details:
 - Build: ${status}
-- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}`;
+- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}
 
 Debug Information:
 - Docker Version: ${{ steps.build.outputs.docker-version || 'N/A' }}
