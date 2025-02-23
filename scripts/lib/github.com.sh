@@ -30,7 +30,7 @@ check_github_session() {
     return 1
   fi
   if ! export GITOPS_SERVER_URL=$(gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url); then
-    error ${LINENO} "Failed to get repository URL for ${git_org_project}" 1
+    echo "Error: Failed to get repository URL for ${git_org_project}" >&2
     return 1
   fi
   debug "${project}"
