@@ -37,15 +37,14 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          load: true
+          push: true
           platforms: linux/amd64
-          tags: |
-            ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
-            rover:local
+          tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           file: ./Dockerfile
           target: base
+          provenance: false
           build-args: |
             TARGETARCH=amd64
             TARGETOS=linux
