@@ -48,6 +48,7 @@ Describe 'init.sh'
         # Mock functions
         resource_group_create() {
           debug "Creating resource group: $1 in $2"
+          echo "Creating resource group: ${TF_VAR_environment}-launchpad"
           echo "...created"
           return 0
         }
@@ -58,11 +59,14 @@ Describe 'init.sh'
         }
         storage_account() {
           debug "Creating storage account in $1"
+          echo "Creating storage account: st${TF_VAR_environment}"
           echo "stg created"
+          echo "role"
           return 0
         }
         keyvault() {
           debug "Creating keyvault in $1"
+          echo "Creating keyvault: kv${TF_VAR_environment}"
           echo "...created"
           return 0
         }
