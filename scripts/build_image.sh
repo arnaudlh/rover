@@ -134,7 +134,8 @@ function build_base_rover_image {
             extensionsAzureCli=aks-preview \
             versionTerrascan=1.18.3 \
             versionTfupdate=0.7.2 \
-            mkdir -p /var/lib/buildkit/cache && \
+            mkdir -p /var/lib/buildkit/{cache,tmp} && \
+            export TMPDIR=/var/lib/buildkit/tmp && \
             docker buildx rm rover || true && \
             docker buildx create --name rover --driver docker-container --use && \
             docker buildx inspect --bootstrap && \
