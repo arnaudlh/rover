@@ -94,7 +94,6 @@ EOF
       export git_org_project="owner/repo"
       export GITHUB_TOKEN="dummy_token"
       export mock_secret_error="false"
-      export mock_secret_error="false"
     }
 
     BeforeEach 'setup'
