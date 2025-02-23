@@ -206,7 +206,7 @@ RUN set -ex && \
     echo "Installing PowerShell ${versionPowershell}..." && \
     if [ "${TARGETARCH}" = "amd64" ]; then curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-x64.tar.gz ; \
     else curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-${TARGETARCH}.tar.gz ; \
-    fi\
+    fi \
     && mkdir -p /opt/microsoft/powershell/7 && \
     tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 && \
     chmod +x /opt/microsoft/powershell/7/pwsh && \
@@ -290,8 +290,7 @@ RUN set -ex && \
         echo ACCEPT_EULA=Y apt-get install -y --no-install-recommends unixodbc mssql-tools; \
     else \
         echo "mssql-tools skipped as not running on arm64"; \
-    fi\
-    #
+    fi \
     && echo "Installing latest shellspec..." && \
     curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
     #
