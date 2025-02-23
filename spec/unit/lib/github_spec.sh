@@ -79,42 +79,7 @@ EOF
     }
     export -f git
     
-    # Create mock gh command
-    cat > /tmp/mock_bin/gh << 'EOF'
-#!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
-        echo "Logged in to github.com as testuser"
-        return 0
-        ;;
-    esac
-    ;;
-  "api")
-    if [[ "$2" == "repos/owner/repo" ]]; then
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
-    if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
-      echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
-      return 0
-    fi
-    ;;
-  "secret")
-    case "$2" in
-      "list")
-        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          return 0
-        fi
-        ;;
-    esac
-    ;;
-esac
-return 0
-EOF
-    chmod +x /tmp/mock_bin/gh
+
   }
   cleanup() {
     cleanup_test_env
@@ -212,32 +177,6 @@ EOF
       It 'should verify GitHub authentication successfully'
         export git_org_project="owner/repo"
         export mock_secret_error="false"
-        
-        # Mock verify_github_secret function
-        verify_github_secret() {
-          return 0
-        }
-        export -f verify_github_secret
-                    echo "https://github.com/owner/repo.git"
-                    return 0
-                  fi
-                  ;;
-              esac
-              ;;
-            "rev-parse")
-              if [[ "$2" == "--show-toplevel" ]]; then
-                echo "/home/runner/work/rover/rover"
-                return 0
-              fi
-              ;;
-            "status")
-              echo "On branch main"
-              return 0
-              ;;
-          esac
-          return 0
-        }
-        export -f git
         
         # Mock verify_github_secret function
         verify_github_secret() {
