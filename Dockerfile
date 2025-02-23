@@ -380,7 +380,7 @@ RUN echo "Setting up OMZ environment" && \
     echo "source /tf/rover/zsh-autosuggestions.zsh" >> /home/${USERNAME}/.zshrc && \
     echo "alias watch=\"watch \"" >> /home/${USERNAME}/.zshrc
 
-FROM base
+FROM base AS rover
 
 ARG versionTerraform \
     USERNAME=vscode \
