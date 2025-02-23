@@ -59,7 +59,6 @@ fi
 
 exit 0
 EOF
-EOF
     chmod +x /tmp/mock_bin/usr/bin/gh
     export PATH="/tmp/mock_bin/usr/bin:$PATH"
     export GITHUB_TOKEN="dummy_token"
