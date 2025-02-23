@@ -113,30 +113,6 @@ EOF
           return 0
         }
         export -f verify_github_secret
-        
-        # Mock gh auth status to succeed
-        cat > /tmp/mock_bin/gh << 'EOF'
-#!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
-        echo "Logged in to github.com as testuser"
-        return 0
-        ;;
-    esac
-    ;;
-  "api")
-    if [[ "$2" == "repos/owner/repo" ]]; then
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
-    ;;
-esac
-return 0
-EOF
-        chmod +x /tmp/mock_bin/gh
-        
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
