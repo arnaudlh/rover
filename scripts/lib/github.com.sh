@@ -1,21 +1,13 @@
 check_github_session() {
-  information "@call check_github_session"
+  # Check GitHub token first
+  if [ -z "${GITHUB_TOKEN}" ]; then
+    echo "GITHUB_TOKEN not set" >&2
+    return 1
+  fi
   
-  # Check GitHub authentication first
-  if ! gh auth status >/dev/null 2>&1; then
+  # Check GitHub authentication
+  if ! gh auth status >/dev/null 2>&1 || [ "${mock_auth_error}" = "true" ]; then
     echo "Error: Not authenticated with GitHub" >&2
-    return 1
-  fi
-  debug "GitHub authentication successful"
-
-  # Allow mock to simulate auth failure for testing
-  if [ "${mock_auth_error}" = "true" ]; then
-    echo "Error: Not authenticated with GitHub" >&2
-    return 1
-  fi
-
-  # Mock functions should be able to override this for testing
-  if [ "${mock_auth_error}" = "true" ]; then
     return 1
   fi
 
