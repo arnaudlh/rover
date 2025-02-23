@@ -63,16 +63,14 @@ verify_github_secret() {
   application=${1}
   secret_name=${2}
 
-  gh secret list -a ${application} | grep "${secret_name}"
-
-  RETURN_CODE=$?
-
-  echo "return code ${RETURN_CODE}"
-
-  set -e
-  if [ $RETURN_CODE != 0 ]; then
-      error ${LINENO} "You need to set the ${application}/${secret_name} in your project as per instructions in the documentation." $RETURN_CODE
+  if ! gh secret list -a ${application} | grep "${secret_name}" > /dev/null 2>&1; then
+    echo "return code 1"
+    echo "You need to set the ${application}/${secret_name} in your project as per instructions in the documentation" >&2
+    return 1
   fi
+
+  echo "return code 0"
+  return 0
 }
 
 register_github_secret() {
