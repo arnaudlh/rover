@@ -85,7 +85,7 @@ jobs:
         with:
           driver-opts: |
             network=host
-            image=moby/buildkit:latest
+          buildkitd-flags: --debug
 
       - name: Build and push
         id: build
@@ -105,7 +105,10 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
           allow: |
             network.host
-          outputs: type=registry,push=true
+            security.insecure
+          outputs: type=image,push=true
+          provenance: false
+          sbom: false
           build-args: |
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
@@ -251,7 +254,7 @@ jobs:
         with:
           driver-opts: |
             network=host
-            image=moby/buildkit:latest
+          buildkitd-flags: --debug
 
       - name: Build and push agent
         id: build-agent
@@ -270,7 +273,10 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
           allow: |
             network.host
-          outputs: type=registry,push=true
+            security.insecure
+          outputs: type=image,push=true
+          provenance: false
+          sbom: false
           build-args: |
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
