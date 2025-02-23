@@ -74,8 +74,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest
           target: base
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ github.ref_name }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}
           provenance: false
           sbom: false
           build-args: |
