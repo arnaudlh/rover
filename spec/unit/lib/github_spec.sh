@@ -62,6 +62,30 @@ Describe 'github.com.sh'
         return 0
       }
       export -f gh
+      
+      # Mock git commands
+      git() {
+        case "$1" in
+          "config")
+            case "$2" in
+              "--get")
+                if [[ "$3" == "remote.origin.url" ]]; then
+                  echo "https://github.com/owner/repo.git"
+                  return 0
+                fi
+                ;;
+            esac
+            ;;
+          "rev-parse")
+            if [[ "$2" == "--show-toplevel" ]]; then
+              echo "/home/runner/work/rover/rover"
+              return 0
+            fi
+            ;;
+        esac
+        return 0
+      }
+      export -f git
       export -f gh
     }
 
