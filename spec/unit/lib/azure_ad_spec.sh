@@ -25,7 +25,18 @@ Describe 'azure_ad.sh'
                 if [ "${mock_error}" = "true" ]; then
                   return 1
                 fi
-                echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
+                case "$3" in
+                  "show")
+                    if [ "${mock_error}" = "true" ]; then
+                      return 1
+                    fi
+                    if [ "$4" = "--query" ] && [ "$5" = "id" ] && [ "$6" = "-o" ] && [ "$7" = "tsv" ]; then
+                      echo "user123"
+                    else
+                      echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
+                    fi
+                    return 0
+                    ;;
                 return 0
                 ;;
             esac
