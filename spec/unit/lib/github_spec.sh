@@ -35,9 +35,7 @@ case "$1" in
           echo "Error: Not authenticated with GitHub" >&2
           return 1
         fi
-        echo "github.com"
-        echo "  ✓ Logged in to github.com as testuser"
-        echo "  - Active account: testuser"
+        echo "✓ Logged in to github.com"
         return 0
         ;;
     esac
