@@ -36,14 +36,18 @@ Describe 'init.sh'
             "group")
               case "$2" in
                 "list")
-                  if [[ "$*" == *"--query"* ]] && [[ "$*" == *"[?tags.caf_environment=='${TF_VAR_environment}'"* ]] && [[ "$*" == *"tags.caf_tfstate=='${TF_VAR_level}'"* ]]; then
-                    if [ ! -z "${mock_group_list}" ]; then
-                      echo "${mock_group_list}"
+                  if [[ "$*" == *"--query"* ]]; then
+                    if [[ "$*" == *"-o json"* ]]; then
+                      if [ ! -z "${mock_group_list}" ]; then
+                        echo "${mock_group_list}"
+                      else
+                        echo "[]"
+                      fi
                     else
                       echo "[]"
                     fi
                   else
-                    echo '[]'
+                    echo "[]"
                   fi
                   return 0
                   ;;
