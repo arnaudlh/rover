@@ -45,6 +45,11 @@ jobs:
           file: ./Dockerfile
           target: base
           provenance: false
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          build-context: |
+            .=.
+            docker-context=.
           build-args: |
             TARGETARCH=amd64
             TARGETOS=linux
