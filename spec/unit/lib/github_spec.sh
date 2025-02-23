@@ -18,6 +18,24 @@ Describe 'github.com.sh'
     mkdir -p /tmp/mock_bin
     export PATH="/tmp/mock_bin:$PATH"
     
+    # Mock git command
+    git() {
+      case "$1" in
+        "config")
+          case "$2" in
+            "--get")
+              if [[ "$3" == "remote.origin.url" ]]; then
+                echo "https://github.com/owner/repo.git"
+                return 0
+              fi
+              ;;
+          esac
+          ;;
+      esac
+      return 0
+    }
+    export -f git
+    
     # Create mock gh command
     cat > /tmp/mock_bin/gh << 'EOF'
 #!/bin/bash
@@ -152,7 +170,13 @@ EOF
         export git_org_project="owner/repo"
         export mock_secret_error="false"
         
-        # Mock gh auth status output
+        # Mock verify_github_secret function
+        verify_github_secret() {
+          return 0
+        }
+        export -f verify_github_secret
+        
+        # Mock gh command
         cat > /tmp/mock_bin/gh << 'EOF'
 #!/bin/bash
 case "$1" in
