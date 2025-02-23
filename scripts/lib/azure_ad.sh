@@ -25,15 +25,21 @@ create_federated_identity() {
     az rest --method post --url "/providers/Microsoft.Authorization/elevateAccess?api-version=2016-07-01"
 
     # Create Azure AD application
-    app=$(az ad app create --display-name "${appName}" --only-show-errors)
+    if ! app=$(az ad app create --display-name "${appName}" --only-show-errors); then
+      error ${LINENO} "Failed to create Azure AD application" 1
+      exit 1
+    fi
     success " - application created."
 
     # Create service principal
-    sp=$(az ad sp create --id $(echo $app | jq -r .appId) --only-show-errors)
+    if ! sp=$(az ad sp create --id $(echo $app | jq -r .appId) --only-show-errors); then
+      error ${LINENO} "Failed to create service principal" 1
+      exit 1
+    fi
     success " - service principal created."
 
     if [ "${sp}" = '' ]; then
-      information "Failed to create the app and sp. Check your permissions."
+      error ${LINENO} "Failed to create the app and sp. Check your permissions." 1
       exit 1
     fi
 

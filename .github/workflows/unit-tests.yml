@@ -28,21 +28,30 @@ jobs:
           mkdir -p spec/unit/lib/tfcloud
           mkdir -p spec/support
           
-          # Copy scripts to test directory
+          # Create test environment structure
+          mkdir -p spec/unit/lib/tfcloud
+          mkdir -p spec/support
+          
+          # Copy source files to test directory
           cp -r scripts/lib/* spec/unit/lib/
-          cp -r scripts/tfcloud/* spec/unit/lib/tfcloud/ || true
-          cp scripts/functions.sh spec/unit/lib/ || true
-          cp scripts/rover.sh spec/unit/lib/ || true
-          cp scripts/tfstate.sh spec/unit/lib/ || true
-          cp scripts/remote.sh spec/unit/lib/ || true
-          cp scripts/parse_command.sh spec/unit/lib/ || true
-          cp scripts/banner.sh spec/unit/lib/ || true
-          cp scripts/clone.sh spec/unit/lib/ || true
-          cp scripts/walkthrough.sh spec/unit/lib/ || true
-          cp scripts/sshd.sh spec/unit/lib/ || true
-          cp scripts/backend.hcl.tf spec/unit/lib/ || true
-          cp scripts/backend.azurerm.tf spec/unit/lib/ || true
-          cp scripts/task.sh spec/unit/lib/ || true
+          cp scripts/functions.sh spec/unit/lib/
+          cp scripts/rover.sh spec/unit/lib/
+          cp scripts/tfstate.sh spec/unit/lib/
+          cp scripts/remote.sh spec/unit/lib/
+          cp scripts/parse_command.sh spec/unit/lib/
+          cp scripts/banner.sh spec/unit/lib/
+          cp scripts/clone.sh spec/unit/lib/
+          cp scripts/walkthrough.sh spec/unit/lib/
+          cp scripts/sshd.sh spec/unit/lib/
+          cp scripts/backend.hcl.tf spec/unit/lib/
+          cp scripts/backend.azurerm.tf spec/unit/lib/
+          cp scripts/task.sh spec/unit/lib/
+          
+          # Debug information
+          echo "Test directory contents:"
+          ls -la spec/unit/lib/
+          echo "Source directory contents:"
+          ls -la scripts/lib/
           
           # Debug information
           echo "Test directory contents after copy:"
@@ -87,6 +96,37 @@ jobs:
           export TF_VAR_tfstate_subscription_id="sub123"
           export TF_VAR_tenant_id="tenant123"
           export location="eastus"
+          
+          # Create mock az command
+          mkdir -p /tmp/mock_bin
+          cat > /tmp/mock_bin/az << 'EOF'
+          #!/bin/bash
+          if [ "${mock_error}" = "true" ]; then
+            echo "Error getting user object ID" >&2
+            exit 1
+          fi
+          case "$1" in
+            "ad")
+              case "$2" in
+                "signed-in-user")
+                  case "$3" in
+                    "show")
+                      if [ "$4" = "--query" ] && [ "$5" = "id" ] && [ "$6" = "-o" ] && [ "$7" = "tsv" ] && [ "$8" = "--only-show-errors" ]; then
+                        echo "user123"
+                        exit 0
+                      fi
+                      echo '{"id": "user123", "userPrincipalName": "test@example.com"}'
+                      exit 0
+                      ;;
+                  esac
+                  ;;
+              esac
+              ;;
+          esac
+          exit 0
+          EOF
+          chmod +x /tmp/mock_bin/az
+          export PATH="/tmp/mock_bin:$PATH"
           
           # Run unit tests
           echo "Running unit tests..."
