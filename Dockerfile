@@ -287,11 +287,11 @@ RUN set -ex && \
     # ################ Install apt packages ##################
     # For amd64 only - as no arm64 version packages available per:  https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools/
     if [ "${TARGETARCH}" = "amd64" ]; then \
-        echo ACCEPT_EULA=Y apt-get install -y --no-install-recommends unixodbc mssql-tools; \
+        ACCEPT_EULA=Y apt-get install -y --no-install-recommends unixodbc mssql-tools; \
     else \
         echo "mssql-tools skipped as not running on arm64"; \
-    fi \
-    && echo "Installing latest shellspec..." && \
+    fi && \
+    echo "Installing latest shellspec..." && \
     curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
     #
     # Golang
