@@ -133,6 +133,42 @@ Describe 'github.com.sh'
           return 0
         }
         export -f git
+        
+        # Mock gh command for this specific test
+        gh() {
+          case "$1" in
+            "auth")
+              case "$2" in
+                "status")
+                  echo "Logged in to github.com as testuser"
+                  return 0
+                  ;;
+              esac
+              ;;
+            "api")
+              if [[ "$2" == "repos/owner/repo" ]]; then
+                echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
+                return 0
+              fi
+              if [[ "$2" == "repos/owner/repo/actions/secrets" ]]; then
+                echo '{"total_count": 1, "secrets": [{"name": "BOOTSTRAP_TOKEN", "created_at": "2024-02-23"}]}'
+                return 0
+              fi
+              ;;
+            "secret")
+              case "$2" in
+                "list")
+                  if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
+                    echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
+                    return 0
+                  fi
+                  ;;
+              esac
+              ;;
+          esac
+          return 0
+        }
+        export -f gh
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "Logged in to github.com"
