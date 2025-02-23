@@ -1,8 +1,8 @@
 Describe 'github.com.sh'
   Include spec/support/spec_helper.sh
-  Include spec/unit/lib/lib/logger.sh
-  Include spec/unit/lib/lib/github.com.sh
-  Include spec/unit/lib/functions.sh
+  Include scripts/lib/logger.sh
+  Include scripts/lib/github.com.sh
+  Include scripts/functions.sh
 
   setup() {
     setup_test_env
@@ -35,7 +35,9 @@ case "$1" in
           echo "Error: Not authenticated with GitHub" >&2
           return 1
         fi
-        echo "Logged in to github.com as testuser"
+        echo "github.com"
+        echo "  ✓ Logged in to github.com as testuser"
+        echo "  - Active account: testuser"
         return 0
         ;;
     esac
@@ -121,7 +123,7 @@ EOF
         export -f verify_github_secret
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
-        The output should include "Logged in to github.com"
+        The output should include "✓ Logged in to github.com"
         The status should eq 0
       End
 
