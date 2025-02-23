@@ -38,8 +38,9 @@ target "common_agent" {
   cache-from = ["type=local,src=/tmp/.buildx-cache"]
   cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
   contexts = {
-    rover = "docker-image://localhost:5000/rover:local"
+    rover = "target:rover_local"
   }
+  target = "base"
 }
 
 target "github" {
