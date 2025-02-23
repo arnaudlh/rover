@@ -119,6 +119,7 @@ Describe 'init.sh'
       It 'should create new resource group when none exists'
         When call init
         The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
+        The output should include "Resource group created"
         The output should include "...created"
         The output should include "Creating storage account: st${TF_VAR_environment}"
         The output should include "stg created"
