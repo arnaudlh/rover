@@ -134,13 +134,13 @@ function build_base_rover_image {
             extensionsAzureCli=aks-preview \
             versionTerrascan=1.18.3 \
             versionTfupdate=0.7.2 \
-            mkdir -p /tmp/.buildx-cache && \
+            mkdir -p /var/lib/buildkit/cache && \
             docker buildx rm rover || true && \
             docker buildx create --name rover --driver docker-container --use && \
             docker buildx inspect --bootstrap && \
             docker buildx bake \
-                --allow=fs.read=/tmp/.buildx-cache \
-                --allow=fs.write=/tmp/.buildx-cache-new \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.TARGETARCH=${architecture}" \
@@ -154,8 +154,8 @@ function build_base_rover_image {
             # Build agents using local image
             DOCKER_BUILDKIT=1 docker buildx bake \
                 --allow=network.host \
-                --allow=fs.read=/tmp/.buildx-cache \
-                --allow=fs.write=/tmp/.buildx-cache-new \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.platform=linux/amd64" \
@@ -232,8 +232,8 @@ function build_rover_agents {
             tag="${tag}" \
             docker buildx bake \
                 --allow=network.host \
-                --allow=fs.read=/tmp/.buildx-cache \
-                --allow=fs.write=/tmp/.buildx-cache-new \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-agents.hcl \
                 -f docker-bake.override.hcl \
                 --set *.platform=${os}/${platform} \
