@@ -268,6 +268,9 @@ jobs:
         platform: [linux/amd64, linux/arm64]
         agent: [github, tfc, gitlab, azure_devops]
       fail-fast: false
+    env:
+      DOCKER_BUILDKIT: 1
+      BUILDKIT_PROGRESS: plain
     steps:
       - uses: actions/checkout@v4
       
@@ -277,9 +280,7 @@ jobs:
         with:
           tools: trivy,bandit,binskim,templateanalyzer
           categories: IaC,containers,python,general
-          image: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
