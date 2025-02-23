@@ -153,7 +153,6 @@ Describe 'init.sh'
         The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad has been clean-up."
         The status should eq 0
       End
-      End
     End
 
     Context "Storage account management"
