@@ -360,13 +360,21 @@ jobs:
             });
 
   msdo:
-    needs: [build-base, build-agents]
+    needs: matrix-prep
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: microsoft/security-devops-action@v1
         id: msdo
+        with:
+          tools: trivy,bandit,binskim,templateanalyzer
+          categories: IaC,containers,python,general
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-          category: 'Microsoft Security DevOps'
+          category: 'MSDO-${{ matrix.platform }}-${{ matrix.agent }}'
