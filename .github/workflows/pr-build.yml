@@ -23,38 +23,41 @@ jobs:
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=moby/buildkit:master
-            network=host
-            
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Debug Docker Info
-        run: |
-          docker version
-          docker info
-          docker buildx ls
 
-      - name: Build and cache
-        uses: docker/build-push-action@v5
-        env:
-          BUILDKIT_PROGRESS: plain
-          DOCKER_BUILDKIT: 1
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
-          file: ./Dockerfile
-          target: base
-          provenance: false
-          build-args: |
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg TARGETARCH=amd64 \
+            --build-arg TARGETOS=linux \
+            --build-arg USER_UID=1000 \
+            --build-arg USER_GID=1000 \
+            --build-arg USERNAME=vscode \
+            --build-arg versionVault=1.15.0 \
+            --build-arg versionGolang=1.21.6 \
+            --build-arg versionKubectl=1.28.4 \
+            --build-arg versionKubelogin=0.1.0 \
+            --build-arg versionDockerCompose=2.24.1 \
+            --build-arg versionTerraformDocs=0.17.0 \
+            --build-arg versionPacker=1.10.0 \
+            --build-arg versionPowershell=7.4.1 \
+            --build-arg versionAnsible=2.16.2 \
+            --build-arg extensionsAzureCli=aks-preview \
+            --build-arg versionTerrascan=1.18.3 \
+            --build-arg versionTfupdate=0.7.2 \
+            --target base \
+            -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
             TARGETARCH=amd64
             TARGETOS=linux
             USER_UID=1000
