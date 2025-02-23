@@ -69,11 +69,6 @@ jobs:
             --push \
             -t ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }} \
             .
-            versionDockerCompose=2.24.1
-            versionTerraformDocs=0.17.0
-            versionPacker=1.10.0
-            versionPowershell=7.4.1
-            versionAnsible=2.16.2
             extensionsAzureCli=aks-preview
             versionTerrascan=1.18.3
             versionTfupdate=0.7.2
