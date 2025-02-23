@@ -35,8 +35,9 @@ case "$1" in
           echo "Error: Not authenticated with GitHub" >&2
           return 1
         fi
+        # Capture the actual output of gh auth status
         echo "github.com"
-        echo "✓ Logged in to github.com as testuser"
+        echo "✓ Logged in to github.com"
         echo "- Active account: testuser"
         return 0
         ;;
@@ -123,6 +124,7 @@ EOF
         export -f verify_github_secret
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
+        The output should include "github.com"
         The output should include "✓ Logged in to github.com"
         The status should eq 0
       End
