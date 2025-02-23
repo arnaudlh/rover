@@ -117,11 +117,30 @@ function build_base_rover_image {
             versionRover="${rover_base}:${tag}" \
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
+            TARGETARCH=${architecture} \
+            TARGETOS=${os} \
+            USER_UID=1000 \
+            USER_GID=1000 \
+            USERNAME=vscode \
+            versionVault=1.15.0 \
+            versionGolang=1.21.6 \
+            versionKubectl=1.28.4 \
+            versionKubelogin=0.1.0 \
+            versionDockerCompose=2.24.1 \
+            versionTerraformDocs=0.17.0 \
+            versionPacker=1.10.0 \
+            versionPowershell=7.4.1 \
+            versionAnsible=2.16.2 \
+            extensionsAzureCli=aks-preview \
+            versionTerrascan=1.18.3 \
+            versionTfupdate=0.7.2 \
+            mkdir -p /tmp/.buildx-cache && \
             docker buildx bake \
                 -f docker-bake.hcl \
                 -f docker-bake.override.hcl \
-                --set *.platform=${os}/${architecture} \
-                --push rover_local
+                --set "*.platform=${os}/${architecture}" \
+                --load \
+                rover_local
             # Pull from in-memory local registry to local docker images
             docker pull --platform ${os}/${architecture} ${rover}
             ;;

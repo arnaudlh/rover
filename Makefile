@@ -1,7 +1,7 @@
 default: github
 
 github:
-	@bash "$(CURDIR)/scripts/build_image.sh" "github"
+	@bash "$(CURDIR)/scripts/build_image.sh" "ghcr"
 
 #
 # To build local images in a different platform architecture (from a macos m1 processor). (used to generate the azdo agent on macos)

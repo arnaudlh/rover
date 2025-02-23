@@ -11,50 +11,82 @@ group "default" {
   targets = ["rover_local", "rover_agents"]
 }
 
-target "rover_local" {
+# Common target configuration
+target "common" {
   dockerfile = "./Dockerfile"
-  tags = ["${tag}"]
+  context = "."
   args = {
-    extensionsAzureCli   = extensionsAzureCli
-    versionDockerCompose = versionDockerCompose
-    versionGolang        = versionGolang
-    versionKubectl       = versionKubectl
-    versionKubelogin     = versionKubelogin
-    versionPacker        = versionPacker
-    versionPowershell    = versionPowershell
-    versionRover         = versionRover
-    versionTerraform     = versionTerraform
-    versionTerraformDocs = versionTerraformDocs
-    versionVault         = versionVault
-    versionAnsible       = versionAnsible
-    versionTerrascan     = versionTerrascan
-    versionTfupdate      = versionTfupdate
+    TARGETARCH = "${TARGETARCH}"
+    TARGETOS = "${TARGETOS}"
+    USER_UID = "${USER_UID}"
+    USER_GID = "${USER_GID}"
+    USERNAME = "${USERNAME}"
+    versionVault = "1.15.0"
+    versionGolang = "1.21.6"
+    versionKubectl = "1.28.4"
+    versionKubelogin = "0.1.0"
+    versionDockerCompose = "2.24.1"
+    versionTerraformDocs = "0.17.0"
+    versionPacker = "1.10.0"
+    versionPowershell = "7.4.1"
+    versionAnsible = "2.16.2"
+    extensionsAzureCli = "aks-preview"
+    versionTerrascan = "1.18.3"
+    versionTfupdate = "0.7.2"
   }
-  platforms = ["linux/amd64","linux/arm64" ]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
   cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
+}
+
+target "rover_local" {
+  inherits = ["common"]
+  tags = ["rover:local"]
+  platforms = ["linux/amd64"]
+  output = ["type=docker"]
+  target = "base"
+  no-cache = false
 }
 
 target "rover_registry" {
-  inherits = ["rover_local"]
-  tags = ["${versionRover}"]
-  args = {
-    image     = versionRover
-  }
+  inherits = ["common"]
+  tags = ["${registry}rover:${versionRover}"]
+  platforms = ["linux/amd64", "linux/arm64"]
+  output = ["type=registry"]
 }
 
-variable "registry" {
-    default = ""
+# Build configuration variables
+variable "TARGETARCH" {
+  default = "amd64"
+}
+
+variable "TARGETOS" {
+  default = "linux"
+}
+
+variable "USER_UID" {
+  default = "1000"
+}
+
+variable "USER_GID" {
+  default = "1000"
+}
+
+variable "USERNAME" {
+  default = "vscode"
 }
 
 variable "tag" {
-    default = "latest"
+  default = "latest"
 }
 
 variable "versionRover" {
-    default = ""
+  default = ""
 }
 
 variable "versionTerraform" {
-    default = ""
+  default = ""
+}
+
+variable "registry" {
+  default = ""
 }

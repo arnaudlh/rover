@@ -5,31 +5,34 @@ FROM ubuntu:22.04 AS base
 
 SHELL ["/bin/bash", "-c"]
 
-
-# Arguments set during docker-compose build -b --build from .env file
-
-ARG versionVault \
-    versionKubectl \
-    versionKubelogin \
-    versionDockerCompose \
-    versionPowershell \
-    versionPacker \
-    versionGolang \
-    versionTerraformDocs \
-    versionAnsible \
-    versionTerrascan \
-    versionTfupdate \
-    extensionsAzureCli \
-    SSH_PASSWD \
-    TARGETARCH \
-    TARGETOS
-
+# Base configuration arguments
 ARG USERNAME=vscode
 ARG USER_UID=1000
-ARG USER_GID=${USER_UID}
+ARG USER_GID=1000
+ARG TARGETARCH
+ARG TARGETOS
 
-ENV SSH_PASSWD=${SSH_PASSWD} \
-    USERNAME=${USERNAME} \
+# Version arguments
+ARG versionVault=1.15.0
+ARG versionGolang=1.21.6
+ARG versionKubectl=1.28.4
+ARG versionKubelogin=0.1.0
+ARG versionDockerCompose=2.24.1
+ARG versionTerraformDocs=0.17.0
+ARG versionPacker=1.10.0
+ARG versionPowershell=7.4.1
+ARG versionAnsible=2.16.2
+ARG extensionsAzureCli=aks-preview
+ARG versionTerrascan=1.18.3
+ARG versionTfupdate=0.7.2
+
+# Base configuration environment variables
+ENV USERNAME=${USERNAME} \
+    USER_UID=${USER_UID} \
+    USER_GID=${USER_GID} \
+    TARGETARCH=${TARGETARCH} \
+    TARGETOS=${TARGETOS} \
+    DEBIAN_FRONTEND=noninteractive \
     versionVault=${versionVault} \
     versionGolang=${versionGolang} \
     versionKubectl=${versionKubectl} \
@@ -42,8 +45,8 @@ ENV SSH_PASSWD=${SSH_PASSWD} \
     extensionsAzureCli=${extensionsAzureCli} \
     versionTerrascan=${versionTerrascan} \
     versionTfupdate=${versionTfupdate} \
-    PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
-    TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
+    PATH="/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin:${PATH}" \
+    TF_DATA_DIR="/home/vscode/.terraform.cache" \
     TF_PLUGIN_CACHE_DIR="/tf/cache" \
     TF_REGISTRY_DISCOVERY_RETRY=5 \
     TF_REGISTRY_CLIENT_TIMEOUT=15 \
@@ -57,8 +60,10 @@ ENV SSH_PASSWD=${SSH_PASSWD} \
 WORKDIR /tf/rover
 COPY ./scripts/.kubectl_aliases .
 COPY ./scripts/zsh-autosuggestions.zsh .
-    # installation common tools
-RUN apt-get update && \
+
+# Installation of common tools
+RUN set -ex && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-transport-https \
     apt-utils \
@@ -105,21 +110,22 @@ RUN apt-get update && \
     #
     # Add Microsoft key
     #
-    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg && \
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
     #
     # Add Microsoft repository
     #
-    gosu root apt-add-repository https://packages.microsoft.com/ubuntu/22.04/prod && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | tee /etc/apt/sources.list.d/microsoft.list > /dev/null && \
     #
     # Add Docker repository
     #
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/docker-archive-keyring.gpg && \
-    echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu focal stable" > /etc/apt/sources.list.d/docker.list && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
     #
     # Kubernetes repo
     #
-    curl -fsSL https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/ /" | gosu root tee /etc/apt/sources.list.d/kubernetes.list && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list > /dev/null && \
     #
     # Github shell
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gosu root dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
