@@ -34,8 +34,26 @@ env:
   DOCKER_BUILDKIT: 1
 
 jobs:
-  build:
+  matrix-prep:
     runs-on: ubuntu-latest
+    outputs:
+      platforms: ${{ steps.platforms.outputs.matrix }}
+      agents: ${{ steps.agents.outputs.matrix }}
+    steps:
+      - id: platforms
+        run: |
+          echo "matrix=[\"linux/amd64\", \"linux/arm64\"]" >> $GITHUB_OUTPUT
+      - id: agents
+        run: |
+          echo "matrix=[\"github\", \"tfc\", \"gitlab\", \"azure_devops\"]" >> $GITHUB_OUTPUT
+
+  build-base:
+    needs: matrix-prep
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,16 +88,16 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ matrix.platform }}
           target: base
-          platforms: linux/amd64
-          cache-from: type=gha,scope=${{ github.ref_name }}
-          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}
+          platforms: ${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
           provenance: false
           sbom: false
           build-args: |
-            TARGETARCH=amd64
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
             USER_UID=1000
             USER_GID=1000
@@ -100,9 +118,9 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}'
+          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}'
           format: 'table'
-          output: 'trivy-results.txt'
+          output: 'trivy-results-${{ matrix.platform }}.txt'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -112,16 +130,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-results
-          path: trivy-results.txt
+          name: trivy-results-${{ matrix.platform }}
+          path: trivy-results-${{ matrix.platform }}.txt
           
       - name: Run Trivy for SARIF output
         uses: aquasecurity/trivy-action@master
         if: always()
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}'
+          image-ref: 'ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform }}'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-results-${{ matrix.platform }}.sarif'
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -131,7 +149,8 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'trivy-results-${{ matrix.platform }}.sarif'
+          category: 'Trivy-${{ matrix.platform }}'
 
       - name: Move cache
         run: |
@@ -191,3 +210,141 @@ jobs:
                 summary: body
               }
             });
+
+  build-agents:
+    needs: [matrix-prep, build-base]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push agent
+        id: build-agent
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./agents/${{ matrix.agent }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
+          platforms: ${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          build-args: |
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            TARGETOS=linux
+            USERNAME=vscode
+
+      - name: Run Trivy vulnerability scanner for agent
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}'
+          format: 'table'
+          output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results for agent
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          path: trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt
+
+      - name: Run Trivy for SARIF output for agent
+        uses: aquasecurity/trivy-action@master
+        if: always()
+        with:
+          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}'
+          format: 'sarif'
+          output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab for agent
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
+          category: 'Trivy-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
+
+      - name: Report agent build status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const { number } = context.issue;
+            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            
+            const body = [
+              `Agent Build Status: ${status}`,
+              '',
+              'Build Information:',
+              `- Platform: ${{ matrix.platform }}`,
+              `- Agent: ${{ matrix.agent }}`,
+              `- SHA: ${context.sha}`,
+              '- Security: Trivy scan results uploaded to Security tab',
+              '',
+              'Status Details:',
+              `- Build: ${status}`,
+              `- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}`
+            ].join('\n');
+            
+            if (context.payload.pull_request) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: number,
+                body
+              });
+            }
+            
+            const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            await github.rest.checks.create({
+              owner,
+              repo,
+              name: `Build & Security Check - Agent ${{ matrix.agent }} (${{ matrix.platform }})`,
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title: `Agent Build ${status}`,
+                summary: body
+              }
+            });
+
+  msdo:
+    needs: [build-base, build-agents]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/security-devops-action@v1
+        id: msdo
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
+          category: 'Microsoft Security DevOps'
