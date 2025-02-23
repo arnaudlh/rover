@@ -1,8 +1,8 @@
 Describe 'github.com.sh'
   Include spec/support/spec_helper.sh
-  Include spec/unit/lib/github.com.sh
-  Include spec/unit/lib/logger.sh
-  Include spec/unit/lib/functions.sh
+  Include scripts/lib/logger.sh
+  Include scripts/lib/github.com.sh
+  Include scripts/lib/functions.sh
 
   setup() {
     setup_test_env
