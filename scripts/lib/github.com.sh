@@ -4,8 +4,14 @@ check_github_session() {
   export git_org_project=$(echo "$url" | sed -e 's#^https://github.com/##; s#^git@github.com:##; s#.git$##')
   export git_project=$(basename -s .git $(git config --get remote.origin.url))
   success "Connected to GiHub: repos/${git_org_project}"
-  project=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id)
-  export GITOPS_SERVER_URL=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url)
+  if ! project=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .id); then
+    error ${LINENO} "Failed to access GitHub repository ${git_org_project}" 1
+    return 1
+  fi
+  if ! export GITOPS_SERVER_URL=$(/usr/bin/gh api "repos/${git_org_project}" 2>/dev/null | jq -r .svn_url); then
+    error ${LINENO} "Failed to get repository URL for ${git_org_project}" 1
+    return 1
+  fi
   debug "${project}"
   
   verify_github_secret "actions" "BOOTSTRAP_TOKEN"

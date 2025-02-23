@@ -50,30 +50,9 @@ Describe 'github.com.sh'
 
     Context "Authentication verification"
       It 'should verify GitHub authentication successfully'
-        # Mock gh command to handle secrets access
-        gh() {
-          case "$1" in
-            "auth")
-              case "$2" in
-                "status")
-                  echo "Logged in to github.com as testuser"
-                  return 0
-                  ;;
-              esac
-              ;;
-            "secret")
-              case "$2" in
-                "list")
-                  echo "[]"
-                  return 0
-                  ;;
-              esac
-              ;;
-          esac
-          return 0
-        }
-        export -f gh
+        PATH="/tmp/mock_bin:$PATH"
         When call check_github_session
+        The output should include "Connected to GiHub: repos/"
         The output should include "Logged in to github.com"
         The status should eq 0
       End
