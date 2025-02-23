@@ -25,7 +25,8 @@ Describe 'github.com.sh'
     export PATH="/tmp/mock_bin:$PATH"
     
     # Create mock gh command
-    cat > /tmp/mock_bin/gh << 'EOF'
+    mkdir -p /tmp/mock_bin/usr/bin
+    cat > /tmp/mock_bin/usr/bin/gh << 'EOF'
 #!/bin/bash
 case "$1" in
   "auth")
@@ -45,6 +46,7 @@ case "$1" in
         exit 0
         ;;
     esac
+    exit 0
     ;;
   "api")
     if [[ "$2" == "repos/${git_org_project}" ]]; then
@@ -86,8 +88,8 @@ case "$1" in
 esac
 return 0
 EOF
-    chmod +x /tmp/mock_bin/gh
-    ln -sf $(readlink -f /tmp/mock_bin/gh) /tmp/mock_bin/usr/bin/gh
+    chmod +x /tmp/mock_bin/usr/bin/gh
+    export PATH="/tmp/mock_bin/usr/bin:$PATH"
     
     # Mock git command
     git() {
