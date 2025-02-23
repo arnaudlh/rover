@@ -155,6 +155,7 @@ Describe 'init.sh'
         The output should include "...created"
         The output should include "Instructions displayed"
         The status should eq 0
+        debug "Test completed with status: $status"
       End
 
       It 'should skip creation when resource group exists'
