@@ -28,14 +28,14 @@ Describe 'init.sh'
             "group")
               case "$2" in
                 "list")
-                  if [ ! -z "${mock_group_list}" ]; then
-                    echo "${mock_group_list}"
-                  else
-                    if [[ "$*" == *"--query"* ]]; then
-                      echo "[]"
+                  if [[ "$*" == *"--query"* ]]; then
+                    if [ ! -z "${mock_group_list}" ]; then
+                      echo "${mock_group_list}"
                     else
                       echo "[]"
                     fi
+                  else
+                    echo "[]"
                   fi
                   return 0
                   ;;

@@ -4,7 +4,7 @@ init() {
   rg_name="${TF_VAR_environment}-launchpad"
   location=${location:=australiaeast}
 
-  current_rg=$(az group list --query "[?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']" -o json)
+  current_rg=$(az group list --query "[?tags.caf_environment=='${TF_VAR_environment}' && tags.caf_tfstate=='${TF_VAR_level}']" -o json 2>/dev/null || echo "[]")
 
   if [ "${tf_command}" == "--clean" ]; then
     if [ "${current_rg}" != "[]" ]; then
