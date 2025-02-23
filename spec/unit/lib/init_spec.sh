@@ -21,6 +21,14 @@ Describe 'init.sh'
 
     Context "Resource creation"
       setup() {
+        # Set required environment variables
+        export TF_VAR_environment="test"
+        export TF_VAR_workspace="default"
+        export location="eastus"
+        export TF_VAR_level="level0"
+        export TF_VAR_tfstate_subscription_id="sub123"
+        export TF_VAR_landingzone_name="test-launchpad"
+        
         # Mock functions
         display_instructions() { echo "Instructions displayed"; }
         az() {
