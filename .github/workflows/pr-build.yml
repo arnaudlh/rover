@@ -18,9 +18,9 @@ permissions:
   statuses: write
   security-events: write
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/rover
 
 jobs:
   build:
@@ -34,21 +34,36 @@ jobs:
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: |
+            --debug
+            --allow-insecure-entitlement network.host
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/rover
+          tags: |
+            type=sha,prefix=pr-
+            type=ref,event=pr
 
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ github.token }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           target: base
           platforms: linux/amd64
           cache-from: type=gha
@@ -101,13 +116,18 @@ jobs:
             let body = `Build Status: ${status}
 
 Build Information:
-- Platforms: linux/amd64, linux/arm64
+- Platforms: linux/amd64
 - SHA: ${context.sha}
+- Build ID: ${{ steps.docker_build.outputs.digest || 'N/A' }}
 - Security: Trivy scan results uploaded to Security tab
 
 Status Details:
 - Build: ${status}
-- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}`;
+- Security Scan: ${process.env.TRIVY_EXIT_CODE === '0' ? '✅' : '❌'}
+
+Debug Information:
+- Docker Version: \`${{ steps.docker_build.outputs.docker-version || 'N/A' }}\`
+- BuildKit Version: \`${{ steps.docker_build.outputs.buildkit-version || 'N/A' }}\``;
             
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
