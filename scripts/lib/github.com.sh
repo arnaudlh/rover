@@ -2,14 +2,15 @@ check_github_session() {
   information "@call check_github_session"
   
   # Check GitHub authentication first
-  if ! gh auth status >/dev/null 2>&1; then
-    error ${LINENO} "GitHub authentication failed" 1
+  if ! gh auth status 2>/dev/null; then
+    error ${LINENO} "Error: Not authenticated with GitHub" 1
     return 1
   fi
   debug "GitHub authentication successful"
 
   # Allow mock to simulate auth failure for testing
   if [ "${mock_auth_error}" = "true" ]; then
+    error ${LINENO} "Error: Not authenticated with GitHub" 1
     return 1
   fi
 
