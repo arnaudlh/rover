@@ -39,6 +39,12 @@ Describe 'init.sh'
         export TF_VAR_landingzone_name="test-launchpad"
         export LOG_LEVEL="DEBUG"
         export AZURE_CORE_OUTPUT_FORMAT="json"
+        export LOG_TO_FILE="false"
+        export log_folder_path="/tmp/rover_test_logs"
+        mkdir -p "${log_folder_path}"
+        __log_init__
+        set_log_severity "DEBUG"
+        debug "Test setup complete"
         az() {
           case "$1" in
             "group")
