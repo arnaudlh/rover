@@ -82,10 +82,19 @@ Describe 'github.com.sh'
               return 0
             fi
             ;;
+          "status")
+            echo "On branch main"
+            return 0
+            ;;
         esac
         return 0
       }
       export -f git
+      
+      # Set up test environment
+      export git_org_project="owner/repo"
+      export GITHUB_TOKEN="dummy_token"
+      export mock_secret_error="false"
       export -f gh
     }
 
