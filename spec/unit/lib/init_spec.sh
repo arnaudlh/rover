@@ -135,18 +135,101 @@ Describe 'init.sh'
 
       BeforeEach 'setup'
 
+      setup() {
+        # Mock functions
+        display_instructions() { echo "Instructions displayed"; }
+        az() {
+          case "$1" in
+            "group")
+              case "$2" in
+                "list")
+                  echo "${mock_group_list:-[]}"
+                  return 0
+                  ;;
+                "create")
+                  echo "/subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad"
+                  return 0
+                  ;;
+                "wait")
+                  echo "Operation completed"
+                  return 0
+                  ;;
+              esac
+              ;;
+            "storage")
+              case "$2" in
+                "account")
+                  case "$3" in
+                    "list")
+                      echo "[]"
+                      return 0
+                      ;;
+                    "create")
+                      echo "/subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad/providers/Microsoft.Storage/storageAccounts/st${TF_VAR_environment}123"
+                      return 0
+                      ;;
+                    "check-name")
+                      echo '{"nameAvailable": true}'
+                      return 0
+                      ;;
+                  esac
+                  ;;
+                "container")
+                  echo '{"created": true}'
+                  return 0
+                  ;;
+              esac
+              ;;
+            "keyvault")
+              case "$2" in
+                "list")
+                  echo "[]"
+                  return 0
+                  ;;
+                "create")
+                  echo "/subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad/providers/Microsoft.KeyVault/vaults/kv${TF_VAR_environment}123"
+                  return 0
+                  ;;
+                "secret")
+                  echo '{"id": "secret1"}'
+                  return 0
+                  ;;
+              esac
+              ;;
+            "role")
+              echo '{"id": "role1"}'
+              return 0
+              ;;
+            "ad")
+              echo '{"userPrincipalName": "test@example.com"}'
+              return 0
+              ;;
+            "account")
+              echo '{"tenantId": "tenant123"}'
+              return 0
+              ;;
+          esac
+          return 0
+        }
+      }
+
+      BeforeEach 'setup'
+
       It 'should create new resource group when none exists'
         When call init
         The output should include "Creating resource group: ${TF_VAR_environment}-launchpad"
         The output should include "...created"
-        The output should include "Launchpad caf_environment=${TF_VAR_environment} and caf_tfstate=${TF_VAR_level} in /subscriptions/${TF_VAR_tfstate_subscription_id}/resourceGroups/${TF_VAR_environment}-launchpad has been deployed."
+        The output should include "stg created"
+        The output should include "role"
+        The output should include "Instructions displayed"
         The status should eq 0
       End
 
       It 'should skip creation when resource group exists'
         export mock_group_list='[{"name": "${TF_VAR_environment}-launchpad"}]'
         When call init
-        The output should include "Launchpad already deployed"
+        The output should include "Launchpad already deployed in"
+        The status should eq 0
       End
 
       It 'should handle clean command'
