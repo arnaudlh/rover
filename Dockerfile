@@ -204,9 +204,9 @@ RUN set -ex && \
     # https://docs.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.2#binary-archives
     #
     echo "Installing PowerShell ${versionPowershell}..." && \
-    if [ ${TARGETARCH} == "amd64" ]; then curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-x64.tar.gz ; \
+    if [ "${TARGETARCH}" = "amd64" ]; then curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-x64.tar.gz ; \
     else curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-${TARGETARCH}.tar.gz ; \
-    fi \
+    fi\
     && mkdir -p /opt/microsoft/powershell/7 && \
     tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 && \
     chmod +x /opt/microsoft/powershell/7/pwsh && \
@@ -233,11 +233,11 @@ RUN set -ex && \
     echo "Installing Kubelogin ${versionKubelogin}..." && \
     curl -sSL -o /tmp/kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v${versionKubelogin}/kubelogin-${TARGETOS}-${TARGETARCH}.zip 2>&1 && \
     unzip -d /usr/ /tmp/kubelogin.zip && \
-    if [ ${TARGETARCH} == "amd64" ]; then \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
         chmod +x /usr/bin/linux_amd64/kubelogin ; \
     else \
         chmod +x /usr/bin/linux_arm64/kubelogin ; \
-    fi  && \
+    fi && \
     # Hashicorp Vault
     #
     echo "Installing Vault ${versionVault}..." && \
@@ -286,11 +286,11 @@ RUN set -ex && \
     #
     # ################ Install apt packages ##################
     # For amd64 only - as no arm64 version packages available per:  https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools/
-    if [ ${TARGETARCH} == "amd64" ]; then \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
         echo ACCEPT_EULA=Y apt-get install -y --no-install-recommends unixodbc mssql-tools; \
     else \
-        echo "mssql-tools skipped as not running on amr64"; \
-    fi \
+        echo "mssql-tools skipped as not running on arm64"; \
+    fi\
     #
     && echo "Installing latest shellspec..." && \
     curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
