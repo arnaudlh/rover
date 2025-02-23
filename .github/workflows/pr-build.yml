@@ -2,9 +2,10 @@ name: PR Build & Test
 
 on:
   pull_request:
-    branches: [ main ]
+    types: [opened, synchronize, reopened]
   push:
-    branches: [ devin/1740289687-ghcr-migration ]
+    branches:
+      - devin/1740289687-ghcr-migration
 
 permissions:
   contents: write
