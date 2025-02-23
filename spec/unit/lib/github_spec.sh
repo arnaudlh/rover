@@ -56,9 +56,9 @@ case "$1" in
         if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
           if [ "${mock_secret_error}" = "true" ]; then
             echo "OTHER_SECRET Updated 2024-02-23"
-            return 0
+          else
+            echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
           fi
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
           return 0
         fi
         ;;
