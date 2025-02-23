@@ -78,22 +78,27 @@ jobs:
           export TF_VAR_tenant_id="tenant123"
           export location="eastus"
           
-          # Debug information
-          echo "Current directory: $(pwd)"
-          echo "Files in current directory:"
-          ls -la
-          echo "Script path: $script_path"
-          echo "Environment:"
-          env | grep -E "script_path|TF_|location"
+          # Run unit tests
+          echo "Running unit tests..."
+          SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib" shellspec \
+            --format documentation \
+            --shell bash \
+            --no-banner \
+            --fail-fast \
+            --jobs 1 \
+            spec/unit/lib/*_spec.sh \
+            -f d || exit 1
           
-          # Initialize and run tests
-          cd spec/unit/lib
-          shellspec --init
-          
-          # Run tests with detailed output
-          echo "Running tests..."
-          export script_path="$PWD"
-          SHELLSPEC_LOAD_PATH="$PWD" shellspec --format documentation --shell bash --no-banner --fail-fast --jobs 1 *_spec.sh -f d || exit 1
+          # Run integration tests
+          echo "Running integration tests..."
+          SHELLSPEC_LOAD_PATH="$PWD/spec/unit/lib" shellspec \
+            --format documentation \
+            --shell bash \
+            --no-banner \
+            --fail-fast \
+            --jobs 1 \
+            spec/integration/*_spec.sh \
+            -f d || exit 1
       
       - name: Generate Coverage Report
         run: |
