@@ -36,11 +36,15 @@ jobs:
           mkdir -p spec/unit/lib
           
           # Copy source files to test directory
-          cp -r scripts/* spec/unit/lib/
+          cp -r scripts/lib/* spec/unit/lib/
+          cp scripts/functions.sh spec/unit/lib/
           
           # Debug information
           echo "Test directory contents:"
           ls -la spec/unit/lib/
+          
+          # Set up permissions
+          chmod +x spec/unit/lib/*.sh || true
           
           # Debug information
           echo "Test directory contents:"
@@ -127,7 +131,7 @@ jobs:
           
           # Run unit tests
           echo "Running unit tests..."
-          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/spec/unit/lib/lib:$PWD/spec/unit/lib/tfcloud" shellspec \
+          SHELLSPEC_LOAD_PATH="$PWD/spec/support:$PWD/spec/unit/lib:$PWD/scripts/lib:$PWD/spec/unit/lib/tfcloud" shellspec \
             --format documentation \
             --shell bash \
             --no-banner \
