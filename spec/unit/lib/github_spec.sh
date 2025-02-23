@@ -37,7 +37,11 @@ case "$1" in
         fi
         # Mock gh auth status
         if [ "$1" = "auth" ] && [ "$2" = "status" ]; then
-          /usr/bin/gh auth status
+          echo "github.com"
+          echo "  ✓ Logged in to github.com account testuser"
+          echo "  - Active account: true"
+          echo "  - Git operations protocol: https"
+          echo "  - Token: ghs_************************************"
           return 0
         fi
         # Mock gh api calls
@@ -136,7 +140,8 @@ EOF
         When call check_github_session
         The output should include "Connected to GiHub: repos/owner/repo"
         The output should include "github.com"
-        The output should include "  ✓ Logged in to github.com account"
+        The output should include "  ✓ Logged in to github.com account testuser"
+        The output should include "  - Active account: true"
         The output should include "  - Git operations protocol: https"
         The status should eq 0
       End
