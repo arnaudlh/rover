@@ -1,8 +1,4 @@
 check_github_session() {
-  # Initialize logging
-  __log_init__
-  set_log_severity "INFO"
-  
   # Log function call
   information "@call check_github_session"
   
