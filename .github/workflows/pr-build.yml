@@ -45,12 +45,17 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: false
+          push: true
           platforms: linux/amd64,linux/arm64
           tags: ghcr.io/${{ github.repository }}/rover:pr-${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          file: ./Dockerfile
           target: base
+          allow: |
+            network.host
+            fs.read=/var/lib/buildkit/cache
+            fs.write=/var/lib/buildkit/cache-new
           
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
