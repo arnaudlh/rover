@@ -1,4 +1,4 @@
-FROM rover
+FROM rover:local
 
 ARG AGENT_KEYVAULT_NAME
 ARG MSI_ID

@@ -1,4 +1,4 @@
-FROM rover
+FROM rover:local
 
 ARG AGENT_NAME
 ARG AGENT_TOKEN
