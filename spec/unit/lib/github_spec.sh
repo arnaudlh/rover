@@ -18,38 +18,7 @@ Describe 'github.com.sh'
     mkdir -p /tmp/mock_bin
     export PATH="/tmp/mock_bin:$PATH"
     
-    # Create mock gh command
-    cat > /tmp/mock_bin/gh << 'EOF'
-#!/bin/bash
-case "$1" in
-  "auth")
-    case "$2" in
-      "status")
-        echo "Logged in to github.com as testuser"
-        return 0
-        ;;
-    esac
-    ;;
-  "api")
-    if [[ "$2" == "repos/owner/repo" ]]; then
-      echo '{"id": 12345, "svn_url": "https://github.com/owner/repo"}'
-      return 0
-    fi
-    ;;
-  "secret")
-    case "$2" in
-      "list")
-        if [ "$3" = "-a" ] && [ "$4" = "actions" ]; then
-          echo "BOOTSTRAP_TOKEN Updated 2024-02-23"
-          return 0
-        fi
-        ;;
-    esac
-    ;;
-esac
-return 0
-EOF
-    chmod +x /tmp/mock_bin/gh
+
     
     # Mock git command
     git() {
