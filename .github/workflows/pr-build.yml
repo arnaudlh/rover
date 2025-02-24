@@ -270,6 +270,13 @@ jobs:
           mkdir -p ${{ github.workspace }}/trivy-results
           echo "TRIVY_RESULTS_DIR=${{ github.workspace }}/trivy-results" >> $GITHUB_ENV
 
+      - name: Debug directory
+        run: |
+          pwd
+          ls -la ${{ github.workspace }}/trivy-results
+          echo "Current directory contents:"
+          ls -la
+
       - name: Run Trivy scan for base image
         uses: aquasecurity/trivy-action@master
         with:
@@ -282,6 +289,12 @@ jobs:
           scanners: 'vuln,secret,config'
           artifact-type: 'container_image'
           
+      - name: Debug SARIF files
+        run: |
+          echo "Base SARIF file:"
+          ls -la ${{ env.TRIVY_RESULTS_DIR }}/base.sarif || echo "Base SARIF file not found"
+          cat ${{ env.TRIVY_RESULTS_DIR }}/base.sarif || echo "Cannot read base SARIF file"
+
       - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
@@ -302,6 +315,12 @@ jobs:
           scanners: 'vuln,secret,config'
           artifact-type: 'container_image'
           
+      - name: Debug agent SARIF files
+        run: |
+          echo "Agent SARIF file:"
+          ls -la ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif || echo "Agent SARIF file not found"
+          cat ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif || echo "Cannot read agent SARIF file"
+
       - name: Upload agent scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
