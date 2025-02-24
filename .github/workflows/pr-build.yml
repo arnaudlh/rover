@@ -265,43 +265,33 @@ jobs:
             agent: azure_devops
       fail-fast: false
     steps:
-      - name: Run Trivy scan for base image
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'image'
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          format: 'sarif'
-          output: trivy-results.sarif
-          severity: 'CRITICAL,HIGH'
-          list-all-pkgs: true
-          scanners: 'vuln,secret,config'
-          exit-code: '0'
-          skip-files: ''
-          skip-dirs: ''
-          
-      - name: Run Trivy scans for agents
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'image'
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          format: 'sarif'
-          output: trivy-results.sarif
-          severity: 'CRITICAL,HIGH'
-          list-all-pkgs: true
-          scanners: 'vuln,secret,config'
-          exit-code: '0'
-          skip-files: ''
-          skip-dirs: ''
-          
-      - name: Check SARIF file
+      - name: Run Trivy scans
         run: |
-          if [ -f trivy-results.sarif ]; then
-            echo "SARIF file exists"
-            cat trivy-results.sarif
-          else
-            echo "SARIF file does not exist"
-            exit 1
-          fi
+          # Scan base image
+          trivy image \
+            --format sarif \
+            --output trivy-results.sarif \
+            --severity HIGH,CRITICAL \
+            --scanners vuln,secret,config \
+            --quiet \
+            --no-progress \
+            --exit-code 0 \
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+
+          # Scan agent image
+          trivy image \
+            --format sarif \
+            --output trivy-results.sarif \
+            --severity HIGH,CRITICAL \
+            --scanners vuln,secret,config \
+            --quiet \
+            --no-progress \
+            --exit-code 0 \
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+          
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.49.1
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
