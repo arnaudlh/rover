@@ -320,11 +320,7 @@ jobs:
             platform: linux/arm64
             arch: arm64
             agent: azure_devops
-        exclude:
-          - type: agent
-            platform: linux/arm64
-            arch: arm64
-            agent: tfc
+      fail-fast: false
       fail-fast: false
     continue-on-error: true
     steps:
