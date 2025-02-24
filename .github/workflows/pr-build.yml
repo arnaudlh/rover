@@ -246,6 +246,10 @@ jobs:
   trivy-scan:
     needs: [build-base, build-agents]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
     strategy:
       matrix:
         include:
@@ -276,17 +280,9 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
-        with:
-          scan-type: 'image'
-          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
-          format: 'table'
-          output: 'trivy-results.txt'
-          severity: 'CRITICAL,HIGH'
-          scanners: 'vuln,secret,config'
-          exit-code: '0'
-
-      - name: Run Trivy with SARIF output
-        uses: aquasecurity/trivy-action@0.12.0
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         with:
           scan-type: 'image'
           image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
