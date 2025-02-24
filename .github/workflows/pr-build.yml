@@ -291,8 +291,10 @@ jobs:
           ls -la
           echo "Base image SARIF file contents:"
           cat trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Base image SARIF file not found"
-          echo "Agent SARIF file contents:"
-          cat trivy-results-agents-github-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Agent SARIF file not found"
+          if [[ "${{ matrix.platform }}" != "linux/arm64" || "${{ matrix.agent }}" != "tfc" ]]; then
+            echo "Agent SARIF file contents:"
+            cat trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Agent SARIF file not found"
+          fi
 
       - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
