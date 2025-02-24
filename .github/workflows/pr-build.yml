@@ -296,9 +296,6 @@ jobs:
           wait-for-processing: true
 
 
-          
-
-
 
   build-report:
     needs: [build-base, build-agents, trivy-scan]
@@ -309,9 +306,6 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        
       - name: Generate build report
         uses: actions/github-script@v7
         env:
@@ -387,7 +381,9 @@ jobs:
               '',
               `Overall Status: ${buildBaseResult === 'success' && 
                                 Object.values(agentStatuses).every(agent => 
-                                  Object.values(agent).every(status => status)) && 
+                                  Object.values(agent).every(status => 
+                                    status === 'success' || status === 'n/a'
+                                  )) && 
                                 trivyScanResult === 'success' ? '✅' : '❌'}`
             ].join('\n');
             
