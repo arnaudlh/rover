@@ -6,7 +6,7 @@ error() {
     local message="$2"
     local code="${3:-1}"
     printf "Error line:%s: message:%s status :%s\n" "$parent_lineno" "$message" "$code" >&2
-    exit "$code"
+    return "$code"
 }
 
 error_message() {
@@ -169,7 +169,7 @@ export_tf_environment_variables() {
       ;;
     *)
       error "0" "Unknown log level" 1
-      return 1
+      exit 1
       ;;
   esac
 
@@ -220,7 +220,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*" >&1
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
