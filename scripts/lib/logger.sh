@@ -45,7 +45,7 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        error "0" "Log folder path is not set" "1"
+        echo "Error line:0: message:Log folder path is not set status :1" >&2
         return 1
     fi
 
@@ -93,11 +93,11 @@ __set_text_log__() {
 
     export CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
     information "Detailed Logs @ $CURRENT_LOG_FILE"
+    exec 3>&1 4>&2
+    export LOG_TO_FILE=true
     echo "------------------------------------------------------------------------------------------------------"
     printf "STARTING LOG OUTPUT TO : %s\n" "$CURRENT_LOG_FILE"
     echo "------------------------------------------------------------------------------------------------------"
-    exec 3>&1 4>&2
-    export LOG_TO_FILE=true
     exec 1>> $CURRENT_LOG_FILE 2>&1
 }
 
@@ -212,8 +212,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
-            printf ' [%s] [%s] %s\n' "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
