@@ -114,22 +114,6 @@ jobs:
             versionTfupdate=0.7.2
             versionTerraform=1.7.4
           
-      - name: Run Trivy vulnerability scanner for base image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          format: 'sarif'
-          output: 'trivy-results-base-${{ matrix.platform }}.sarif'
-          severity: 'CRITICAL,HIGH'
-          
-      - name: Upload Trivy scan results for base image
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: 'trivy-results-base-${{ matrix.platform }}.sarif'
-          category: 'Trivy-Base-${{ matrix.platform }}'
-          wait-for-processing: true
-
       - name: Move cache
         if: always()
         run: |
@@ -183,26 +167,57 @@ jobs:
             TARGETOS=linux
             USERNAME=vscode
 
-      - name: Run Trivy vulnerability scanner for agent
+
+
+
+          
+  security-scan:
+    needs: [build-base, build-agents]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+      fail-fast: false
+    steps:
+      - name: Run Trivy scan for base image
         uses: aquasecurity/trivy-action@master
         with:
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
+          output: 'trivy-results-base-${{ matrix.platform }}.sarif'
           severity: 'CRITICAL,HIGH'
           
-      - name: Upload Trivy scan results for agent
+      - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
-          category: 'Trivy-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
+          sarif_file: 'trivy-results-base-${{ matrix.platform }}.sarif'
+          category: 'Trivy-Base-${{ matrix.platform }}'
+          wait-for-processing: true
+          
+      - name: Run Trivy scans for agents
+        uses: aquasecurity/trivy-action@master
+        with:
+          image: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-github
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-tfc
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-gitlab
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-azure_devops
+          format: 'sarif'
+          output: 'trivy-results-agents-${{ matrix.platform }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          
+      - name: Upload agent scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: 'trivy-results-agents-${{ matrix.platform }}.sarif'
+          category: 'Trivy-Agents-${{ matrix.platform }}'
           wait-for-processing: true
 
 
-          
   build-report:
-    needs: [build-base, build-agents]
+    needs: [build-base, build-agents, security-scan]
     permissions:
       checks: write
       pull-requests: write
@@ -235,7 +250,7 @@ jobs:
               '- azure_devops',
               '',
               '## Security Scans',
-              '- MSDO analysis complete (includes container security scanning)',
+              '- Trivy vulnerability scanning complete',
               '- SARIF reports processed',
               '',
               `Overall Status: ${status}`
