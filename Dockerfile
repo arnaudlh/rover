@@ -75,9 +75,16 @@ RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         docker-ce-cli \
         kubectl \
-        gh && \
+        gh \
+        gpg \
+        curl \
+        ca-certificates && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Verify installations
+    docker --version && \
+    kubectl version --client && \
+    gh --version
 
 # Install tools
 RUN set -ex && \
