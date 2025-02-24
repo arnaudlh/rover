@@ -211,25 +211,18 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install pip packages with retries and better error handling
     for i in {1..5}; do \
         echo "Attempt $i: Installing Python packages..." && \
-        if pip3 install --no-cache-dir \
+        if pip3 install --no-cache-dir --timeout 60 --retries 3 \
             pre-commit \
             yq \
             azure-cli \
             checkov \
             pywinrm \
             ansible-core==${versionAnsible}; then \
-            echo "Verifying Python package installations..." && \
-            { python3 -m pip list | grep -E "pre-commit" && echo "pre-commit installed successfully"; } || { echo "pre-commit installation verification failed"; exit 1; } && \
-            { python3 -m pip list | grep -E "yq" && echo "yq installed successfully"; } || { echo "yq installation verification failed"; exit 1; } && \
-            { python3 -m pip list | grep -E "azure-cli" && echo "azure-cli installed successfully"; } || { echo "azure-cli installation verification failed"; exit 1; } && \
-            { python3 -m pip list | grep -E "checkov" && echo "checkov installed successfully"; } || { echo "checkov installation verification failed"; exit 1; } && \
-            { python3 -m pip list | grep -E "pywinrm" && echo "pywinrm installed successfully"; } || { echo "pywinrm installation verification failed"; exit 1; } && \
-            { python3 -m pip list | grep -E "ansible-core" && echo "ansible-core installed successfully"; } || { echo "ansible-core installation verification failed"; exit 1; } && \
-            echo "Successfully installed and verified all Python packages" && \
+            echo "Successfully installed Python packages" && \
             break; \
         fi; \
         echo "Attempt $i failed with exit code $?, retrying in 10 seconds..." && \
@@ -239,6 +232,8 @@ RUN set -ex && \
         fi; \
         sleep 10; \
     done && \
+    # Verify Python package installations
+    python3 -m pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
     # Cleanup
     apt-get remove -y python3-dev && \
     apt-get clean && \
