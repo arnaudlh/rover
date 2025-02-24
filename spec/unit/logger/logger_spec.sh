@@ -113,13 +113,8 @@ Describe 'logger.sh'
         The output should include "STARTING LOG OUTPUT TO"
       End
 
-      Parameters
-        test_name  description
-        test      "should handle reset correctly"
-      End
-
-      Example "should handle reset correctly"
-        When call __set_text_log__ "$test_name"
+      It 'should handle reset correctly'
+        When call __set_text_log__ "test"
         The output should include "Detailed Logs @"
         When call __reset_log__
         The variable "LOG_TO_FILE" should eq "false"
