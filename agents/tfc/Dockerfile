@@ -22,19 +22,19 @@ ENV TFC_AGENT_TOKEN="" \
 
 RUN mkdir -p /home/${USERNAME}/agent && \
     cd /home/${USERNAME}/agent && \
-    DEBIAN_FRONTEND=noninteractive sudo apt-get update && \
-    DEBIAN_FRONTEND=noninteractive sudo apt-get install -y unzip && \
+    DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y unzip && \
     if [ "${TARGETARCH}" = "amd64" ]; then \
         curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_amd64.zip; \
     else \
         curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_arm64.zip; \
     fi && \
-    sudo mkdir -p /usr/local/bin && \
-    sudo unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
+    mkdir -p /usr/local/bin && \
+    unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
     rm /tmp/tfc-agent.zip && \
-    sudo chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
+    chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
     mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
-    sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
 
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-plan
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-apply
