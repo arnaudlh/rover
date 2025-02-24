@@ -19,7 +19,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y jq uuid-runtime kcov
+        sudo apt-get install -y jq uuid-runtime
         curl -fsSL https://git.io/shellspec | sh -s -- --yes
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
@@ -33,13 +33,6 @@ jobs:
       id: unit_tests
       run: |
         shellspec --format documentation --no-banner spec/unit/logger/logger_spec.sh
-      continue-on-error: true
-
-    - name: Generate Coverage Report
-      id: coverage
-      run: |
-        shellspec --coverage --kcov-options "--include-path=scripts/lib" spec/unit/logger/logger_spec.sh
-      continue-on-error: true
 
     - name: Process Test Results
       run: |
@@ -49,14 +42,6 @@ jobs:
         else
           echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
           exit 1
-        fi
-        
-        echo "### Coverage Report :chart_with_upwards_trend:" >> $GITHUB_STEP_SUMMARY
-        if [ -f "coverage/index.html" ]; then
-          COVERAGE=$(grep -oP 'Total:\s+\K[0-9]+%' coverage/index.html || echo "N/A")
-          echo "Code Coverage: $COVERAGE" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "Coverage report not generated" >> $GITHUB_STEP_SUMMARY
         fi
 
     - name: Upload Test Results
