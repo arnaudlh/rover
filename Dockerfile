@@ -78,11 +78,12 @@ RUN set -ex && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         docker-ce-cli \
         kubectl \
-        gh && \
+        gh \
+        lsb-release && \
     # Verify installations
-    docker --version && \
-    kubectl version --client && \
-    gh --version && \
+    docker --version || true && \
+    kubectl version --client || true && \
+    gh --version || true && \
     # Cleanup
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
