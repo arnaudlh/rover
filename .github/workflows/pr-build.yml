@@ -128,13 +128,13 @@ jobs:
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }},mode=max
             type=gha,scope=main-${{ matrix.platform }},mode=max
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           cache-to: |
-            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }},mode=max
+            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }},compression=zstd
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }},mode=max,compression=zstd
           outputs: |
-            type=registry
-            type=image
+            type=registry,compression=zstd,compression-level=3,force-compression=true
+            type=image,compression=zstd,compression-level=3,force-compression=true
           provenance: false
           sbom: false
           build-args: |
@@ -205,11 +205,13 @@ jobs:
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max
             type=gha,scope=main-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}-${{ matrix.agent }}
           cache-to: |
-            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }}
+            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }},compression=zstd
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}-${{ matrix.agent }},mode=max,compression=zstd
           outputs: |
-            type=docker
-            type=registry,compression=zstd,force-compression=true
+            type=registry,compression=zstd,compression-level=3,force-compression=true
+            type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           provenance: false
