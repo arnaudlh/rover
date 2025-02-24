@@ -43,8 +43,8 @@ Describe 'logger.sh'
       It 'should throw an error and not create directory'
         unset log_folder_path
         When call __log_init__
-        The stderr should include "Error line:0: message:Log folder path is not set status :1"
-        The error should include "Error line:0: message:Log folder path is not set status :1"
+        The stderr should eq "Error line:0: message:Log folder path is not set status :1\n"
+        The error should eq "Error line:0: message:Log folder path is not set status :1\n"
         The status should eq 1
         The output should not include "creating directory"
       End
@@ -152,7 +152,7 @@ Describe 'logger.sh'
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
         The output should include "[INFO]"
-        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC"
+        The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[.*\] test message$"
       End
 
       It 'should include source file and line information'
