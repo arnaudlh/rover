@@ -212,10 +212,6 @@ jobs:
             type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          build-args: |
-            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-            TARGETOS=linux
-            USERNAME=vscode
           provenance: false
           sbom: false
           build-args: |
