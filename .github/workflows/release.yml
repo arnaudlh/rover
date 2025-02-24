@@ -50,22 +50,39 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+      - name: Run MSDO scan for base image
+        uses: microsoft/security-devops-action@v1
+        id: msdo-base
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/rover:latest'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy scan results to GitHub Security tab
+          categories: containers
+          image: 'ghcr.io/${{ github.repository }}/rover:latest'
+          
+      - name: Upload MSDO scan results for base image
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success() || failure()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
+          category: 'MSDO-Release-Base'
+          wait-for-processing: true
+          
+      - name: Run MSDO scan for agents
+        uses: microsoft/security-devops-action@v1
+        id: msdo-agents
+        with:
+          categories: containers
+          image: |
+            ghcr.io/${{ github.repository }}/rover-agent:latest-github
+            ghcr.io/${{ github.repository }}/rover-agent:latest-tfc
+            ghcr.io/${{ github.repository }}/rover-agent:latest-gitlab
+            ghcr.io/${{ github.repository }}/rover-agent:latest-azure_devops
+          
+      - name: Upload MSDO scan results for agents
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: ${{ steps.msdo-agents.outputs.sarifFile }}
+          category: 'MSDO-Release-Agents'
+          wait-for-processing: true
 
       - name: Move cache
         run: |
