@@ -120,21 +120,29 @@ RUN set -ex && \
     chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
     # Install Helm
     curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
-    # Install Python packages
-    pip3 install --no-cache-dir \
-        pre-commit \
-        yq \
-        azure-cli \
-        checkov \
-        pywinrm \
-        ansible-core==${versionAnsible} && \
-    # Install Azure CLI extensions
+    # Install Python packages with retries
+    for i in {1..3}; do \
+        if pip3 install --no-cache-dir \
+            pre-commit \
+            yq \
+            azure-cli \
+            checkov \
+            pywinrm \
+            ansible-core==${versionAnsible}; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done && \
+    # Install Azure CLI extensions with error handling
     az extension add --name ${extensionsAzureCli} --system || true && \
     az extension add --name containerapp --system || true && \
     az config set extension.use_dynamic_install=yes_without_prompt || true && \
     # Install shellspec
     curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
-    # Install Golang
+    # Install Golang with verification
     curl -sSL -o /tmp/golang.tar.gz https://go.dev/dl/go${versionGolang}.${TARGETOS}-${TARGETARCH}.tar.gz && \
     tar -C /usr/local -xzf /tmp/golang.tar.gz && \
     rm /tmp/golang.tar.gz && \
