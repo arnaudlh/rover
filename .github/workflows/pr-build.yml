@@ -265,10 +265,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy vulnerability scanner for base image
-        uses: aquasecurity/trivy-action@v0.14.0
+        uses: aquasecurity/trivy-action@0.10.0
         with:
           scan-type: 'image'
-          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
           format: 'sarif'
           output: 'trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
@@ -278,10 +278,10 @@ jobs:
 
       - name: Run Trivy vulnerability scanner for agents
         if: ${{ !(matrix.platform == 'linux/arm64' && matrix.agent == 'tfc') }}
-        uses: aquasecurity/trivy-action@v0.14.0
+        uses: aquasecurity/trivy-action@0.10.0
         with:
           scan-type: 'image'
-          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
