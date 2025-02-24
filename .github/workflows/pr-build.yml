@@ -267,12 +267,14 @@ jobs:
 
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
+        id: msdo
         continue-on-error: true
         with:
           categories: IaC
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
           policy: recommended
+          includeTools: true
 
 
   trivy-scan:
@@ -345,6 +347,7 @@ jobs:
           timeout: '10m'
           scanners: 'vuln'
           vuln-type: 'os,library'
+          security-checks: 'vuln'
 
       - name: Debug SARIF files
         run: |
