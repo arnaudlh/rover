@@ -53,7 +53,7 @@ Describe 'logger.sh'
         When call __log_init__
         The stderr should eq ""
         The status should eq 0
-        The stdout should include "creating directory"
+        The stdout should eq "creating directory $log_folder_path\n"
       End
     End
   End
@@ -73,7 +73,7 @@ Describe 'logger.sh'
 
       It 'should handle invalid log levels'
         When call set_log_severity "INVALID"
-        The stdout should include "Unknown log level INVALID for logger default; setting to INFO"
+        The stdout should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[WARN\] \[/home/runner/\.local/lib/shellspec/lib/core/dsl\.sh:[0-9]+\] Unknown log level INVALID for logger default; setting to INFO"
         The variable "_loggers_level_map[default]" should eq "3"
       End
     End
