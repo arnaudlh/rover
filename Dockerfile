@@ -6,18 +6,18 @@ ARG USER_GID=1000
 ARG TF_PLUGIN_CACHE_DIR=/tf/cache
 ARG TARGETARCH
 ARG TARGETOS
-ARG versionVault=1.15.0
-ARG versionGolang=1.21.6
-ARG versionKubectl=1.28.4
-ARG versionKubelogin=0.1.0
-ARG versionDockerCompose=2.24.1
-ARG versionTerraformDocs=0.17.0
-ARG versionPacker=1.10.0
-ARG versionPowershell=7.4.1
-ARG versionAnsible=2.16.2
-ARG extensionsAzureCli=aks-preview
-ARG versionTerrascan=1.18.3
-ARG versionTfupdate=0.7.2
+ARG versionVault
+ARG versionGolang
+ARG versionKubectl
+ARG versionKubelogin
+ARG versionDockerCompose
+ARG versionTerraformDocs
+ARG versionPacker
+ARG versionPowershell
+ARG versionAnsible
+ARG extensionsAzureCli
+ARG versionTerrascan
+ARG versionTfupdate
 
 WORKDIR /tf/rover
 
