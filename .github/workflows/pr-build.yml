@@ -297,37 +297,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Run MSDO scan for base image
+      - name: Run MSDO scan
         uses: microsoft/security-devops-action@v1
-        id: msdo-base
+        id: msdo
         with:
           categories: containers
           policy: GitHub
           tools: trivy
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           
-      - name: Upload MSDO scan results for base image
+      - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
-          category: 'MSDO-Base-${{ matrix.platform }}'
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
+          category: 'MSDO-${{ matrix.platform }}'
           wait-for-processing: true
-          
-      - name: Run MSDO scan for agents
-        uses: microsoft/security-devops-action@v1
-        id: msdo-agents
-        with:
-          categories: containers
-          policy: GitHub
-          tools: trivy
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          image: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-github
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-tfc
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-gitlab
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-azure_devops
           
       - name: Upload MSDO scan results for agents
         uses: github/codeql-action/upload-sarif@v3
@@ -467,7 +451,7 @@ jobs:
                                       agentSuccess && 
                                       trivyScanResult === 'success' && 
                                       msdoScanResult === 'success' ? '✅' : '❌'}`;
-                })()`,
+                })(),
                 summary: buildSummary
               }
             });
