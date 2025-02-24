@@ -136,13 +136,40 @@ RUN set -ex && \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             docker-ce-cli \
             gh \
-            kubectl; then \
+            kubectl && \
+            docker --version && \
+            gh --version && \
+            kubectl version --client; then \
             echo "Successfully installed repository packages" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 10 seconds..." && \
         if [ $i -eq 5 ]; then exit 1; fi; \
         sleep 10; \
+    done && \
+    # Install Docker Compose with retries
+    for i in {1..3}; do \
+        if mkdir -p /usr/libexec/docker/cli-plugins/ && \
+           if [ "${TARGETARCH}" = "amd64" ]; then \
+               curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64; \
+           else \
+               curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64; \
+           fi && \
+           chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
+           docker-compose version || true; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Helm with retries
+    for i in {1..3}; do \
+        if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
+           helm version || true; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
     done
 
 # Install additional packages with retries
@@ -305,6 +332,18 @@ RUN set -ex && \
 
 # Install Terraform and HashiCorp tools with retries
 RUN set -ex && \
+    # Install Terraform with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
+           unzip -o -d /usr/bin /tmp/terraform.zip && \
+           chmod +x /usr/bin/terraform && \
+           rm /tmp/terraform.zip && \
+           terraform version || true; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
     # Install tfupdate with retries
     for i in {1..3}; do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
@@ -405,8 +444,7 @@ RUN set -ex && \
         tar -xf terrascan.tar.gz terrascan && \
         install terrascan /usr/local/bin && \
         rm terrascan.tar.gz terrascan && \
-        terrascan version || true && \
-        break; \
+        terrascan version || true && break; \
         if [ $i -eq 3 ]; then exit 1; fi; \
         sleep 5; \
     done && \
