@@ -199,8 +199,8 @@ jobs:
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}-${{ matrix.agent }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}-${{ matrix.agent }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.agent }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.agent }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           platforms: ${{ matrix.platform }}
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.agent }},mode=max
