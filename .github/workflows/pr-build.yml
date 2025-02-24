@@ -275,12 +275,13 @@ jobs:
           exit-code: '0'
 
       - name: Run Trivy vulnerability scanner for agents
+        if: ${{ !(matrix.platform == 'linux/arm64' && matrix.agent == 'tfc') }}
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
-          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-github-${{ github.sha }}
+          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
           format: 'sarif'
-          output: 'trivy-results-agents-github-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
+          output: 'trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
