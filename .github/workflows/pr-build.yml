@@ -289,9 +289,8 @@ jobs:
         uses: aquasecurity/trivy-action@0.29.0
         with:
           scan-type: 'image'
-          image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, (matrix.platform == 'linux/amd64' && 'amd64' || 'arm64')) || format('{0}/{1}/rover-agent:pr-{2}-{3}', env.REGISTRY, github.repository, matrix.agent, github.sha) }}
-          format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', (matrix.platform == 'linux/amd64' && 'amd64' || 'arm64')) || format('trivy-results-agents-{0}-{1}.sarif', matrix.agent, (matrix.platform == 'linux/amd64' && 'amd64' || 'arm64')) }}
+          scan-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('{0}/{1}/rover-agent:pr-{2}-{3}', env.REGISTRY, github.repository, matrix.agent, github.sha) }}
+          format: 'table'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -321,8 +320,8 @@ jobs:
         if: ${{ !(matrix.platform == 'linux/arm64' && matrix.agent == 'tfc') && (success() || failure()) }}
         continue-on-error: true
         with:
-          sarif_file: trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif
-          category: trivy-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
+          sarif_file: trivy-results-agents-${{ matrix.agent }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}.sarif
+          category: trivy-agents-${{ matrix.agent }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           wait-for-processing: true
 
   build-report:
