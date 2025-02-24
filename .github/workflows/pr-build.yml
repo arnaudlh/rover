@@ -268,7 +268,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.14.0
         with:
           scan-type: 'image'
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
+          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
           format: 'sarif'
           output: 'trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
@@ -281,7 +281,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.14.0
         with:
           scan-type: 'image'
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
+          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
