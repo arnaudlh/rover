@@ -30,8 +30,11 @@ target "common" {
     USER_GID = "${USER_GID}"
     USERNAME = "${USERNAME}"
   }
-  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
-  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
+  cache-from = [
+    "type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}",
+    "type=gha,scope=main-${TARGETARCH}"
+  ]
+  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}-${GITHUB_SHA}"]
   network = ["host"]
   allow = [
     "network.host",
@@ -45,6 +48,10 @@ target "base-matrix" {
     platform = ["linux/amd64", "linux/arm64"]
   }
   platforms = ["${platform}"]
+  args = {
+    TARGETARCH = "${platform == "linux/amd64" ? "amd64" : "arm64"}"
+    TARGETOS = "linux"
+  }
 }
 
 target "rover_local" {

@@ -41,7 +41,7 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 # Install base packages with retries
 RUN set -ex && \
     mkdir -p /var/lib/apt/lists/partial /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
-    for i in {1..3}; do \
+    for i in {1..5}; do \
         if apt-get update && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             apt-transport-https \
@@ -70,10 +70,12 @@ RUN set -ex && \
             wget \
             zsh \
             zip; then \
+            echo "Successfully installed base packages" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
-        sleep 5; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
     done && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
