@@ -120,28 +120,42 @@ RUN set -ex && \
 # Install additional packages with retries
 RUN set -ex && \
     # Install system packages with retries
-    for i in {1..3}; do \
+    for i in {1..5}; do \
+        echo "Attempt $i: Installing system packages..." && \
         if apt-get update && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            docker-ce-cli \
-            kubectl \
-            gh \
-            lsb-release \
             apt-transport-https \
             ca-certificates \
             gnupg2 \
+            lsb-release \
             python3-pip \
             python3-dev; then \
+            echo "Successfully installed base packages" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done && \
+    # Install additional packages with retries
+    for i in {1..5}; do \
+        echo "Attempt $i: Installing additional packages..." && \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            docker-ce-cli \
+            kubectl \
+            gh; then \
             # Verify installations
             docker --version || true && \
             kubectl version --client || true && \
             gh --version || true && \
             python3 --version || true && \
+            echo "Successfully installed additional packages" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
-        sleep 5; \
-    done && \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done&& \
     # Install pip packages with retries
     for i in {1..3}; do \
         if pip3 install --no-cache-dir \
