@@ -185,6 +185,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Parse agent versions
+        id: versions
+        run: |
+          echo "github_runner=$(./scripts/parse_versions.sh agent github_runner)" >> $GITHUB_OUTPUT
+          echo "azdo=$(./scripts/parse_versions.sh agent azdo)" >> $GITHUB_OUTPUT
+          echo "tfc=$(./scripts/parse_versions.sh agent tfc)" >> $GITHUB_OUTPUT
+
       - name: Build and push agent
         id: build-agent
         uses: docker/build-push-action@v5
@@ -219,13 +226,9 @@ jobs:
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
             USERNAME=vscode
-            versionGithubRunner=${{ needs.build-base.outputs.github_runner }}
-            versionAzdo=${{ needs.build-base.outputs.azdo }}
-            versionTfc=${{ needs.build-base.outputs.tfc }}
-            versionDockerCompose=${{ needs.build-base.outputs.docker_compose }}
-            versionGolang=${{ needs.build-base.outputs.golang }}
-            versionAnsible=${{ needs.build-base.outputs.ansible }}
-            extensionsAzureCli=${{ needs.build-base.outputs.azure_cli }}
+            versionGithubRunner=${{ steps.versions.outputs.github_runner }}
+            versionAzdo=${{ steps.versions.outputs.azdo }}
+            versionTfc=${{ steps.versions.outputs.tfc }}
 
   trivy-scan:
     needs: [build-base, build-agents]

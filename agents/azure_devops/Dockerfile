@@ -20,7 +20,7 @@ ENV AGENT_NAME="" \
     VSTS_AGENT_INPUT_TOKEN="" \
     VSTS_AGENT_INPUT_POOL=""
 
-RUN mkdir /home/${USERNAME}/agent && \
+RUN mkdir -p /home/${USERNAME}/agent && \
     cd /home/${USERNAME}/agent && \
     if [ "${TARGETARCH}" = "amd64" ]; then \
         curl -L -o /tmp/agent_package.tar.gz https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-x64-${versionAzdo}.tar.gz; \
@@ -28,7 +28,8 @@ RUN mkdir /home/${USERNAME}/agent && \
         curl -L -o /tmp/agent_package.tar.gz https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-arm64-${versionAzdo}.tar.gz; \
     fi && \
     tar zxf /tmp/agent_package.tar.gz && \
-    rm /tmp/agent_package.tar.gz
+    rm /tmp/agent_package.tar.gz && \
+    sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
 
 COPY ./agents/azure_devops/azdo.sh /home/${USERNAME}/agent/
 RUN chmod +x /home/${USERNAME}/agent/azdo.sh

@@ -19,7 +19,7 @@ ENV AGENT_NAME="" \
     URL="" \
     WORK="_work"
 
-RUN mkdir /home/${USERNAME}/agent && \
+RUN mkdir -p /home/${USERNAME}/agent && \
     cd /home/${USERNAME}/agent && \
     if [ "${TARGETARCH}" = "amd64" ]; then \
         curl -sSL -o /tmp/github-runner.tar.gz https://github.com/actions/runner/releases/download/v${versionGithubRunner}/actions-runner-linux-x64-${versionGithubRunner}.tar.gz; \
@@ -28,7 +28,7 @@ RUN mkdir /home/${USERNAME}/agent && \
     fi && \
     tar xzf /tmp/github-runner.tar.gz && \
     rm /tmp/github-runner.tar.gz && \
-    ./bin/installdependencies.sh
+    sudo ./bin/installdependencies.sh
 
 COPY ./agents/github/github.sh /home/${USERNAME}/agent/
 RUN chmod +x /home/${USERNAME}/agent/github.sh
