@@ -6,7 +6,7 @@ error() {
     local message="$2"
     local code="${3:-1}"
     printf "Error line:%s: message:%s status :%s\n" "$parent_lineno" "$message" "$code" >&2
-    return "$code"
+    exit "$code"
 }
 
 error_message() {
@@ -169,7 +169,7 @@ export_tf_environment_variables() {
       ;;
     *)
       error "0" "Unknown log level" 1
-      return "$?"
+      exit 1
       ;;
   esac
 
