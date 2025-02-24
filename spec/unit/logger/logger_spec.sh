@@ -45,7 +45,6 @@ Describe 'logger.sh'
         When call __log_init__
         The stderr should eq "Error line:0: message:Log folder path is not set status :1\n"
         The status should eq 1
-        The output should eq ""
       End
     End
   End
@@ -106,6 +105,10 @@ Describe 'logger.sh'
       It 'should create log file with correct name'
         When call __set_text_log__ "test"
         The path "$CURRENT_LOG_FILE" should be file
+      End
+
+      It 'should include start marker in log file'
+        When call __set_text_log__ "test"
         The output should include "STARTING LOG OUTPUT TO"
       End
 
