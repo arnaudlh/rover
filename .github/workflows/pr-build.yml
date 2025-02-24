@@ -344,30 +344,32 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
-            const status = needs.build-base.result === 'success' && 
-                          needs.build-agents.result === 'success' && 
-                          needs.trivy-scan.result === 'success' && 
-                          needs.msdo-scan.result === 'success' ? '✅' : '❌';
+            const jobs = context.payload.workflow_run ? context.payload.workflow_run.jobs : [];
+            
+            const getJobStatus = (name) => {
+              const job = jobs.find(j => j.name.startsWith(name));
+              return job && job.conclusion === 'success' ? '✅' : '❌';
+            };
             
             const buildSummary = [
               '# Build & Security Report',
               '',
               '## Base Image Builds',
-              `- linux/amd64: ${needs.build-base.result === 'success' ? '✅' : '❌'}`,
-              `- linux/arm64: ${needs.build-base.result === 'success' ? '✅' : '❌'}`,
+              `- linux/amd64: ${getJobStatus('build-base')}`,
+              `- linux/arm64: ${getJobStatus('build-base')}`,
               '',
               '## Agent Builds',
-              `- github: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
-              `- tfc: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
-              `- gitlab: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
-              `- azure_devops: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
+              `- github: ${getJobStatus('build-agents')}`,
+              `- tfc: ${getJobStatus('build-agents')}`,
+              `- gitlab: ${getJobStatus('build-agents')}`,
+              `- azure_devops: ${getJobStatus('build-agents')}`,
               '',
               '## Security Scans',
-              `- Trivy vulnerability scanning: ${needs.trivy-scan.result === 'success' ? '✅' : '❌'}`,
-              `- MSDO security analysis: ${needs.msdo-scan.result === 'success' ? '✅' : '❌'}`,
-              `- SARIF reports processed: ${needs.trivy-scan.result === 'success' && needs.msdo-scan.result === 'success' ? '✅' : '❌'}`,
+              `- Trivy vulnerability scanning: ${getJobStatus('trivy-scan')}`,
+              `- MSDO security analysis: ${getJobStatus('msdo-scan')}`,
+              `- SARIF reports processed: ${getJobStatus('trivy-scan') === '✅' && getJobStatus('msdo-scan') === '✅' ? '✅' : '❌'}`,
               '',
-              `Overall Status: ${status}`
+              `Overall Status: ${jobs.every(j => j.conclusion === 'success') ? '✅' : '❌'}`
             ].join('\n');
             
             if (context.payload.pull_request) {
@@ -385,9 +387,9 @@ jobs:
               name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: status === '✅' ? 'success' : 'failure',
+              conclusion: jobs.every(j => j.conclusion === 'success') ? 'success' : 'failure',
               output: {
-                title: `Build Report ${status}`,
+                title: `Build Report ${jobs.every(j => j.conclusion === 'success') ? '✅' : '❌'}`,
                 summary: buildSummary
               }
             });
