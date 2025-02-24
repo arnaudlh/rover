@@ -43,7 +43,6 @@ target "rover_local" {
   tags = ["rover:local"]
   platforms = ["linux/amd64"]
   output = ["type=docker"]
-  target = "base"
   no-cache = false
 }
 
