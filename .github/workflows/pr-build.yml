@@ -278,13 +278,13 @@ jobs:
           vuln-type: 'os,library'
           skip-dirs: 'tests,examples'
           timeout: '10m'
+          cache-dir: '/tmp/.trivy'
 
       - name: Debug SARIF file
         run: |
           ls -la
           echo "SARIF file contents:"
           cat trivy-results.sarif || echo "SARIF file not found"
-          echo "SARIF file contents:"
           cat trivy-results.sarif || echo "SARIF file not found"
 
       - name: Debug output
@@ -319,9 +319,11 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
+          command: analyze
           categories: containers
           tools: trivy
           break-on-failure: false
+          upload-sarif: true
           
       - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
