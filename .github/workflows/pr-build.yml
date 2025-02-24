@@ -167,11 +167,28 @@ jobs:
       result: success
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
-        agent: [github, tfc, gitlab, azure_devops]
-        exclude:
-          - platform: linux/arm64
+        include:
+          - platform: linux/amd64
+            arch: amd64
+            agent: github
+          - platform: linux/amd64
+            arch: amd64
             agent: tfc
+          - platform: linux/amd64
+            arch: amd64
+            agent: gitlab
+          - platform: linux/amd64
+            arch: amd64
+            agent: azure_devops
+          - platform: linux/arm64
+            arch: arm64
+            agent: github
+          - platform: linux/arm64
+            arch: arm64
+            agent: gitlab
+          - platform: linux/arm64
+            arch: arm64
+            agent: azure_devops
       fail-fast: false
     continue-on-error: true
     env:
@@ -215,11 +232,11 @@ jobs:
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ matrix.arch }}
           platforms: ${{ matrix.platform }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest,mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ matrix.arch }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ matrix.arch }},mode=max
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
