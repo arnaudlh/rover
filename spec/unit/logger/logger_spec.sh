@@ -40,7 +40,7 @@ Describe 'logger.sh'
       It 'should throw an error and not create directory'
         unset log_folder_path
         When run source scripts/lib/logger.sh
-        The stderr should include "Log folder path is not set"
+        The stderr should include "Error: Log folder path is not set"
         The status should eq 1
         The output should not include "creating directory"
       End
@@ -74,40 +74,40 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-      Data:msg="test message"
-      Example "should respect log level hierarchy with $msg"
+      It 'should respect log level hierarchy'
         When call set_log_severity "INFO"
         The variable "_loggers_level_map[default]" should eq "3"
         
-        When call log_debug "$msg"
+        %data:test_message="test message"
+        When call log_debug "$test_message"
         The output should eq ""
         
-        When call log_info "$msg"
-        The output should include "$msg"
+        When call log_info "$test_message"
+        The output should include "$test_message"
       End
 
-      Data:msg="test message"
-      Example "should allow logging at all defined levels with $msg"
+      It 'should allow logging at all defined levels'
         When call set_log_severity "VERBOSE"
         The variable "_loggers_level_map[default]" should eq "5"
         
-        When call log_verbose "$msg"
-        The output should include "$msg"
+        %data:test_message="test message"
+        When call log_verbose "$test_message"
+        The output should include "$test_message"
         
-        When call log_debug "$msg"
-        The output should include "$msg"
+        When call log_debug "$test_message"
+        The output should include "$test_message"
         
-        When call log_info "$msg"
-        The output should include "$msg"
+        When call log_info "$test_message"
+        The output should include "$test_message"
         
-        When call log_warn "$msg"
-        The output should include "$msg"
+        When call log_warn "$test_message"
+        The output should include "$test_message"
         
-        When call log_error "$msg"
-        The output should include "$msg"
+        When call log_error "$test_message"
+        The output should include "$test_message"
         
-        When call log_fatal "$msg"
-        The output should include "$msg"
+        When call log_fatal "$test_message"
+        The output should include "$test_message"
       End
     End
   End
