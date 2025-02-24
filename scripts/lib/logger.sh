@@ -45,7 +45,7 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        echo "Error line:0: message:Log folder path is not set status :1" >&2
+        printf '%s\n' "Error line:0: message:Log folder path is not set status :1" >&2
         return 1
     fi
 
