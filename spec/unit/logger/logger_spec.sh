@@ -43,7 +43,7 @@ Describe 'logger.sh'
       It 'should throw an error and not create directory'
         unset log_folder_path
         When call __log_init__
-        The error should include "Error line:0: message:Log folder path is not set status :1"
+        The stderr should include "Error line:0: message:Log folder path is not set status :1"
         The status should eq 1
         The output should not include "creating directory"
       End
