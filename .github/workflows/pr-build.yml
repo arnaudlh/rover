@@ -273,6 +273,7 @@ jobs:
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
           policy: recommended
+          upload-results: true
 
 
   trivy-scan:
@@ -351,6 +352,8 @@ jobs:
           list-all-pkgs: true
           scanners: 'vuln'
           vuln-type: 'os,library'
+          cache-dir: ${{ github.workspace }}/.cache/trivy
+          skip-dirs: 'node_modules,vendor'
 
       - name: Debug SARIF files
         run: |
