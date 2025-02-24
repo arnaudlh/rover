@@ -46,10 +46,11 @@ __log_init__() {
 
     if [ -z "$log_folder_path" ]; then
         error "0" "Log folder path is not set" 1
+        return 1
     fi
 
     if [ ! -d "$log_folder_path" ]; then
-        printf "creating directory %s\n" "$log_folder_path"
+        printf "creating directory %s\n" "$log_folder_path" >&1
         __create_dir__ "$log_folder_path"
     fi
 
