@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 # Continual logging methods. These always print regardless of log level
+error() {
+    local parent_lineno="$1"
+    local message="$2"
+    local code="${3:-1}"
+    printf "Error line:%s: message:%s status :%s\n" "$parent_lineno" "$message" "$code" >&2
+    return "$code"
+}
+
 error_message() {
     printf >&2 "\e[91m$@\n\e[0m"
 }
@@ -49,7 +57,7 @@ __log_init__() {
         return 1
     fi
 
-    if [ ! -d "$log_folder_path" ]; then
+    if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
         printf "creating directory %s\n" "$log_folder_path" >&1
         __create_dir__ "$log_folder_path"
     fi
