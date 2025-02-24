@@ -154,7 +154,7 @@ RUN set -ex && \
            echo "deb [arch=${TARGETARCH}] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
            # GitHub CLI repository
            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list&& \
+           echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
            apt-get update; then \
             echo "Successfully configured package repositories" && \
             break; \
