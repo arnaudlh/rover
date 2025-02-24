@@ -162,51 +162,58 @@ RUN set -ex && \
     # Verify architecture
     echo "Target Architecture: ${TARGETARCH}"
 
-# Install tools
+# Install tools with retries
 RUN set -ex && \
-    # Install docker compose
+    # Install docker compose with retries
     mkdir -p /usr/libexec/docker/cli-plugins/ && \
-    if [ "${TARGETARCH}" = "amd64" ]; then \
-        curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64; \
-    else \
-        curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64; \
-    fi && \
-    chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
-    docker-compose version || true && \
-    # Install Helm
-    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
-    helm version || true && \
-    # Install Python packages with retries and verification
     for i in {1..3}; do \
-        if pip3 install --no-cache-dir \
-            pre-commit \
-            yq \
-            azure-cli \
-            checkov \
-            pywinrm \
-            ansible-core==${versionAnsible}; then \
-            python3 -m pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
-            break; \
+        if [ "${TARGETARCH}" = "amd64" ]; then \
+            curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64 && break; \
+        else \
+            curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64 && break; \
         fi; \
-        if [ $i -eq 3 ]; then \
-            exit 1; \
-        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
         sleep 5; \
     done && \
-    # Install Azure CLI extensions with error handling
-    az extension add --name ${extensionsAzureCli} --system || true && \
-    az extension add --name containerapp --system || true && \
-    az config set extension.use_dynamic_install=yes_without_prompt || true && \
-    az version || true && \
-    # Install shellspec
-    curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
-    shellspec --version || true && \
-    # Install Golang with verification
-    curl -sSL -o /tmp/golang.tar.gz https://go.dev/dl/go${versionGolang}.${TARGETOS}-${TARGETARCH}.tar.gz && \
-    tar -C /usr/local -xzf /tmp/golang.tar.gz && \
-    rm /tmp/golang.tar.gz && \
-    export PATH=$PATH:/usr/local/go/bin && \
-    go version || true
+    chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
+    docker-compose version || true && \
+    # Install Helm with retries
+    for i in {1..3}; do \
+        if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash; then \
+            helm version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Azure CLI extensions with retries
+    for i in {1..3}; do \
+        if az extension add --name ${extensionsAzureCli} --system && \
+           az extension add --name containerapp --system && \
+           az config set extension.use_dynamic_install=yes_without_prompt; then \
+            az version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install shellspec with retries
+    for i in {1..3}; do \
+        if curl -fsSL https://git.io/shellspec | sh -s -- --yes; then \
+            shellspec --version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Golang with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/golang.tar.gz https://go.dev/dl/go${versionGolang}.${TARGETOS}-${TARGETARCH}.tar.gz && \
+           tar -C /usr/local -xzf /tmp/golang.tar.gz; then \
+            rm /tmp/golang.tar.gz && \
+            export PATH=$PATH:/usr/local/go/bin && \
+            go version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done
 
 # Set up user and permissions
 RUN set -ex && \
