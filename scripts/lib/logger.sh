@@ -106,9 +106,9 @@ __reset_log__() {
     echo "------------------------------------------------------------------------------------------------------"
     printf "STOPPING LOG OUTPUT TO : %s\n" "$current_log"
     echo "------------------------------------------------------------------------------------------------------"
-    exec 2>&4 1>&3
     export LOG_TO_FILE=false
     unset CURRENT_LOG_FILE TF_LOG_PATH
+    exec 2>&4 1>&3
     sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
@@ -212,7 +212,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC\n' -1
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
