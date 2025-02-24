@@ -32,6 +32,10 @@ jobs:
         export log_folder_path="/tmp/test_logs"
         shellspec --format documentation spec/unit/logger/logger_spec.sh
 
+    - name: Generate Coverage Report
+      run: |
+        shellspec --coverage --kcov-options "--include-path=scripts/lib" spec/unit/logger/logger_spec.sh
+
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v4
@@ -45,4 +49,4 @@ jobs:
     - name: Microsoft Security DevOps
       uses: microsoft/security-devops-action@v1
       with:
-        categories: 'IaC,containers'
+        categories: 'IaC'
