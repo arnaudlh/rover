@@ -22,7 +22,13 @@ ENV TFC_AGENT_TOKEN="" \
 
 RUN mkdir -p /home/${USERNAME}/agent && \
     cd /home/${USERNAME}/agent && \
-    curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_${TARGETARCH}.zip && \
+    DEBIAN_FRONTEND=noninteractive sudo apt-get update && \
+    DEBIAN_FRONTEND=noninteractive sudo apt-get install -y unzip && \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
+        curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_amd64.zip; \
+    else \
+        curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_arm64.zip; \
+    fi && \
     sudo mkdir -p /usr/local/bin && \
     sudo unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
     rm /tmp/tfc-agent.zip && \
