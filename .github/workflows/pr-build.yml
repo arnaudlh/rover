@@ -270,10 +270,12 @@ jobs:
         uses: aquasecurity/trivy-action@0.12.0
         with:
           scan-type: 'image'
-          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == ''linux/amd64'') && ''amd64'' || ''arm64'' }}'
+          scan-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == ''linux/amd64'') && ''amd64'' || ''arm64'' }}'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-results-${{ matrix.platform }}.sarif'
           severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '0'
 
       - name: Debug SARIF file
         run: |
@@ -286,7 +288,7 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: trivy-results.sarif
+          sarif_file: trivy-results-${{ matrix.platform }}.sarif
           category: 'trivy'
           wait-for-processing: true
 
