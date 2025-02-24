@@ -26,6 +26,7 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 
 # Install base packages
 RUN set -ex && \
+    mkdir -p /var/lib/apt/lists/partial && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         apt-transport-https \
@@ -53,8 +54,7 @@ RUN set -ex && \
         zsh \
         zip && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /var/lib/apt/lists/partial
+    rm -rf /var/lib/apt/lists/*
 
 # Set up repositories
 RUN set -ex && \
