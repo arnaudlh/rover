@@ -77,7 +77,7 @@ RUN set -ex && \
 
 # Install additional packages
 RUN set -ex && \
-    export ARCH=$(dpkg --print-architecture) && \
+    export ARCH=$(case ${TARGETARCH} in amd64) echo "amd64" ;; arm64) echo "arm64" ;; *) echo "unsupported" ;; esac) && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         docker-ce-cli \
@@ -95,7 +95,7 @@ RUN set -ex && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # Verify architecture
-    echo "Architecture: ${ARCH}"
+    echo "Target Architecture: ${TARGETARCH}, Mapped Architecture: ${ARCH}"
 
 # Install tools
 RUN set -ex && \
