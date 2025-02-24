@@ -128,8 +128,10 @@ jobs:
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }},mode=max
             type=gha,scope=main-${{ matrix.platform }},mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           cache-to: |
             type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }},mode=max
           outputs: |
             type=registry
             type=image
@@ -206,8 +208,8 @@ jobs:
           cache-to: |
             type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }}
           outputs: |
-            type=registry
-            type=image,compression=zstd,force-compression=true
+            type=docker
+            type=registry,compression=zstd,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           provenance: false
