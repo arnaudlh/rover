@@ -1,36 +1,30 @@
-group "rover_agents" {
-  targets = ["github", "tfc", "azdo", "gitlab"]
+group "agents" {
+  targets = ["agent-matrix"]
 }
 
-target "common" {
+target "agent-common" {
   context = "."
   args = {
+    TARGETARCH = "${TARGETARCH}"
+    TARGETOS = "${TARGETOS}"
     USERNAME = "vscode"
   }
-  platforms = ["linux/amd64"]
-  output = ["type=docker"]
+  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
+  network = ["host"]
+  allow = [
+    "network.host",
+    "security.insecure"
+  ]
 }
 
-target "github" {
-  inherits = ["common"]
-  dockerfile = "./agents/github/Dockerfile"
-  tags = ["rover-agent:github"]
-}
-
-target "azdo" {
-  inherits = ["common"]
-  dockerfile = "./agents/azure_devops/Dockerfile"
-  tags = ["rover-agent:azdo"]
-}
-
-target "tfc" {
-  inherits = ["common"]
-  dockerfile = "./agents/tfc/Dockerfile"
-  tags = ["rover-agent:tfc"]
-}
-
-target "gitlab" {
-  inherits = ["common"]
-  dockerfile = "./agents/gitlab/Dockerfile"
-  tags = ["rover-agent:gitlab"]
+target "agent-matrix" {
+  inherits = ["agent-common"]
+  matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
+    platform = ["linux/amd64", "linux/arm64"]
+  }
+  dockerfile = "./agents/${agent}/Dockerfile"
+  platforms = ["${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${TAG}"]
 }

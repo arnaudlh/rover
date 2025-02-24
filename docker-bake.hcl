@@ -8,7 +8,15 @@
 #
 
 group "default" {
-  targets = ["rover_local", "rover_agents"]
+  targets = ["rover_local"]
+}
+
+group "pr" {
+  targets = ["rover_local", "rover_registry"]
+}
+
+group "release" {
+  targets = ["rover_registry"]
 }
 
 # Common target configuration
@@ -21,35 +29,35 @@ target "common" {
     USER_UID = "${USER_UID}"
     USER_GID = "${USER_GID}"
     USERNAME = "${USERNAME}"
-    versionVault = "1.15.0"
-    versionGolang = "1.21.6"
-    versionKubectl = "1.28.4"
-    versionKubelogin = "0.1.0"
-    versionDockerCompose = "2.24.1"
-    versionTerraformDocs = "0.17.0"
-    versionPacker = "1.10.0"
-    versionPowershell = "7.4.1"
-    versionAnsible = "2.16.2"
-    extensionsAzureCli = "aks-preview"
-    versionTerrascan = "1.18.3"
-    versionTfupdate = "0.7.2"
   }
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache-new,mode=max"]
+  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
+  network = ["host"]
+  allow = [
+    "network.host",
+    "security.insecure"
+  ]
+}
+
+target "base-matrix" {
+  inherits = ["common"]
+  matrix = {
+    platform = ["linux/amd64", "linux/arm64"]
+  }
+  platforms = ["${platform}"]
 }
 
 target "rover_local" {
-  inherits = ["common"]
+  inherits = ["base-matrix"]
   tags = ["rover:local"]
-  platforms = ["linux/amd64"]
   output = ["type=docker"]
+  platforms = ["linux/amd64"]
   no-cache = false
 }
 
 target "rover_registry" {
-  inherits = ["common"]
+  inherits = ["base-matrix"]
   tags = ["${registry}rover:${versionRover}"]
-  platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]
 }
 
