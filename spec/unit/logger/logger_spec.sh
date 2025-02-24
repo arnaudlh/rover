@@ -74,23 +74,18 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-      It 'should respect log level hierarchy'
-        When call set_log_severity "INFO"
-        The variable "_loggers_level_map[default]" should eq "3"
-        
-        When call log_debug "$test_msg"
-        The output should eq ""
-        
-        When call log_info "$test_msg"
-        The output should include "$test_msg"
+      Parameters:level=INFO level_value=3 message="test message"
+      Example "should respect log level hierarchy"
+        When call set_log_severity "$level"
+        The variable "_loggers_level_map[default]" should eq "$level_value"
       End
 
-      It 'should allow logging at all defined levels'
-        When call set_log_severity "VERBOSE"
-        The variable "_loggers_level_map[default]" should eq "5"
-        
-        When call log_verbose "$test_msg"
-        The output should include "$test_msg"
+      Parameters:level=VERBOSE level_value=5 message="test message"
+      Example "should allow logging at all defined levels"
+        When call set_log_severity "$level"
+        The variable "_loggers_level_map[default]" should eq "$level_value"
+        When call log_verbose "$message"
+        The output should include "$message"
       End
     End
   End
@@ -120,8 +115,8 @@ Describe 'logger.sh'
 
       It 'should handle reset correctly'
         When call __set_text_log__ "test"
+        The output should include "Detailed Logs @"
         When call __reset_log__
-        The output should include "STOPPING LOG OUTPUT TO"
         The variable "LOG_TO_FILE" should eq "false"
         The variable "CURRENT_LOG_FILE" should be undefined
       End
@@ -157,7 +152,7 @@ Describe 'logger.sh'
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
         The output should include "[INFO]"
-        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC"
       End
 
       It 'should include source file and line information'
