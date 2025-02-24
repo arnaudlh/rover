@@ -46,6 +46,7 @@ __log_init__() {
 
     if [ -z "$log_folder_path" ]; then
         error "0" "Log folder path is not set" 1
+        return 1
     fi
 
     if [ ! -d "$log_folder_path" ]; then
@@ -108,8 +109,7 @@ __reset_log__() {
     sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
     exec 2>&4 1>&3
     export LOG_TO_FILE=false
-    unset CURRENT_LOG_FILE
-    unset TF_LOG_PATH
+    unset CURRENT_LOG_FILE TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
 
@@ -211,12 +211,12 @@ _log() {
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
             printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
-            printf ' [%s] [%s] ' "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}"
+            printf ' [%s] %s ' "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}"
             printf '%s\n' "$@"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
-         printf ' [%s] [%s] ' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]} Unknown logger '$logger'"
+         printf ' [%s] %s ' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]} Unknown logger '$logger'"
     fi
 }
 
