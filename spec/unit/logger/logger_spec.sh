@@ -151,8 +151,6 @@ Describe 'logger.sh'
         When call log_info "test message"
         The output should include "[INFO]"
         The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[/home/runner/\.local/lib/shellspec/lib/core/evaluation\.sh:[0-9]+\] test message$"
-        The output should include "evaluation.sh:"
-        The output should include "[INFO]"
         The status should eq 0
       End
 
