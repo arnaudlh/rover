@@ -1,4 +1,9 @@
 Describe 'logger.sh'
+  # Mock tfcloud script sourcing from functions.sh
+  export script_path="$(pwd)/scripts"
+  mkdir -p "${script_path}/tfcloud"
+  touch "${script_path}/tfcloud/mock.sh"
+  
   Include scripts/functions.sh
   Include scripts/lib/logger.sh
   
