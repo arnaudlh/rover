@@ -446,12 +446,20 @@ jobs:
               head_sha: context.sha,
               status: 'completed',
               conclusion: buildBaseResult === 'success' && 
-                         buildAgentsResult === 'success' && 
+                         Object.values(agentStatuses).every(agent => 
+                           Object.values(agent).every(status => 
+                             status === 'success' || status === 'n/a'
+                           )
+                         ) && 
                          trivyScanResult === 'success' && 
                          msdoScanResult === 'success' ? 'success' : 'failure',
               output: {
                 title: `Build Report ${buildBaseResult === 'success' && 
-                                    buildAgentsResult === 'success' && 
+                                    Object.values(agentStatuses).every(agent => 
+                                      Object.values(agent).every(status => 
+                                        status === 'success' || status === 'n/a'
+                                      )
+                                    ) && 
                                     trivyScanResult === 'success' && 
                                     msdoScanResult === 'success' ? '✅' : '❌'}`,
                 summary: buildSummary
