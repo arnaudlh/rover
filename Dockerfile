@@ -53,6 +53,7 @@ RUN set -ex && \
     done && \
     # Install core packages with retries
     for i in {1..5}; do \
+        echo "Attempt $i: Installing core packages..." && \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             apt-transport-https \
             apt-utils \
@@ -89,49 +90,67 @@ RUN set -ex && \
             vim \
             wget \
             zip \
-            zsh; then \
-            echo "Successfully installed core packages" && \
+            zsh && \
+            echo "Verifying core package installations..." && \
+            command -v curl >/dev/null 2>&1 && \
+            command -v git >/dev/null 2>&1 && \
+            command -v gpg >/dev/null 2>&1 && \
+            command -v python3 >/dev/null 2>&1; then \
+            echo "Successfully installed and verified core packages" && \
             break; \
         fi; \
-        echo "Attempt $i to install packages failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
+        echo "Attempt $i to install packages failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install core packages after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
     done && \
+    # Clean up
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Set up package repositories with retries
+# Set up package repositories with retries and improved error handling
 ARG TARGETARCH
 RUN set -ex && \
     # Create required directories and verify architecture
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     echo "Building for architecture: ${TARGETARCH}" && \
     # Configure package repositories with retries
-    for i in {1..5}; do \
+    for i in {1..3}; do \
         echo "Attempt $i: Configuring package repositories..." && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
-           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "Microsoft repository configured successfully"; } && \
            # Docker repository
-           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "Docker repository configured successfully"; } && \
            # Kubernetes repository
-           curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
+           chmod a+r /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           echo "Kubernetes repository configured successfully"; } && \
            # GitHub CLI repository
-           curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
+           chmod a+r /etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+           echo "GitHub CLI repository configured successfully"; } && \
            # Update package lists after adding repositories
-           apt-get update; then \
-            echo "Successfully configured package repositories" && \
+           { apt-get update && echo "Package lists updated successfully"; }; then \
+            echo "Successfully configured all package repositories" && \
             break; \
         fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
-    done && \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to configure package repositories after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done&& \
     # Install repository-specific packages with retries
     for i in {1..5}; do \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -173,46 +192,45 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Install additional packages with retries
+# Install additional packages with retries and verification
 RUN set -ex && \
     # Install system packages with retries
-    for i in {1..5}; do \
+    for i in {1..3}; do \
         echo "Attempt $i: Installing system packages..." && \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            python3-pip \
+            python3-dev && \
+            echo "Successfully installed Python packages" && \
+            python3 --version; then \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Python packages after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done && \
+    # Install and verify CLI tools
+    for i in {1..3}; do \
+        echo "Attempt $i: Installing CLI tools..." && \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             docker-ce-cli \
             kubectl \
-            gh \
-            python3-pip \
-            python3-dev; then \
-            echo "Successfully installed packages" && \
+            gh && \
+            echo "Verifying CLI tool installations..." && \
+            { docker --version && echo "Docker CLI installed successfully"; } && \
+            { kubectl version --client && echo "kubectl installed successfully"; } && \
+            { gh --version && echo "GitHub CLI installed successfully"; }; then \
+            echo "Successfully installed and verified all CLI tools" && \
             break; \
         fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
-    done && \
-    # Install additional packages with retries
-    for i in {1..5}; do \
-        echo "Attempt $i: Installing additional packages..." && \
-        if apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            docker-ce-cli \
-            kubectl \
-            gh && \
-           # Verify installations with detailed error logging
-           { docker --version && echo "Docker CLI installed successfully"; } || { echo "Docker CLI installation verification failed"; exit 1; } && \
-           { kubectl version --client && echo "kubectl installed successfully"; } || { echo "kubectl installation verification failed"; exit 1; } && \
-           { gh --version && echo "GitHub CLI installed successfully"; } || { echo "GitHub CLI installation verification failed"; exit 1; } && \
-           { python3 --version && echo "Python3 installed successfully"; } || { echo "Python3 installation verification failed"; exit 1; } && \
-           echo "Successfully installed and verified all additional packages" && \
-           break; \
-        fi; \
-        echo "Attempt $i failed with exit code $?, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then \
-            echo "Failed to install packages after 5 attempts" && \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install CLI tools after 3 attempts" && \
             exit 1; \
         fi; \
-        sleep 10; \
+        sleep 5; \
     done&& \
     # Install pip packages with retries and better error handling
     for i in {1..5}; do \
@@ -248,21 +266,36 @@ RUN set -ex && \
     # Verify architecture
     echo "Target Architecture: ${TARGETARCH}"
 
-# Install tools with retries
+# Install tools with retries and improved verification
 RUN set -ex && \
-    # Install docker compose with retries
+    # Install docker compose with retries and verification
     mkdir -p /usr/libexec/docker/cli-plugins/ && \
     for i in {1..3}; do \
+        echo "Attempt $i: Installing Docker Compose..." && \
         if [ "${TARGETARCH}" = "amd64" ]; then \
-            curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64 && break; \
+            if curl -L --retry 3 --retry-delay 5 -o /usr/libexec/docker/cli-plugins/docker-compose \
+                https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64 && \
+               chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
+               docker-compose version; then \
+                echo "Docker Compose installed successfully" && \
+                break; \
+            fi; \
         else \
-            curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64 && break; \
+            if curl -L --retry 3 --retry-delay 5 -o /usr/libexec/docker/cli-plugins/docker-compose \
+                https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64 && \
+               chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
+               docker-compose version; then \
+                echo "Docker Compose installed successfully" && \
+                break; \
+            fi; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Docker Compose after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
-    done && \
-    chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
-    docker-compose version || true && \
+    done&& \
     # Install Helm with retries
     for i in {1..3}; do \
         if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash; then \
@@ -301,17 +334,25 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Install shell tools with retries
+# Install shell tools with retries and improved verification
 RUN set -ex && \
-    # Install kubectl-node_shell with retries
+    # Install kubectl-node_shell with retries and verification
     for i in {1..3}; do \
-        if curl -L0 -o /usr/local/bin/kubectl-node_shell https://github.com/kvaps/kubectl-node-shell/raw/master/kubectl-node_shell && \
-           chmod +x /usr/local/bin/kubectl-node_shell; then \
-            kubectl-node_shell --help || true && break; \
+        echo "Attempt $i: Installing kubectl-node_shell..." && \
+        if curl -L0 --retry 3 --retry-delay 5 -o /usr/local/bin/kubectl-node_shell \
+            https://github.com/kvaps/kubectl-node-shell/raw/master/kubectl-node_shell && \
+           chmod +x /usr/local/bin/kubectl-node_shell && \
+           kubectl-node_shell --help; then \
+            echo "kubectl-node_shell installed successfully" && \
+            break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install kubectl-node_shell after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
-    done && \
+    done&& \
     # Install git bash completion with retries
     for i in {1..3}; do \
         if mkdir -p /etc/bash_completion.d/ && \
@@ -331,20 +372,27 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Install Terraform and HashiCorp tools with retries
+# Install Terraform and HashiCorp tools with retries and improved verification
 RUN set -ex && \
-    # Install Terraform with retries
+    # Install Terraform with retries and verification
     for i in {1..3}; do \
-        if curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
+        echo "Attempt $i: Installing Terraform..." && \
+        if curl -sSL --retry 3 --retry-delay 5 -o /tmp/terraform.zip \
+            "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
            unzip -o -d /usr/bin /tmp/terraform.zip && \
            chmod +x /usr/bin/terraform && \
            rm /tmp/terraform.zip && \
-           terraform version || true; then \
+           terraform version; then \
+            echo "Terraform installed successfully" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Terraform after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
-    done && \
+    done&& \
     # Install tfupdate with retries
     for i in {1..3}; do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
@@ -498,9 +546,10 @@ RUN set -ex && \
     echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME}
 
-# Configure shell with retries
+# Configure shell with retries and improved verification
 RUN set -ex && \
     for i in {1..3}; do \
+        echo "Attempt $i: Configuring shell..." && \
         if mkdir -p /commandhistory && \
            touch /commandhistory/.bash_history && \
            chown -R ${USERNAME} /commandhistory && \
@@ -508,16 +557,23 @@ RUN set -ex && \
            echo "export HISTCONTROL=ignoredups:erasedups" >> "/home/${USERNAME}/.bashrc" && \
            echo 'PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"' >> "/home/${USERNAME}/.bashrc" && \
            echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >> "/home/${USERNAME}/.bashrc" && \
-           echo 'alias watch="watch "' >> "/home/${USERNAME}/.bashrc"; then \
+           echo 'alias watch="watch "' >> "/home/${USERNAME}/.bashrc" && \
+           test -f "/home/${USERNAME}/.bashrc"; then \
+            echo "Shell configuration completed successfully" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to configure shell after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
     done
 
-# Clean up with retries
+# Clean up with retries and improved verification
 RUN set -ex && \
     for i in {1..3}; do \
+        echo "Attempt $i: Cleaning up..." && \
         if apt-get remove -y \
             gcc \
             python3-dev \
@@ -527,8 +583,13 @@ RUN set -ex && \
            rm -rf /tmp/* && \
            rm -rf /var/lib/apt/lists/* && \
            find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf; then \
+            echo "Cleanup completed successfully" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to clean up after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
     done
