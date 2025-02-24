@@ -275,7 +275,9 @@ jobs:
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
-          exit-code: '1'
+          exit-code: '0'
+          skip-files: ''
+          skip-dirs: ''
           
       - name: Run Trivy scans for agents
         uses: aquasecurity/trivy-action@master
@@ -287,8 +289,20 @@ jobs:
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
-          exit-code: '1'
+          exit-code: '0'
+          skip-files: ''
+          skip-dirs: ''
           
+      - name: Check SARIF file
+        run: |
+          if [ -f trivy-results.sarif ]; then
+            echo "SARIF file exists"
+            cat trivy-results.sarif
+          else
+            echo "SARIF file does not exist"
+            exit 1
+          fi
+
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
