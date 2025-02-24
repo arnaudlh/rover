@@ -129,10 +129,8 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.sha }}-${{ matrix.platform }}-${{ github.run_id }},mode=max
-            type=gha,scope=main-${{ matrix.platform }},mode=max
-          cache-to: |
-            type=gha,mode=max,scope=pr-${{ github.sha }}-${{ matrix.platform }}-${{ github.run_id }},compression=zstd
+            type=gha,scope=pr-${{ github.sha }}-${{ matrix.platform }},mode=max
+          cache-to: type=inline
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
@@ -220,10 +218,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-agent-${{ github.sha }}-${{ matrix.agent }}-${{ github.run_id }},mode=max
-            type=gha,scope=main-agent-${{ matrix.agent }},mode=max
-          cache-to: |
-            type=gha,mode=max,scope=pr-agent-${{ github.sha }}-${{ matrix.agent }}-${{ github.run_id }},compression=zstd
+            type=gha,scope=pr-agent-${{ github.sha }}-${{ matrix.agent }},mode=max
+          cache-to: type=inline
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
