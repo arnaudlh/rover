@@ -53,13 +53,15 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        printf "Error line:0: message:Log folder path is not set status :1\n" >&2
+        echo -n "Error line:0: message:Log folder path is not set status :1" >&2
+        echo >&2
         return 1
     fi
 
     if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-        printf "creating directory %s\n" "$log_folder_path"
+        echo -n "creating directory $log_folder_path"
         mkdir -p "$log_folder_path" 2>/dev/null
+        echo
     fi
 
 }
