@@ -58,9 +58,8 @@ __log_init__() {
     fi
 
     if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-        echo -n "creating directory $log_folder_path"
+        printf "creating directory %s\n" "$log_folder_path"
         mkdir -p "$log_folder_path" 2>/dev/null
-        echo
     fi
 
 }
@@ -200,8 +199,7 @@ set_log_severity() {
             _loggers_level_map[$logger]=$l
 
         else
-            echo -n "Error line:0: message:Unknown log level status :1" >&2
-            echo >&2
+            printf "Error line:0: message:Unknown log level status :1\n" >&2
             return 1
         fi
     else
@@ -222,8 +220,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            echo -n "$(date '+%Y-%m-%dT%H:%M:%S') UTC [$in_level] [${BASH_SOURCE[2]}:${BASH_LINENO[1]}] $*"
-            echo
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
