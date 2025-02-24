@@ -115,7 +115,6 @@ __reset_log__() {
     export LOG_TO_FILE
     unset CURRENT_LOG_FILE TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
-    export LOG_TO_FILE
 }
 
 #------------------------------------------------------------------------------
@@ -220,9 +219,7 @@ _log() {
             printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
          fi
      else
-         local timestamp
-         timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
-         printf "%s UTC [%s] [%s] Unknown logger %s\n" "$timestamp" "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
+         printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
     fi
 }
 
