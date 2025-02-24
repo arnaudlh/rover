@@ -43,10 +43,12 @@ RUN set -ex && \
         jq \
         less \
         locales \
+        lsb-release \
         make \
         python3-dev \
         python3-pip \
         rsync \
+        software-properties-common \
         sudo \
         unzip \
         vim \
