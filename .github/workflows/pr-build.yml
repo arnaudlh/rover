@@ -266,7 +266,9 @@ jobs:
       fail-fast: false
     steps:
       - name: Create results directory
-        run: mkdir -p trivy-results
+        run: |
+          mkdir -p ${{ github.workspace }}/trivy-results
+          echo "TRIVY_RESULTS_DIR=${{ github.workspace }}/trivy-results" >> $GITHUB_ENV
 
       - name: Run Trivy scan for base image
         uses: aquasecurity/trivy-action@master
@@ -274,16 +276,17 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: trivy-results/base.sarif
+          output: ${{ env.TRIVY_RESULTS_DIR }}/base.sarif
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
+          artifact-type: 'container_image'
           
       - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: trivy-results/base.sarif
+          sarif_file: ${{ env.TRIVY_RESULTS_DIR }}/base.sarif
           category: 'Trivy-Base-${{ matrix.platform }}'
           wait-for-processing: true
           
@@ -293,16 +296,17 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: trivy-results/agents.sarif
+          output: ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
+          artifact-type: 'container_image'
           
       - name: Upload agent scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: trivy-results/agents.sarif
+          sarif_file: ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif
           category: 'Trivy-Agents-${{ matrix.platform }}-${{ matrix.agent }}'
           wait-for-processing: true
 
