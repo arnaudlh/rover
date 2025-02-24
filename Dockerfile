@@ -1,4 +1,4 @@
-FROM ubuntu:22.04@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e AS base
+FROM ubuntu:22.04.3@sha256:b492494d8e0113c4ad3fe4528a4b5ff89faa5331f7d52c5c138196f69ce176a6 AS base
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -41,14 +41,15 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 # Install base packages with retries
 RUN set -ex && \
     mkdir -p /var/lib/apt/lists/partial /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
-    # Update package lists with retries
-    for i in {1..5}; do \
+    # Update package lists with retries and better error handling
+    for i in {1..3}; do \
         if apt-get update; then \
+            echo "Package lists updated successfully" && \
             break; \
         fi; \
-        echo "Attempt $i to update package lists failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
+        echo "Attempt $i to update package lists failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then echo "Failed to update package lists" && exit 1; fi; \
+        sleep 5; \
     done && \
     # Install core packages with retries
     for i in {1..5}; do \
