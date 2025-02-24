@@ -115,24 +115,31 @@ RUN set -ex && \
     # Verify architecture
     echo "Building for architecture: ${TARGETARCH}"
 
-# Install additional packages
+# Install additional packages with retries
 RUN set -ex && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        docker-ce-cli \
-        kubectl \
-        gh \
-        lsb-release \
-        apt-transport-https \
-        ca-certificates \
-        gnupg2 \
-        python3-pip \
-        python3-dev && \
-    # Verify installations
-    docker --version || true && \
-    kubectl version --client || true && \
-    gh --version || true && \
-    python3 --version || true && \
+    # Install system packages with retries
+    for i in {1..3}; do \
+        if apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            docker-ce-cli \
+            kubectl \
+            gh \
+            lsb-release \
+            apt-transport-https \
+            ca-certificates \
+            gnupg2 \
+            python3-pip \
+            python3-dev; then \
+            # Verify installations
+            docker --version || true && \
+            kubectl version --client || true && \
+            gh --version || true && \
+            python3 --version || true && \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
     # Install pip packages with retries
     for i in {1..3}; do \
         if pip3 install --no-cache-dir \
@@ -145,9 +152,7 @@ RUN set -ex && \
             python3 -m pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then \
-            exit 1; \
-        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
         sleep 5; \
     done && \
     # Cleanup
