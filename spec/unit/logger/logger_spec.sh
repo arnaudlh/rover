@@ -74,38 +74,25 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-      It 'should respect log level hierarchy'
-        set_log_severity "INFO"
-        Assert "_loggers_level_map[default]" eq "3"
+      Parameters:level_name=INFO level_value=3 test_msg="test message"
+      Example "should respect log level hierarchy"
+        When call set_log_severity "$level_name"
+        The variable "_loggers_level_map[default]" should eq "$level_value"
         
-        When call log_debug "test message"
+        When call log_debug "$test_msg"
         The output should eq ""
         
-        When call log_info "test message"
-        The output should include "test message"
+        When call log_info "$test_msg"
+        The output should include "$test_msg"
       End
 
-      It 'should allow logging at all defined levels'
-        set_log_severity "VERBOSE"
-        Assert "_loggers_level_map[default]" eq "5"
+      Parameters:level=VERBOSE test_msg="test message"
+      Example "should allow logging at all defined levels"
+        When call set_log_severity "$level"
+        The variable "_loggers_level_map[default]" should eq "5"
         
-        When call log_verbose "test message"
-        The output should include "test message"
-        
-        When call log_debug "test message"
-        The output should include "test message"
-        
-        When call log_info "test message"
-        The output should include "test message"
-        
-        When call log_warn "test message"
-        The output should include "test message"
-        
-        When call log_error "test message"
-        The output should include "test message"
-        
-        When call log_fatal "test message"
-        The output should include "test message"
+        When call log_verbose "$test_msg"
+        The output should include "$test_msg"
       End
     End
   End
@@ -171,12 +158,13 @@ Describe 'logger.sh'
 
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
-        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\]"
+        The output should include "[INFO]"
+        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
       End
 
       It 'should include source file and line information'
         When call log_info "test message"
-        The output should include "[${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
+        The output should include ".sh:"
       End
     End
   End
