@@ -199,10 +199,10 @@ set_log_severity() {
 
         if [[ $l ]]; then
             _loggers_level_map[$logger]=$l
-        else
-            printf "Error line:0: message:Unknown log level status :1\n" >&2
-            return 1
+            return 0
         fi
+        # Let export_tf_environment_variables handle the error message
+        return 1
     else
         printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
         printf ' [%s] [%s] ' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}"
