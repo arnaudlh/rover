@@ -129,8 +129,18 @@ RUN set -ex && \
             gnupg2 \
             lsb-release \
             python3-pip \
-            python3-dev; then \
-            echo "Successfully installed base packages" && \
+            python3-dev && \
+           # Add package repositories
+           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
+           echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+           chmod a+r /etc/apt/keyrings/docker.gpg && \
+           echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
+           echo "deb [arch=${TARGETARCH}] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
+           echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list; then \
+            echo "Successfully installed base packages and configured repositories" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 10 seconds..." && \
@@ -140,7 +150,8 @@ RUN set -ex && \
     # Install additional packages with retries
     for i in {1..5}; do \
         echo "Attempt $i: Installing additional packages..." && \
-        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        if apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             docker-ce-cli \
             kubectl \
             gh; then \
