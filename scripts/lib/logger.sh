@@ -53,7 +53,7 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        printf "Error line:0: message:Log folder path is not set status :1\n" >&2
+        error "0" "Log folder path is not set" 1
         return 1
     fi
 
@@ -168,7 +168,7 @@ export_tf_environment_variables() {
       isAutomation=true
       ;;
     *)
-      printf "Error line:0: message:Unknown log level status :1\n" >&2
+      error "0" "Unknown log level" 1
       return 1
       ;;
   esac
@@ -199,7 +199,7 @@ set_log_severity() {
             _loggers_level_map[$logger]=$l
 
         else
-            printf "Error line:0: message:Unknown log level status :1\n" >&2
+            error "0" "Unknown log level" 1
             return 1
         fi
     else
