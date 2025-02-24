@@ -103,17 +103,20 @@ RUN set -ex && \
     # Create required directories
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     # Update and install base packages with retries
-    for i in {1..3}; do \
+    for i in {1..5}; do \
+        echo "Attempt $i: Installing base packages..." && \
         if apt-get update && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates \
             curl \
             gnupg \
             lsb-release; then \
+            echo "Successfully installed base packages" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
-        sleep 5; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
     done && \
     # Add repositories with retries
     for i in {1..3}; do \
@@ -161,17 +164,17 @@ RUN set -ex && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
            curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
            # Docker repository
            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [signed-by=/etc/apt/keyrings/docker.gpg arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "deb [signed-by=/etc/apt/keyrings/docker.gpg arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
            # Kubernetes repository
            curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-           echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg arch=$(dpkg --print-architecture)] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg arch=${TARGETARCH}] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
            # GitHub CLI repository
            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
-           echo "deb [signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg arch=$(dpkg --print-architecture)] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+           echo "deb [signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list&& \
            apt-get update; then \
             echo "Successfully configured package repositories" && \
             break; \
@@ -187,21 +190,25 @@ RUN set -ex && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             docker-ce-cli \
             kubectl \
-            gh; then \
-            # Verify installations
-            docker --version || true && \
-            kubectl version --client || true && \
-            gh --version || true && \
-            python3 --version || true && \
-            echo "Successfully installed additional packages" && \
-            break; \
+            gh && \
+           # Verify installations with detailed error logging
+           { docker --version && echo "Docker CLI installed successfully"; } || { echo "Docker CLI installation verification failed"; exit 1; } && \
+           { kubectl version --client && echo "kubectl installed successfully"; } || { echo "kubectl installation verification failed"; exit 1; } && \
+           { gh --version && echo "GitHub CLI installed successfully"; } || { echo "GitHub CLI installation verification failed"; exit 1; } && \
+           { python3 --version && echo "Python3 installed successfully"; } || { echo "Python3 installation verification failed"; exit 1; } && \
+           echo "Successfully installed and verified all additional packages" && \
+           break; \
         fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
+        echo "Attempt $i failed with exit code $?, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then \
+            echo "Failed to install packages after 5 attempts" && \
+            exit 1; \
+        fi; \
         sleep 10; \
     done&& \
-    # Install pip packages with retries
-    for i in {1..3}; do \
+    # Install pip packages with retries and better error handling
+    for i in {1..5}; do \
+        echo "Attempt $i: Installing Python packages..." && \
         if pip3 install --no-cache-dir \
             pre-commit \
             yq \
@@ -209,11 +216,22 @@ RUN set -ex && \
             checkov \
             pywinrm \
             ansible-core==${versionAnsible}; then \
-            python3 -m pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
+            echo "Verifying Python package installations..." && \
+            { python3 -m pip list | grep -E "pre-commit" && echo "pre-commit installed successfully"; } || { echo "pre-commit installation verification failed"; exit 1; } && \
+            { python3 -m pip list | grep -E "yq" && echo "yq installed successfully"; } || { echo "yq installation verification failed"; exit 1; } && \
+            { python3 -m pip list | grep -E "azure-cli" && echo "azure-cli installed successfully"; } || { echo "azure-cli installation verification failed"; exit 1; } && \
+            { python3 -m pip list | grep -E "checkov" && echo "checkov installed successfully"; } || { echo "checkov installation verification failed"; exit 1; } && \
+            { python3 -m pip list | grep -E "pywinrm" && echo "pywinrm installed successfully"; } || { echo "pywinrm installation verification failed"; exit 1; } && \
+            { python3 -m pip list | grep -E "ansible-core" && echo "ansible-core installed successfully"; } || { echo "ansible-core installation verification failed"; exit 1; } && \
+            echo "Successfully installed and verified all Python packages" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
-        sleep 5; \
+        echo "Attempt $i failed with exit code $?, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then \
+            echo "Failed to install Python packages after 5 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 10; \
     done && \
     # Cleanup
     apt-get remove -y python3-dev && \

@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  BUILDKIT_PROGRESS: plain
+  DOCKER_SCAN_SUGGEST: false
+  BUILDKIT_COLORS: 1
+
 permissions:
   contents: read
   packages: write
@@ -30,6 +35,15 @@ env:
   IMAGE_NAME: ${{ github.repository }}/rover
   BUILDX_NO_DEFAULT_LOAD: true
   DOCKER_BUILDKIT: 1
+  BUILDKIT_STEP_LOG_MAX_SIZE: 10485760
+  BUILDKIT_STEP_LOG_MAX_SPEED: 10485760
+  DOCKER_BUILDKIT_CACHE: 1
+  BUILDKIT_PROGRESS: plain
+  DOCKER_SCAN_SUGGEST: false
+  BUILDKIT_COLORS: 1
+  BUILDKIT_STEP_LOG_MAX_SIZE: 10485760
+  BUILDKIT_STEP_LOG_MAX_SPEED: 10485760
+  DOCKER_BUILDKIT_CACHE: 1
 
 jobs:
   matrix-prep:
@@ -83,6 +97,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          network: host
+          allow: |
+            network.host
+            security.insecure
           file: ./Dockerfile
           push: true
           tags: |
@@ -91,9 +109,10 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}
-            type=gha,scope=main-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }},mode=max
+            type=gha,scope=main-${{ matrix.platform }},mode=max
+          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }},compression=zstd
+          outputs: type=registry,compression=zstd
           provenance: false
           sbom: false
           build-args: |
@@ -152,6 +171,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          network: host
+          allow: |
+            network.host
+            security.insecure
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
@@ -159,9 +182,10 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
-            type=gha,scope=main-agent-${{ matrix.platform }}-${{ matrix.agent }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max,sharing=private
+            type=gha,scope=main-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max,sharing=locked
+          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }},compression=zstd
+          outputs: type=registry,compression=zstd,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           provenance: false
