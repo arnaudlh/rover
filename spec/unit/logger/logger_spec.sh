@@ -39,9 +39,10 @@ Describe 'logger.sh'
 
       It 'should throw an error and not create directory'
         unset log_folder_path
-        When run __log_init__
+        When run source scripts/lib/logger.sh
         The stderr should include "Log folder path is not set"
         The status should eq 1
+        The output should not include "creating directory"
       End
     End
   End
@@ -73,20 +74,20 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-      Parameters:debug_msg="test message" info_msg="test message"
-      Example "should respect log level hierarchy"
+      Data:msg="test message"
+      Example "should respect log level hierarchy with $msg"
         When call set_log_severity "INFO"
         The variable "_loggers_level_map[default]" should eq "3"
         
-        When call log_debug "$debug_msg"
+        When call log_debug "$msg"
         The output should eq ""
         
-        When call log_info "$info_msg"
-        The output should include "$info_msg"
+        When call log_info "$msg"
+        The output should include "$msg"
       End
 
-      Parameters:msg="test message"
-      Example "should allow logging at all defined levels"
+      Data:msg="test message"
+      Example "should allow logging at all defined levels with $msg"
         When call set_log_severity "VERBOSE"
         The variable "_loggers_level_map[default]" should eq "5"
         
