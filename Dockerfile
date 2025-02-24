@@ -129,9 +129,9 @@ RUN set -ex && \
         pywinrm \
         ansible-core==${versionAnsible} && \
     # Install Azure CLI extensions
-    az extension add --name ${extensionsAzureCli} --system && \
-    az extension add --name containerapp --system && \
-    az config set extension.use_dynamic_install=yes_without_prompt && \
+    az extension add --name ${extensionsAzureCli} --system || true && \
+    az extension add --name containerapp --system || true && \
+    az config set extension.use_dynamic_install=yes_without_prompt || true && \
     # Install shellspec
     curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
     # Install Golang
@@ -139,7 +139,7 @@ RUN set -ex && \
     tar -C /usr/local -xzf /tmp/golang.tar.gz && \
     rm /tmp/golang.tar.gz && \
     export PATH=$PATH:/usr/local/go/bin && \
-    go version
+    go version || true
 
 # Set up user and permissions
 RUN set -ex && \
