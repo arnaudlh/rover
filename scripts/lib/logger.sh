@@ -58,7 +58,7 @@ __log_init__() {
     fi
 
     if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-        echo "creating directory $log_folder_path"
+        printf "creating directory %s\n" "$log_folder_path"
         mkdir -p "$log_folder_path" 2>/dev/null
     fi
 
@@ -199,8 +199,8 @@ set_log_severity() {
             _loggers_level_map[$logger]=$l
 
         else
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown log level %s for logger %s; setting to INFO\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$in_level" "$logger"
-            _loggers_level_map[$logger]=3
+            error "0" "Unknown log level" 1
+            return 1
         fi
     else
         printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
