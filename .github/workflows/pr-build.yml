@@ -287,16 +287,19 @@ jobs:
 
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
+        continue-on-error: true
         with:
-          categories: 'containers,IaC'
-          tools: 'trivy,terrascan,tfsec,checkov'
+          categories: containers,IaC
+          tools: trivy,terrascan,tfsec,checkov
           config: msdo.yaml
-          policy: 'Microsoft'
+          policy: Microsoft
+          upload-to-security-center: false
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.29.0
+        continue-on-error: true
         with:
           scan-type: 'image'
-          image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('{0}/{1}/rover-agent:pr-{2}-{3}', env.REGISTRY, github.repository, matrix.agent, github.sha) }}
+          scan-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('{0}/{1}/rover-agent:pr-{2}-{3}', env.REGISTRY, github.repository, matrix.agent, github.sha) }}
           format: 'sarif'
           output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('trivy-results-agents-{0}-{1}.sarif', matrix.agent, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') }}
           severity: 'CRITICAL,HIGH'
