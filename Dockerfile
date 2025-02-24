@@ -215,8 +215,61 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Install Terraform tools with retries
+# Install Terraform and HashiCorp tools with retries
 RUN set -ex && \
+    # Install PowerShell with retries
+    for i in {1..3}; do \
+        if [ "${TARGETARCH}" = "amd64" ]; then \
+            if curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-x64.tar.gz && \
+               mkdir -p /opt/microsoft/powershell/7 && \
+               tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 && \
+               chmod +x /opt/microsoft/powershell/7/pwsh && \
+               ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh; then \
+                pwsh --version || true && break; \
+            fi; \
+        else \
+            if curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-${TARGETARCH}.tar.gz && \
+               mkdir -p /opt/microsoft/powershell/7 && \
+               tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 && \
+               chmod +x /opt/microsoft/powershell/7/pwsh && \
+               ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh; then \
+                pwsh --version || true && break; \
+            fi; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Packer with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/packer.zip https://releases.hashicorp.com/packer/${versionPacker}/packer_${versionPacker}_${TARGETOS}_${TARGETARCH}.zip && \
+           unzip -d /usr/bin /tmp/packer.zip && \
+           chmod +x /usr/bin/packer; then \
+            packer version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Kubelogin with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v${versionKubelogin}/kubelogin-${TARGETOS}-${TARGETARCH}.zip && \
+           unzip -d /usr/ /tmp/kubelogin.zip && \
+           chmod +x /usr/bin/linux_${TARGETARCH}/kubelogin; then \
+            /usr/bin/linux_${TARGETARCH}/kubelogin version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Vault with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/vault.zip https://releases.hashicorp.com/vault/${versionVault}/vault_${versionVault}_${TARGETOS}_${TARGETARCH}.zip && \
+           unzip -o -d /usr/bin /tmp/vault.zip && \
+           chmod +x /usr/bin/vault && \
+           setcap cap_ipc_lock=-ep /usr/bin/vault; then \
+            vault version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
     # Install tflint with retries
     for i in {1..3}; do \
         if curl -sSL -o /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/latest/download/tflint_${TARGETOS}_${TARGETARCH}.zip && \
