@@ -425,13 +425,13 @@ ENV versionRover=${versionRover} \
 #
 # Keeping this method to support alpha build installations
 
-RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform ${versionTerraform}..." && \
-    curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" 2>&1 && \
-    sudo unzip -o -d /usr/bin /tmp/terraform.zip && \
-    sudo chmod +x /usr/bin/terraform && \
+RUN set -ex && \
+    echo "Installing Terraform ${versionTerraform}..." && \
+    curl -sSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
+    unzip -o -d /usr/bin /tmp/terraform.zip && \
+    chmod +x /usr/bin/terraform && \
     mkdir -p "/home/${USERNAME}/.terraform.cache/plugin-cache" && \
-    rm /tmp/terraform.zip && \
-    #
+    rm -f /tmp/terraform.zip && \
     echo "Set rover version to ${versionRover}..." && \
     echo "${versionRover}" > /tf/rover/version.txt
 
