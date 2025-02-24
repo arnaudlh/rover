@@ -126,12 +126,10 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }},mode=max
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }},mode=max
             type=gha,scope=main-${{ matrix.platform }},mode=max
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           cache-to: |
             type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }},compression=zstd
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }},mode=max,compression=zstd
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
