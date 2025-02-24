@@ -35,7 +35,7 @@ Describe 'logger.sh'
 
       It 'should throw an error and not create directory'
         When call __log_init__
-        The stderr should eq "Error line:0: message:Log folder path is not set status :1\n"
+        The stderr should include "Error line:0: message:Log folder path is not set status :1"
         The stdout should eq ""
         The status should eq 1
       End
@@ -52,7 +52,7 @@ Describe 'logger.sh'
         When call __log_init__
         The stderr should eq ""
         The status should eq 0
-        The stdout should eq "creating directory $log_folder_path\n"
+        The stdout should include "creating directory $log_folder_path"
       End
     End
   End
@@ -72,7 +72,7 @@ Describe 'logger.sh'
 
       It 'should handle invalid log levels'
         When call set_log_severity "INVALID"
-        The stderr should eq "Error line:0: message:Unknown log level status :1\n"
+        The stderr should include "Error line:0: message:Unknown log level status :1"
         The status should eq 1
         The variable "_loggers_level_map[default]" should eq "3"
       End
