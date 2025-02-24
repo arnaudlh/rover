@@ -113,42 +113,20 @@ jobs:
             versionTerrascan=1.18.3
             versionTfupdate=0.7.2
           
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+      - name: Run MSDO scan for base image
+        uses: microsoft/security-devops-action@v1
+        id: msdo-base
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          format: 'table'
-          output: 'trivy-results.txt'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-results-${{ matrix.platform }}
-          path: trivy-results.txt
+          categories: containers
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           
-      - name: Run Trivy for SARIF output
-        uses: aquasecurity/trivy-action@master
-        if: always()
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy scan results to GitHub Security tab
+      - name: Upload MSDO scan results for base image
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success() || failure()
         with:
-          sarif_file: 'trivy-results.sarif'
-          category: 'Trivy-${{ matrix.platform }}'
+          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
+          category: 'MSDO-Base-${{ matrix.platform }}'
+          wait-for-processing: true
 
       - name: Move cache
         if: always()
@@ -212,79 +190,29 @@ jobs:
             TARGETOS=linux
             USERNAME=vscode
 
-      - name: Run Trivy vulnerability scanner for agent
-        uses: aquasecurity/trivy-action@master
+      - name: Run MSDO scan for agent
+        uses: microsoft/security-devops-action@v1
+        id: msdo-agent
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
-          format: 'table'
-          output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy results for agent
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}
-          path: trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt
-
-      - name: Run Trivy for SARIF output for agent
-        uses: aquasecurity/trivy-action@master
-        if: always()
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
-          format: 'sarif'
-          output: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy scan results to GitHub Security tab for agent
+          categories: containers
+          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
+          
+      - name: Upload MSDO scan results for agent
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: success() || failure()
         with:
-          sarif_file: 'trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif'
-          category: 'Trivy-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
+          sarif_file: ${{ steps.msdo-agent.outputs.sarifFile }}
+          category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
+          wait-for-processing: true
 
-      - name: Upload agent build info
+      - name: Upload build info
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-info-agent-${{ matrix.platform }}-${{ matrix.agent }}
-          path: |
-            trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.txt
-            trivy-results-agent-${{ matrix.platform }}-${{ matrix.agent }}.sarif
+          path: ${{ steps.msdo-agent.outputs.sarifFile }}
 
-  msdo-scan:
-    needs: [build-base, build-agents]
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      contents: read
-      id-token: write
-      actions: read
-    steps:
-      - uses: actions/checkout@v4
-      
-      # Scan base image
-      - name: Run MSDO scan
-        uses: microsoft/security-devops-action@v1
-        id: msdo
-        with:
-          tools: trivy
-          categories: containers
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-amd64
-          
-      - name: Upload MSDO scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-          category: 'MSDO-Base'
-          wait-for-processing: true
+
           
   build-report:
     needs: [build-base, build-agents, msdo-scan]
