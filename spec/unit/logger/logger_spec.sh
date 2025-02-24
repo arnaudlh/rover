@@ -149,8 +149,7 @@ Describe 'logger.sh'
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
         The output should include "[INFO]"
-        The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[.*\] test message$"
-        The output should include ".sh:"
+        The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[.*\.sh:[0-9]+\] test message$"
         The status should eq 0
       End
 
