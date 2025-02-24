@@ -295,40 +295,13 @@ jobs:
           category: 'trivy'
           wait-for-processing: true
 
-  msdo-scan:
-    needs: [build-base, build-agents]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [linux/amd64, linux/arm64]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run MSDO scan
-        uses: microsoft/security-devops-action@v1
-        id: msdo
-        with:
-          categories: 'containers'
-          tools: 'trivy'
-          break-on-failure: false
-          upload-sarif: true
-          output: 'msdo-results.sarif'
-          args: '--no-progress --no-color'
-          
-      - name: Upload MSDO scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-          category: 'MSDO-${{ matrix.platform }}'
-          wait-for-processing: true
+
           
 
 
 
   build-report:
-    needs: [build-base, build-agents, trivy-scan, msdo-scan]
+    needs: [build-base, build-agents, trivy-scan]
     permissions:
       checks: write
       pull-requests: write
@@ -344,14 +317,14 @@ jobs:
         env:
           BUILD_BASE_RESULT: ${{ needs.build-base.result }}
           TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
-          MSDO_SCAN_RESULT: ${{ needs.msdo-scan.result }}
+
         with:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT;
             const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
-            const msdoScanResult = process.env.MSDO_SCAN_RESULT;
+
             
             // Get all agent build jobs
             const agentJobs = await github.rest.actions.listJobsForWorkflowRun({
@@ -409,14 +382,13 @@ jobs:
               '',
               '## Security Scans',
               `- Trivy vulnerability scanning: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
-              `- MSDO security analysis: ${msdoScanResult === 'success' ? '✅' : '❌'}`,
-              `- SARIF reports processed: ${trivyScanResult === 'success' && msdoScanResult === 'success' ? '✅' : '❌'}`,
+
+              `- SARIF reports processed: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
               '',
               `Overall Status: ${buildBaseResult === 'success' && 
                                 Object.values(agentStatuses).every(agent => 
                                   Object.values(agent).every(status => status)) && 
-                                trivyScanResult === 'success' && 
-                                msdoScanResult === 'success' ? '✅' : '❌'}`
+                                trivyScanResult === 'success' ? '✅' : '❌'}`
             ].join('\n');
             
             if (context.payload.pull_request) {
@@ -442,8 +414,7 @@ jobs:
                 );
                 return buildBaseResult === 'success' && 
                        agentSuccess && 
-                       trivyScanResult === 'success' && 
-                       msdoScanResult === 'success' ? 'success' : 'failure';
+                       trivyScanResult === 'success' ? 'success' : 'failure';
               })(),
               output: {
                 title: (() => {
@@ -452,10 +423,9 @@ jobs:
                       status === 'success' || status === 'n/a'
                     )
                   );
-                  return buildBaseResult === 'success' && 
+                  return `Build Report ${buildBaseResult === 'success' && 
                          agentSuccess && 
-                         trivyScanResult === 'success' && 
-                         msdoScanResult === 'success' ? 'Build Report ✅' : 'Build Report ❌';
+                         trivyScanResult === 'success' ? '✅' : '❌'}`;
                 })(),
                 summary: buildSummary
               }
