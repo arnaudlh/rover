@@ -1,4 +1,9 @@
 categories:
   - containers
+  - IaC
 tools:
   - trivy
+  - terrascan
+  - tfsec
+  - checkov
+analysis_type: IaC
