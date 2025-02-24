@@ -197,7 +197,8 @@ RUN set -ex && \
     # Install system packages with retries
     for i in {1..3}; do \
         echo "Attempt $i: Installing system packages..." && \
-        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        if apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             python3-pip \
             python3-dev && \
             echo "Successfully installed Python packages" && \
@@ -207,27 +208,6 @@ RUN set -ex && \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
             echo "Failed to install Python packages after 3 attempts" && \
-            exit 1; \
-        fi; \
-        sleep 5; \
-    done && \
-    # Install and verify CLI tools
-    for i in {1..3}; do \
-        echo "Attempt $i: Installing CLI tools..." && \
-        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            docker-ce-cli \
-            kubectl \
-            gh && \
-            echo "Verifying CLI tool installations..." && \
-            { docker --version && echo "Docker CLI installed successfully"; } && \
-            { kubectl version --client && echo "kubectl installed successfully"; } && \
-            { gh --version && echo "GitHub CLI installed successfully"; }; then \
-            echo "Successfully installed and verified all CLI tools" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 5 seconds..." && \
-        if [ $i -eq 3 ]; then \
-            echo "Failed to install CLI tools after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
