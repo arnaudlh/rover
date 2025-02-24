@@ -5,8 +5,7 @@ error() {
     local parent_lineno="$1"
     local message="$2"
     local code="${3:-1}"
-    echo -n "Error line:$parent_lineno: message:$message status :$code" >&2
-    echo >&2
+    printf "Error line:%s: message:%s status :%s\n" "$parent_lineno" "$message" "$code" >&2
     return "$code"
 }
 
@@ -169,7 +168,7 @@ export_tf_environment_variables() {
       isAutomation=true
       ;;
     *)
-      error "0" "Unknown log level" 1
+      printf "Error line:0: message:Unknown log level status :1\n" >&2
       return 1
       ;;
   esac
