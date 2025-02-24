@@ -255,6 +255,7 @@ jobs:
           categories: IaC
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
+          workspace: ${{ github.workspace }}
 
 
   trivy-scan:
@@ -316,6 +317,7 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
           timeout: '10m'
+          artifact-type: 'container_image'
 
       - name: Debug SARIF files
         run: |
