@@ -38,37 +38,43 @@ WORKDIR /tf/rover
 COPY ./scripts/.kubectl_aliases .
 COPY ./scripts/zsh-autosuggestions.zsh .
 
-# Install base packages
+# Install base packages with retries
 RUN set -ex && \
     mkdir -p /var/lib/apt/lists/partial /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        apt-transport-https \
-        apt-utils \
-        bsdmainutils \
-        ca-certificates \
-        curl \
-        fonts-powerline \
-        gcc \
-        gettext \
-        git \
-        gpg \
-        gpg-agent \
-        jq \
-        less \
-        locales \
-        lsb-release \
-        make \
-        python3-dev \
-        python3-pip \
-        rsync \
-        software-properties-common \
-        sudo \
-        unzip \
-        vim \
-        wget \
-        zsh \
-        zip && \
+    for i in {1..3}; do \
+        if apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            apt-transport-https \
+            apt-utils \
+            bsdmainutils \
+            ca-certificates \
+            curl \
+            fonts-powerline \
+            gcc \
+            gettext \
+            git \
+            gpg \
+            gpg-agent \
+            jq \
+            less \
+            locales \
+            lsb-release \
+            make \
+            python3-dev \
+            python3-pip \
+            rsync \
+            software-properties-common \
+            sudo \
+            unzip \
+            vim \
+            wget \
+            zsh \
+            zip; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
