@@ -41,24 +41,41 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 # Install base packages with retries
 RUN set -ex && \
     mkdir -p /var/lib/apt/lists/partial /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
+    # Update package lists with retries
     for i in {1..5}; do \
-        if apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        if apt-get update; then \
+            break; \
+        fi; \
+        echo "Attempt $i to update package lists failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done && \
+    # Install packages in smaller groups with retries
+    for i in {1..5}; do \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             apt-transport-https \
-            apt-utils \
-            bsdmainutils \
             ca-certificates \
             curl \
+            gnupg \
+            lsb-release; then \
+            echo "Successfully installed core packages" && \
+            break; \
+        fi; \
+        echo "Attempt $i to install core packages failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done && \
+    for i in {1..5}; do \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            apt-utils \
+            bsdmainutils \
             fonts-powerline \
             gcc \
             gettext \
             git \
-            gpg \
-            gpg-agent \
             jq \
             less \
             locales \
-            lsb-release \
             make \
             python3-dev \
             python3-pip \
@@ -70,10 +87,10 @@ RUN set -ex && \
             wget \
             zsh \
             zip; then \
-            echo "Successfully installed base packages" && \
+            echo "Successfully installed additional packages" && \
             break; \
         fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        echo "Attempt $i to install additional packages failed, retrying in 10 seconds..." && \
         if [ $i -eq 5 ]; then exit 1; fi; \
         sleep 10; \
     done && \
