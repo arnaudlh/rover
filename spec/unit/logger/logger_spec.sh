@@ -45,7 +45,7 @@ Describe 'logger.sh'
     Context "Log Path is Set"
       setup() {
         export log_folder_path="tmp/$(uuidgen)"
-        export TEST_DEBUG_CREATE_DIR=false
+        export TEST_DEBUG_CREATE_DIR=true
       }
       BeforeEach 'setup'
 
@@ -73,7 +73,8 @@ Describe 'logger.sh'
 
       It 'should handle invalid log levels'
         When call set_log_severity "INVALID"
-        The stdout should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[WARN\] \[/home/runner/\.local/lib/shellspec/lib/core/dsl\.sh:[0-9]+\] Unknown log level INVALID for logger default; setting to INFO"
+        The stderr should eq "Error line:0: message:Unknown log level status :1\n"
+        The status should eq 1
         The variable "_loggers_level_map[default]" should eq "3"
       End
     End
