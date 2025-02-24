@@ -6,7 +6,7 @@ error() {
     local message="$2"
     local code="${3:-1}"
     printf "Error line:%s: message:%s status :%s\n" "$parent_lineno" "$message" "$code" >&2
-    return "$code"
+    exit "$code"
 }
 
 error_message() {
@@ -58,7 +58,8 @@ __log_init__() {
     fi
 
     if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-        __create_dir__ "$log_folder_path"
+        printf "creating directory %s\n" "$log_folder_path"
+        mkdir -p "$log_folder_path" 2>/dev/null
     fi
 
 }
@@ -168,7 +169,7 @@ export_tf_environment_variables() {
       ;;
     *)
       error "0" "Unknown log level" 1
-      exit 1
+      return 1
       ;;
   esac
 
