@@ -44,16 +44,15 @@ Describe 'logger.sh'
     Context "Log Path is Set"
       setup() {
         export log_folder_path="tmp/$(uuidgen)"
+        export TEST_DEBUG_CREATE_DIR=false
       }
       BeforeEach 'setup'
 
-      It 'should throw an error and not create directory'
-        unset log_folder_path
+      It 'should create directory'
         When call __log_init__
-        The stderr should eq "Error line:0: message:Log folder path is not set status :1\n"
-        The status should eq 1
-        The stdout should eq ""
-        The output should eq ""
+        The stderr should eq ""
+        The status should eq 0
+        The stdout should include "creating directory"
       End
     End
   End
@@ -156,7 +155,7 @@ Describe 'logger.sh'
 
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
-        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[/home/runner/\.local/lib/shellspec/lib/core/evaluation\.sh:[0-9]+\] test message"
+        The stdout should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[/home/runner/\.local/lib/shellspec/lib/core/evaluation\.sh:[0-9]+\] test message"
         The stderr should eq ""
         The status should eq 0
       End
