@@ -72,7 +72,7 @@ Describe 'logger.sh'
 
       It 'should handle invalid log levels'
         When call set_log_severity "INVALID"
-        The error should include "Unknown log level"
+        The stdout should include "Unknown log level INVALID for logger default; setting to INFO"
         The variable "_loggers_level_map[default]" should eq "3"
       End
     End
@@ -108,6 +108,8 @@ Describe 'logger.sh'
       It 'should create log directory'
         When call __set_text_log__ "test"
         The path "$log_folder_path" should be directory
+        The stdout should include "Detailed Logs @"
+        The stdout should include "STARTING LOG OUTPUT TO"
       End
 
       It 'should create log file with correct name'
