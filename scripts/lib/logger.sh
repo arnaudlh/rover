@@ -57,9 +57,11 @@ __log_init__() {
         return 1
     fi
 
-    if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-        printf "creating directory %s\n" "$log_folder_path" >&1
-        __create_dir__ "$log_folder_path"
+    if [ ! -d "$log_folder_path" ]; then
+        if [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
+            printf "creating directory %s\n" "$log_folder_path"
+            __create_dir__ "$log_folder_path"
+        fi
     fi
 
 }
@@ -168,7 +170,7 @@ export_tf_environment_variables() {
       isAutomation=true
       ;;
     *)
-      printf >&2 "Error scripts/lib/logger.sh on or near line 0: Unknown log level; exiting with status 1\n"
+      error "0" "Unknown log level" 1
       return 1
       ;;
   esac
