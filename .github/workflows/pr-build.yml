@@ -170,11 +170,9 @@ jobs:
       result: success
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
-        agent: [github, tfc, gitlab, azure_devops]
-        exclude:
-          - platform: linux/arm64
-            agent: tfc
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+        exclude: ${{ fromJson(needs.matrix-prep.outputs.exclude) }}
       fail-fast: false
     continue-on-error: true
     env:
