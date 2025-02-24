@@ -238,6 +238,27 @@ jobs:
             versionAzdo=${{ steps.versions.outputs.azdo }}
             versionTfc=${{ steps.versions.outputs.tfc }}
 
+  msdo-scan:
+    needs: [build-base, build-agents]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run MSDO analysis
+        uses: microsoft/security-devops-action@v1
+        continue-on-error: true
+        with:
+          categories: containers,IaC
+          tools: trivy,terrascan,tfsec,checkov
+          config: msdo.yaml
+          policy: Microsoft
+          upload-to-security-center: false
+
+
   trivy-scan:
     needs: [build-base, build-agents]
     runs-on: ubuntu-latest
@@ -285,15 +306,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run MSDO analysis
-        uses: microsoft/security-devops-action@v1
-        continue-on-error: true
-        with:
-          categories: containers,IaC
-          tools: trivy,terrascan,tfsec,checkov
-          config: msdo.yaml
-          policy: Microsoft
-          upload-to-security-center: false
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.29.0
         continue-on-error: true
@@ -336,7 +348,7 @@ jobs:
           wait-for-processing: true
 
   build-report:
-    needs: [build-base, build-agents, trivy-scan]
+    needs: [build-base, build-agents, trivy-scan, msdo-scan]
     permissions:
       checks: write
       pull-requests: write
