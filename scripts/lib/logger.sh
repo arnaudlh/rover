@@ -187,7 +187,9 @@ export_tf_environment_variables() {
 #------------------------------------------------------------------------------
 set_log_severity() {
     local logger=default in_level l
-    export_tf_environment_variables "$1"
+    local ret=0
+    export_tf_environment_variables "$1" || ret=$?
+    [[ $ret -ne 0 ]] && return $ret
 
     [[ $1 = "-l" ]] && { logger=$2; shift 2 2>/dev/null; }
     in_level="${1:-INFO}"
@@ -197,7 +199,6 @@ set_log_severity() {
 
         if [[ $l ]]; then
             _loggers_level_map[$logger]=$l
-
         else
             printf "Error line:0: message:Unknown log level status :1\n" >&2
             return 1
