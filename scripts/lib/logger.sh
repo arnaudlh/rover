@@ -45,7 +45,7 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        printf >&2 "Error line:0: message:Log folder path is not set status :1\n"
+        printf >&2 "Error: Log folder path is not set\n"
         return 1
     fi
 
@@ -92,9 +92,7 @@ __set_text_log__() {
     fi
 
     export CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
-    echo "------------------------------------------------------------------------------------------------------"
-    printf "STARTING LOG OUTPUT TO : %s\n" "$CURRENT_LOG_FILE"
-    echo "------------------------------------------------------------------------------------------------------"
+    printf "Detailed Logs @ %s\n" "$CURRENT_LOG_FILE"
     export LOG_TO_FILE=true
     exec 3>&1 4>&2
     exec 1>> $CURRENT_LOG_FILE 2>&1
@@ -210,12 +208,12 @@ _log() {
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
             printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
-            printf ' %s %s ' "$in_level" "[${BASH_SOURCE[2]}:${BASH_LINENO[1]}]"
+            printf ' [%s] %s ' "$in_level" "[${BASH_SOURCE[2]}:${BASH_LINENO[1]}]"
             printf '%s\n' "$@"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
-         printf ' %s %s ' "WARN" "[${BASH_SOURCE[2]}:${BASH_LINENO[1]}] Unknown logger '$logger'"
+         printf ' [%s] %s ' "WARN" "[${BASH_SOURCE[2]}:${BASH_LINENO[1]}] Unknown logger '$logger'"
     fi
 }
 
