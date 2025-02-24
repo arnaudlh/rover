@@ -321,11 +321,6 @@ jobs:
             arch: arm64
             agent: azure_devops
       fail-fast: false
-      exclude:
-        - type: agent
-          platform: linux/arm64
-          arch: arm64
-          agent: tfc
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
