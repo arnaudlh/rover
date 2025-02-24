@@ -265,36 +265,17 @@ jobs:
             agent: azure_devops
       fail-fast: false
     steps:
-      - name: Create results directory
-        run: |
-          mkdir -p ${{ github.workspace }}/trivy-results
-          echo "TRIVY_RESULTS_DIR=${{ github.workspace }}/trivy-results" >> $GITHUB_ENV
-
-      - name: Debug directory
-        run: |
-          pwd
-          ls -la ${{ github.workspace }}/trivy-results
-          echo "Current directory contents:"
-          ls -la
-
       - name: Run Trivy scan for base image
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: base.sarif
+          output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
-          
-      - name: Upload base image scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: base.sarif
-          category: 'Trivy-Base-${{ matrix.platform }}'
-          wait-for-processing: true
+          exit-code: '1'
           
       - name: Run Trivy scans for agents
         uses: aquasecurity/trivy-action@master
@@ -302,17 +283,18 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: agents.sarif
+          output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
+          exit-code: '1'
           
-      - name: Upload agent scan results
+      - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: agents.sarif
-          category: 'Trivy-Agents-${{ matrix.platform }}-${{ matrix.agent }}'
+          sarif_file: trivy-results.sarif
+          category: 'Trivy-${{ matrix.platform }}-${{ matrix.agent }}'
           wait-for-processing: true
 
   msdo-scan:
