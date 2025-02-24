@@ -9,8 +9,8 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
 
 env:
   BUILDKIT_PROGRESS: plain
@@ -128,9 +128,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
           target: base
           platforms: ${{ matrix.platform }}
-          cache-from: |
-            type=gha,scope=pr-${{ github.sha }}-${{ matrix.platform }},mode=max
-          cache-to: type=inline
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }},mode=max
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
@@ -217,9 +216,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest
           platforms: ${{ matrix.platform }}
-          cache-from: |
-            type=gha,scope=pr-agent-${{ github.sha }}-${{ matrix.agent }},mode=max
-          cache-to: type=inline
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest,mode=max
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
