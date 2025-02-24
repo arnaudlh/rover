@@ -17,7 +17,7 @@ Describe 'logger.sh'
         local parent_lineno="$1"
         local message="$2"
         local code="$3"
-        >&2 echo "Error line:${parent_lineno}: message:${message} status :${code}"
+        printf "Error line:${parent_lineno}: message:${message} status :${code}\n" >&2
         export TEST_DEBUG_CREATE_DIR=false
         return ${code}
     }
@@ -150,7 +150,7 @@ Describe 'logger.sh'
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
         The stderr should eq ""
-        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[/home/runner/\.local/lib/shellspec/lib/core/evaluation\.sh:[0-9]+\] test message"
+        The stderr should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[/home/runner/\.local/lib/shellspec/lib/core/evaluation\.sh:[0-9]+\] test message"
         The status should eq 0
       End
 
