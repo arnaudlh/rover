@@ -269,12 +269,10 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         with:
           categories: IaC
           tools: terrascan,tfsec,checkov
-          policy: Microsoft.Security.Baseline
+          workspace: ${{ github.workspace }}
           upload-results: true
 
 
@@ -349,6 +347,7 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
+          github-pat: ${{ github.token }}
 
       - name: Debug SARIF files
         run: |
