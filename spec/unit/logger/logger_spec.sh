@@ -22,7 +22,7 @@ Describe 'logger.sh'
         return ${code}
     }
     __create_dir__() {
-        printf "creating directory %s\n" "$1"
+        mkdir -p "$1"
     }
 
     Context "Log Path Not Set"
