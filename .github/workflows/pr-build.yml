@@ -252,21 +252,7 @@ jobs:
       packages: read
     strategy:
       matrix:
-        include:
-          - platform: linux/amd64
-            agent: github
-          - platform: linux/amd64
-            agent: tfc
-          - platform: linux/amd64
-            agent: gitlab
-          - platform: linux/amd64
-            agent: azure_devops
-          - platform: linux/arm64
-            agent: github
-          - platform: linux/arm64
-            agent: gitlab
-          - platform: linux/arm64
-            agent: azure_devops
+        platform: [linux/amd64, linux/arm64]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -278,54 +264,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Trivy vulnerability scanner for base image
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
-        env:
-          TRIVY_USERNAME: ${{ github.actor }}
-          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         with:
           scan-type: 'image'
           image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
           format: 'sarif'
-          output: 'trivy-base.sarif'
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           scanners: 'vuln,secret,config'
           exit-code: '0'
 
-      - name: Run Trivy vulnerability scanner for agent image
-        uses: aquasecurity/trivy-action@0.12.0
-        env:
-          TRIVY_USERNAME: ${{ github.actor }}
-          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          scan-type: 'image'
-          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
-          format: 'sarif'
-          output: 'trivy-agent.sarif'
-          severity: 'CRITICAL,HIGH'
-          scanners: 'vuln,secret,config'
-          exit-code: '0'
-
-      - name: Install jq
+      - name: Debug SARIF file
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-
-      - name: Debug SARIF files
-        run: |
-          echo "Base SARIF file:"
-          ls -la trivy-base.sarif || echo "Base SARIF file not found"
-          echo "Agent SARIF file:"
-          ls -la trivy-agent.sarif || echo "Agent SARIF file not found"
-
-      - name: Merge SARIF files
-        run: |
-          if [ -f trivy-base.sarif ] && [ -f trivy-agent.sarif ]; then
-            jq -s '.[0].runs + .[1].runs | {version: "2.1.0", $schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json", runs: .}' trivy-base.sarif trivy-agent.sarif > trivy-results.sarif
-          else
-            echo "One or both SARIF files missing, copying base SARIF file"
-            cp trivy-base.sarif trivy-results.sarif || cp trivy-agent.sarif trivy-results.sarif || echo "No SARIF files found"
-          fi
+          pwd
+          ls -la
+          echo "SARIF file contents:"
+          cat trivy-results.sarif || echo "SARIF file not found"
 
       - name: Debug output
         run: |
