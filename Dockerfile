@@ -79,7 +79,10 @@ RUN set -ex && \
         docker-ce-cli \
         kubectl \
         gh \
-        lsb-release && \
+        lsb-release \
+        apt-transport-https \
+        ca-certificates \
+        gnupg2 && \
     # Verify installations
     docker --version || true && \
     kubectl version --client || true && \
