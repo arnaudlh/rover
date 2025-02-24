@@ -273,6 +273,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
+          timeout: '10m'
 
       - name: Run Trivy vulnerability scanner for agents
         if: ${{ !(matrix.platform == 'linux/arm64' && matrix.agent == 'tfc') }}
@@ -285,6 +286,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
+          timeout: '10m'
 
       - name: Debug SARIF files
         run: |
