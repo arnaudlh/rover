@@ -248,6 +248,10 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
+        agent: [github, tfc, gitlab, azure_devops]
+        exclude:
+          - platform: linux/arm64
+            agent: tfc
       fail-fast: false
     continue-on-error: true
     steps:
@@ -264,7 +268,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
+          input: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
           format: 'sarif'
           output: 'trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
@@ -277,7 +281,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
+          input: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
