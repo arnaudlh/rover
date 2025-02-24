@@ -106,10 +106,7 @@ Describe 'logger.sh'
       It 'should create log file with correct name'
         When call __set_text_log__ "test"
         The path "$CURRENT_LOG_FILE" should be file
-      End
-
-      It 'should include start marker in log file'
-        When call __set_text_log__ "test"
+        The output should include "Detailed Logs @"
         The output should include "STARTING LOG OUTPUT TO"
       End
 
@@ -118,6 +115,7 @@ Describe 'logger.sh'
         When call __reset_log__
         The variable "LOG_TO_FILE" should eq "false"
         The variable "CURRENT_LOG_FILE" should be undefined
+        The output should include "STOPPING LOG OUTPUT TO"
       End
     End
   End
