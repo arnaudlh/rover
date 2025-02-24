@@ -317,6 +317,9 @@ jobs:
           ignore-unfixed: true
           exit-code: '0'
           timeout: '10m'
+          list-all-pkgs: true
+          scanners: 'vuln'
+          artifact-type: 'container_image'
 
       - name: Debug SARIF files
         run: |
