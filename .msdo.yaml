@@ -1,7 +1,1 @@
-# Microsoft Security DevOps Configuration
-trivy:
-  severity: CRITICAL,HIGH
-  scan-type: image
-  exit-code: 1
-  format: sarif
-  output: trivy-results.sarif
+

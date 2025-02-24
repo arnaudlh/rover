@@ -119,16 +119,15 @@ jobs:
         id: msdo-base
         with:
           categories: containers
+          policy: GitHub
           tools: trivy
-          policy: custom
-          config: .msdo.yaml
-          path: ${{ github.workspace }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Upload MSDO scan results for base image
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: '${{ steps.msdo-base.outputs.sarifFile }}'
+          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
           category: 'MSDO-Base-${{ matrix.platform }}'
           wait-for-processing: true
 
@@ -137,13 +136,6 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
-
-      - name: Upload MSDO results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: msdo-results-base-${{ matrix.platform }}
-          path: ${{ steps.msdo-base.outputs.sarifFile }}
 
   build-agents:
     needs: [build-base, matrix-prep]
@@ -197,25 +189,17 @@ jobs:
         id: msdo-agent
         with:
           categories: containers
+          policy: GitHub
           tools: trivy
-          policy: custom
-          config: .msdo.yaml
-          path: ${{ github.workspace }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Upload MSDO scan results for agent
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: '${{ steps.msdo-agent.outputs.sarifFile }}'
+          sarif_file: ${{ steps.msdo-agent.outputs.sarifFile }}
           category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
           wait-for-processing: true
-
-      - name: Upload MSDO results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: msdo-results-agent-${{ matrix.platform }}-${{ matrix.agent }}
-          path: ${{ steps.msdo-agent.outputs.sarifFile }}
 
 
           
