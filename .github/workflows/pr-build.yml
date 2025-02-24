@@ -163,6 +163,8 @@ jobs:
   build-agents:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ job.status }}
     strategy:
       matrix:
         include:
@@ -208,6 +210,7 @@ jobs:
       - name: Build and push agent
         id: build-agent
         uses: docker/build-push-action@v5
+        continue-on-error: true
         with:
           context: .
           network: host
@@ -310,6 +313,7 @@ jobs:
         uses: actions/github-script@v7
         env:
           BUILD_BASE_RESULT: ${{ needs.build-base.result }}
+          BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
           TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
 
         with:
@@ -317,6 +321,7 @@ jobs:
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT;
+            const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
             const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
 
             
