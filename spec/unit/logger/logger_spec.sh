@@ -152,7 +152,6 @@ Describe 'logger.sh'
         The stderr should eq ""
         The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[/home/runner/\.local/lib/shellspec/lib/core/evaluation\.sh:[0-9]+\] test message$"
         The status should eq 0
-        The status should eq 0
       End
 
       It 'should include source file and line information'
