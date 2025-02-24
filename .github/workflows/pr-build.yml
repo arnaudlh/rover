@@ -349,7 +349,7 @@ jobs:
       - name: Debug SARIF files
         run: |
           ls -la
-          sarif_file="${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}"
+          sarif_file="${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}"
           echo "Looking for SARIF file: $sarif_file"
           if [ -f "$sarif_file" ]; then
             echo "Found SARIF file:"
@@ -375,8 +375,6 @@ jobs:
       checks: write
       pull-requests: write
       contents: read
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
     steps:
       - uses: actions/checkout@v4
       
