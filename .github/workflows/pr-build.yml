@@ -156,20 +156,23 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-${{ matrix.agent }}
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
           platforms: ${{ matrix.platform }}
-          cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
+          cache-from: type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
           cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          build-contexts: |
+            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           provenance: false
           sbom: false
           build-args: |
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
             USERNAME=vscode
-
-
-
-
+            versionGithubRunner=$(./scripts/parse_versions.sh tool github_runner)
+            versionAzdo=$(./scripts/parse_versions.sh tool azdo)
+            versionTfc=$(./scripts/parse_versions.sh tool tfc)
+            versionDockerCompose=$(./scripts/parse_versions.sh tool docker_compose)
+            versionGolang=$(./scripts/parse_versions.sh tool golang)
+            versionAnsible=$(./scripts/parse_versions.sh tool ansible)
+            extensionsAzureCli=$(./scripts/parse_versions.sh tool azure_cli)
           
   trivy-scan:
     needs: [build-base, build-agents]
