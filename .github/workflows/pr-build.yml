@@ -288,11 +288,9 @@ jobs:
           - type: base
             platform: linux/amd64
             arch: amd64
-            agent: null
           - type: base
             platform: linux/arm64
             arch: arm64
-            agent: null
           - type: agent
             platform: linux/amd64
             arch: amd64
@@ -321,6 +319,10 @@ jobs:
             platform: linux/arm64
             arch: arm64
             agent: azure_devops
+        exclude:
+          - type: agent
+            platform: linux/arm64
+            agent: tfc
       fail-fast: false
     continue-on-error: true
     steps:
@@ -352,7 +354,11 @@ jobs:
       - name: Debug SARIF files
         run: |
           ls -la
-          cat ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
+          if [ -f "${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}" ]; then
+            cat "${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}"
+          else
+            echo "SARIF file not found"
+          fi
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
