@@ -39,8 +39,8 @@ Describe 'logger.sh'
 
       It 'should throw an error and not create directory'
         unset log_folder_path
-        When call __log_init__
-        The error should include "Log folder path is not set"
+        When run __log_init__
+        The stderr should include "Log folder path is not set"
         The status should eq 1
       End
     End
@@ -73,38 +73,40 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-      It 'should respect log level hierarchy'
+      Parameters:debug_msg="test message" info_msg="test message"
+      Example "should respect log level hierarchy"
         When call set_log_severity "INFO"
         The variable "_loggers_level_map[default]" should eq "3"
         
-        When call log_debug "test message"
+        When call log_debug "$debug_msg"
         The output should eq ""
         
-        When call log_info "test message"
-        The output should include "test message"
+        When call log_info "$info_msg"
+        The output should include "$info_msg"
       End
 
-      It 'should allow logging at all defined levels'
+      Parameters:msg="test message"
+      Example "should allow logging at all defined levels"
         When call set_log_severity "VERBOSE"
         The variable "_loggers_level_map[default]" should eq "5"
         
-        When call log_verbose "verbose message"
-        The output should include "verbose message"
+        When call log_verbose "$msg"
+        The output should include "$msg"
         
-        When call log_debug "debug message"
-        The output should include "debug message"
+        When call log_debug "$msg"
+        The output should include "$msg"
         
-        When call log_info "info message"
-        The output should include "info message"
+        When call log_info "$msg"
+        The output should include "$msg"
         
-        When call log_warn "warn message"
-        The output should include "warn message"
+        When call log_warn "$msg"
+        The output should include "$msg"
         
-        When call log_error "error message"
-        The output should include "error message"
+        When call log_error "$msg"
+        The output should include "$msg"
         
-        When call log_fatal "fatal message"
-        The output should include "fatal message"
+        When call log_fatal "$msg"
+        The output should include "$msg"
       End
     End
   End
@@ -152,8 +154,8 @@ Describe 'logger.sh'
 
       It 'should format error messages with correct color'
         When call error_message "test error"
-        The output should include $'\e[91m'
-        The output should include $'\e[0m'
+        The stderr should include $'\e[91m'
+        The stderr should include $'\e[0m'
       End
 
       It 'should format warning messages with correct color'
