@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
 # Continual logging methods. These always print regardless of log level
+error() {
+    local parent_lineno="$1"
+    local message="$2"
+    local code="${3:-1}"
+    printf "Error line:${parent_lineno}: message:${message} status :${code}\n" >&2
+    return "${code}"
+}
+
 error_message() {
     printf >&2 "\e[91m$@\n\e[0m"
 }
@@ -45,10 +53,14 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        error "0" "Log folder path is not set" 1
+        printf "Error line:0: message:Log folder path is not set status :1\n" >&2
+        return 1
     fi
 
-    __create_dir__ "$log_folder_path"
+    if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
+        printf "creating directory %s\n" "$log_folder_path"
+        mkdir -p "$log_folder_path" 2>/dev/null
+    fi
 
 }
 
@@ -87,26 +99,28 @@ __set_text_log__() {
       mkdir -p "$log_folder_path/$logDate"
     fi
 
-    export LOG_TO_FILE=true
-    export CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
+    CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
+    export CURRENT_LOG_FILE
     information "Detailed Logs @ $CURRENT_LOG_FILE"
     exec 3>&1 4>&2
-    exec 1>> $CURRENT_LOG_FILE 2>&1
     echo "------------------------------------------------------------------------------------------------------"
-    printf "$(date +"%Y-%m-%dT%H:%M:%S %Z") - STARTING LOG OUTPUT TO : %s\n" $CURRENT_LOG_FILE
+    printf "STARTING LOG OUTPUT TO : %s\n" "$CURRENT_LOG_FILE"
     echo "------------------------------------------------------------------------------------------------------"
+    LOG_TO_FILE=true
+    export LOG_TO_FILE
+    exec 1>> "$CURRENT_LOG_FILE" 2>&1
 }
 
 __reset_log__() {
+    local current_log="$CURRENT_LOG_FILE"
     echo "------------------------------------------------------------------------------------------------------"
-    printf "STOPPING LOG OUTPUT TO : %s\n" $CURRENT_LOG_FILE
+    printf "STOPPING LOG OUTPUT TO : %s\n" "$current_log"
     echo "------------------------------------------------------------------------------------------------------"
-    sed -i 's/\x1b\[[0-9;]*m//g' $CURRENT_LOG_FILE
-    export LOG_TO_FILE=false
-    unset CURRENT_LOG_FILE
-    unset TF_LOG_PATH
-    export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
+    LOG_TO_FILE=false
+    export LOG_TO_FILE
     exec 2>&4 1>&3
+    [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
+    unset CURRENT_LOG_FILE TF_LOG_PATH
 }
 
 #------------------------------------------------------------------------------
@@ -154,7 +168,8 @@ export_tf_environment_variables() {
       isAutomation=true
       ;;
     *)
-      error 0 "Uknown serverity"
+      printf "Error line:0: message:Unknown log level status :1\n" >&2
+      return 1
       ;;
   esac
 
@@ -172,7 +187,9 @@ export_tf_environment_variables() {
 #------------------------------------------------------------------------------
 set_log_severity() {
     local logger=default in_level l
-    export_tf_environment_variables "$1"
+    local ret=0
+    export_tf_environment_variables "$1" || ret=$?
+    [[ $ret -ne 0 ]] && return $ret
 
     [[ $1 = "-l" ]] && { logger=$2; shift 2 2>/dev/null; }
     in_level="${1:-INFO}"
@@ -182,15 +199,14 @@ set_log_severity() {
 
         if [[ $l ]]; then
             _loggers_level_map[$logger]=$l
-
-        else
-            printf '%(%Y-%m-%dT%H:%M:%S %Z)T %-7s %s ' -1 WARN \
-                "${BASH_SOURCE[2]}:${BASH_LINENO[1]} Unknown log level '$in_level' for logger '$logger'; setting to INFO"
-            _loggers_level_map[$logger]=3
+            return 0
         fi
+        # Let export_tf_environment_variables handle the error message
+        return 1
     else
-        printf '%(%Y-%m-%dT%H:%M:%S %Z)T %-7s %s ' -1 WARN \
-            "${BASH_SOURCE[2]}:${BASH_LINENO[1]} Option '-l' needs an argument" >&2
+        printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
+        printf ' [%s] [%s] ' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}"
+        printf 'Option -l needs an argument\n' >&2
     fi
 }
 
@@ -205,11 +221,12 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S %Z)T %-7s %s ' -1 "[$in_level]" "[${BASH_SOURCE[2]}:${BASH_LINENO[1]}]"
-            printf '%s\n' "$@"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
          fi
+         return 0
      else
-         printf '%(%Y-%m-%dT%H:%M:%S %Z)T %-7s %s ' -1 [WARN] "[${BASH_SOURCE[2]}:${BASH_LINENO[1]}] Unknown logger '$logger'"
+         printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
+         return 1
     fi
 }
 

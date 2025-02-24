@@ -1,0 +1,56 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  shellspec:
+    name: ShellSpec Tests
+    runs-on: ubuntu-latest
+    env:
+      log_folder_path: /tmp/test_logs
+      script_path: ${{ github.workspace }}/scripts
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq uuid-runtime
+        curl -fsSL https://git.io/shellspec | sh -s -- --yes
+        echo "${HOME}/.local/bin" >> $GITHUB_PATH
+        shellspec --version
+
+    - name: Setup Test Environment
+      run: |
+        mkdir -p "${log_folder_path}"
+        mkdir -p scripts/tfcloud
+        touch scripts/tfcloud/mock.sh
+
+    - name: Run Unit Tests
+      id: unit_tests
+      run: |
+        shellspec --format documentation --no-banner spec/unit/logger/logger_spec.sh
+
+    - name: Process Test Results
+      run: |
+        echo "### Test Results :test_tube:" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.unit_tests.outcome }}" == "success" ]; then
+          echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          .shellspec-report/
+          coverage/
+          /tmp/test_logs/
