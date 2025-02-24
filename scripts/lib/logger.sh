@@ -95,11 +95,12 @@ __set_text_log__() {
     export CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
     information "Detailed Logs @ $CURRENT_LOG_FILE"
     exec 3>&1 4>&2
+    LOG_TO_FILE=true
+    export LOG_TO_FILE
     echo "------------------------------------------------------------------------------------------------------"
     printf "STARTING LOG OUTPUT TO : %s\n" "$CURRENT_LOG_FILE"
     echo "------------------------------------------------------------------------------------------------------"
     exec 1>> $CURRENT_LOG_FILE 2>&1
-    export LOG_TO_FILE=true
 }
 
 __reset_log__() {
@@ -111,9 +112,8 @@ __reset_log__() {
     exec 2>&4 1>&3
     LOG_TO_FILE=false
     export LOG_TO_FILE
+    unset CURRENT_LOG_FILE TF_LOG_PATH
     [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
-    unset CURRENT_LOG_FILE
-    unset TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
 
