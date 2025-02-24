@@ -341,7 +341,6 @@ jobs:
         uses: actions/github-script@v7
         env:
           BUILD_BASE_RESULT: ${{ needs.build-base.result }}
-          BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
           TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
           MSDO_SCAN_RESULT: ${{ needs.msdo-scan.result }}
         with:
@@ -349,9 +348,45 @@ jobs:
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT;
-            const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
             const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
             const msdoScanResult = process.env.MSDO_SCAN_RESULT;
+            
+            // Get all agent build jobs
+            const agentJobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: context.runId
+            });
+            
+            const agentStatuses = {
+              github: { amd64: 'pending', arm64: 'pending' },
+              tfc: { amd64: 'pending', arm64: 'pending' },
+              gitlab: { amd64: 'pending', arm64: 'pending' },
+              azure_devops: { amd64: 'pending', arm64: 'pending' }
+            };
+            
+            // Parse agent build statuses
+            for (const job of agentJobs.data.jobs) {
+              if (job.name.startsWith('build-agents')) {
+                const match = job.name.match(/build-agents \((linux\/(amd64|arm64)), ([^)]+)\)/);
+                if (match) {
+                  const arch = match[2];
+                  const agent = match[3];
+                  agentStatuses[agent][arch] = job.conclusion || job.status;
+                }
+              }
+            }
+            
+            // Helper function to get status emoji
+            const getStatusEmoji = (agent) => {
+              const amd64Status = agentStatuses[agent].amd64;
+              const arm64Status = agentStatuses[agent].arm64;
+              
+              if (amd64Status === 'success' && arm64Status === 'success') return '✅';
+              if (amd64Status === 'pending' || arm64Status === 'pending') return '⏳';
+              if (amd64Status === 'success' || arm64Status === 'success') return '⚠️';
+              return '❌';
+            };
             
             const buildSummary = [
               '# Build & Security Report',
@@ -361,10 +396,10 @@ jobs:
               `- linux/arm64: ${buildBaseResult === 'success' ? '✅' : '❌'}`,
               '',
               '## Agent Builds',
-              `- github: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
-              `- tfc: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
-              `- gitlab: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
-              `- azure_devops: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
+              `- github: ${getStatusEmoji('github')} (amd64: ${agentStatuses.github.amd64}, arm64: ${agentStatuses.github.arm64})`,
+              `- tfc: ${getStatusEmoji('tfc')} (amd64: ${agentStatuses.tfc.amd64}, arm64: ${agentStatuses.tfc.arm64})`,
+              `- gitlab: ${getStatusEmoji('gitlab')} (amd64: ${agentStatuses.gitlab.amd64}, arm64: ${agentStatuses.gitlab.arm64})`,
+              `- azure_devops: ${getStatusEmoji('azure_devops')} (amd64: ${agentStatuses.azure_devops.amd64}, arm64: ${agentStatuses.azure_devops.arm64})`,
               '',
               '## Security Scans',
               `- Trivy vulnerability scanning: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
@@ -372,7 +407,8 @@ jobs:
               `- SARIF reports processed: ${trivyScanResult === 'success' && msdoScanResult === 'success' ? '✅' : '❌'}`,
               '',
               `Overall Status: ${buildBaseResult === 'success' && 
-                                buildAgentsResult === 'success' && 
+                                Object.values(agentStatuses).every(agent => 
+                                  Object.values(agent).every(status => status)) && 
                                 trivyScanResult === 'success' && 
                                 msdoScanResult === 'success' ? '✅' : '❌'}`
             ].join('\n');
