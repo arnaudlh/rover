@@ -38,9 +38,10 @@ Describe 'logger.sh'
       BeforeEach 'setup'
 
       It 'should throw an error and not create directory'
+        unset log_folder_path
         When call __log_init__
-        The error should eq ""
-        The output should include "creating directory $log_folder_path"
+        The error should include "Log folder path is not set"
+        The status should eq 1
       End
     End
   End
@@ -75,8 +76,10 @@ Describe 'logger.sh'
       It 'should respect log level hierarchy'
         When call set_log_severity "INFO"
         The variable "_loggers_level_map[default]" should eq "3"
+        
         When call log_debug "test message"
         The output should eq ""
+        
         When call log_info "test message"
         The output should include "test message"
       End
@@ -84,16 +87,22 @@ Describe 'logger.sh'
       It 'should allow logging at all defined levels'
         When call set_log_severity "VERBOSE"
         The variable "_loggers_level_map[default]" should eq "5"
+        
         When call log_verbose "verbose message"
         The output should include "verbose message"
+        
         When call log_debug "debug message"
         The output should include "debug message"
+        
         When call log_info "info message"
         The output should include "info message"
+        
         When call log_warn "warn message"
         The output should include "warn message"
+        
         When call log_error "error message"
         The output should include "error message"
+        
         When call log_fatal "fatal message"
         The output should include "fatal message"
       End
@@ -143,20 +152,20 @@ Describe 'logger.sh'
 
       It 'should format error messages with correct color'
         When call error_message "test error"
-        The output should include "\e[91m"
-        The output should include "\e[0m"
+        The output should include $'\e[91m'
+        The output should include $'\e[0m'
       End
 
       It 'should format warning messages with correct color'
         When call warning "test warning"
-        The output should include "\e[33m"
-        The output should include "\e[0m"
+        The output should include $'\e[33m'
+        The output should include $'\e[0m'
       End
 
       It 'should format success messages with correct color'
         When call success "test success"
-        The output should include "\e[32m"
-        The output should include "\e[0m"
+        The output should include $'\e[32m'
+        The output should include $'\e[0m'
       End
 
       It 'should include timestamp and level in log messages'
