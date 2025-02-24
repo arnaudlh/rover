@@ -74,18 +74,16 @@ Describe 'logger.sh'
       }
       BeforeEach 'setup'
 
-      Parameters:level=INFO level_value=3 message="test message"
-      Example "should respect log level hierarchy"
-        When call set_log_severity "$level"
-        The variable "_loggers_level_map[default]" should eq "$level_value"
+      Example "should respect INFO log level"
+        When call set_log_severity "INFO"
+        The variable "_loggers_level_map[default]" should eq "3"
       End
 
-      Parameters:level=VERBOSE level_value=5 message="test message"
-      Example "should allow logging at all defined levels"
-        When call set_log_severity "$level"
-        The variable "_loggers_level_map[default]" should eq "$level_value"
-        When call log_verbose "$message"
-        The output should include "$message"
+      Example "should respect VERBOSE log level"
+        When call set_log_severity "VERBOSE"
+        The variable "_loggers_level_map[default]" should eq "5"
+        When call log_verbose "test message"
+        The output should include "test message"
       End
     End
   End

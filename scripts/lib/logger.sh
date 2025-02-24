@@ -45,7 +45,8 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        error "0" "Log folder path is not set" 1
+        error_message "Error: Log folder path is not set"
+        return 1
     fi
 
     __create_dir__ "$log_folder_path"
@@ -154,7 +155,8 @@ export_tf_environment_variables() {
       isAutomation=true
       ;;
     *)
-      error 0 "Uknown serverity"
+      error_message "Error: Unknown log level"
+      return 1
       ;;
   esac
 
