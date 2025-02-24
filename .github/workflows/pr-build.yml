@@ -283,23 +283,16 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: ${{ env.TRIVY_RESULTS_DIR }}/base.sarif
+          output: base.sarif
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
-          artifact-type: 'container_image'
           
-      - name: Debug SARIF files
-        run: |
-          echo "Base SARIF file:"
-          ls -la ${{ env.TRIVY_RESULTS_DIR }}/base.sarif || echo "Base SARIF file not found"
-          cat ${{ env.TRIVY_RESULTS_DIR }}/base.sarif || echo "Cannot read base SARIF file"
-
       - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: ${{ env.TRIVY_RESULTS_DIR }}/base.sarif
+          sarif_file: base.sarif
           category: 'Trivy-Base-${{ matrix.platform }}'
           wait-for-processing: true
           
@@ -309,23 +302,16 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif
+          output: agents.sarif
           severity: 'CRITICAL,HIGH'
           list-all-pkgs: true
           scanners: 'vuln,secret,config'
-          artifact-type: 'container_image'
           
-      - name: Debug agent SARIF files
-        run: |
-          echo "Agent SARIF file:"
-          ls -la ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif || echo "Agent SARIF file not found"
-          cat ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif || echo "Cannot read agent SARIF file"
-
       - name: Upload agent scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: ${{ env.TRIVY_RESULTS_DIR }}/agents.sarif
+          sarif_file: agents.sarif
           category: 'Trivy-Agents-${{ matrix.platform }}-${{ matrix.agent }}'
           wait-for-processing: true
 
