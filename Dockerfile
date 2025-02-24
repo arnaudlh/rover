@@ -418,14 +418,20 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Clean up
+# Clean up with retries
 RUN set -ex && \
-    apt-get remove -y \
-        gcc \
-        python3-dev \
-        apt-utils && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /tmp/* && \
-    rm -rf /var/lib/apt/lists/* && \
-    find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+    for i in {1..3}; do \
+        if apt-get remove -y \
+            gcc \
+            python3-dev \
+            apt-utils && \
+           apt-get autoremove -y && \
+           apt-get clean && \
+           rm -rf /tmp/* && \
+           rm -rf /var/lib/apt/lists/* && \
+           find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done
