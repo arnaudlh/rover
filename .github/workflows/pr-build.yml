@@ -269,11 +269,15 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           categories: IaC
           tools: terrascan,tfsec,checkov
           workspace: ${{ github.workspace }}
           upload-results: true
+          break-on-failure: false
+          skip-publish: false
 
 
   trivy-scan:
@@ -335,6 +339,9 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ github.token }}
         with:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.arch) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.arch) }}
@@ -347,7 +354,7 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
-          github-pat: ${{ github.token }}
+          security-checks: 'vuln'
 
       - name: Debug SARIF files
         run: |
