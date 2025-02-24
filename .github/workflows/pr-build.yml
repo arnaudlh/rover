@@ -252,13 +252,9 @@ jobs:
         uses: microsoft/security-devops-action@v1
         continue-on-error: true
         with:
-          command: analyze
           categories: IaC
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
-          workspace: ${{ github.workspace }}
-          break-on-failure: false
-          output: msdo-results.sarif
           includeTools: true
 
 
