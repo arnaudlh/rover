@@ -217,6 +217,33 @@ RUN set -ex && \
 
 # Install Terraform and HashiCorp tools with retries
 RUN set -ex && \
+    # Install tfupdate with retries
+    for i in {1..3}; do \
+        if [ "${TARGETARCH}" = "amd64" ]; then \
+            curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_amd64.tar.gz && \
+            tar -xf tfupdate.tar.gz tfupdate && \
+            install tfupdate /usr/local/bin && \
+            rm tfupdate.tar.gz tfupdate; \
+        else \
+            curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_${TARGETARCH}.tar.gz && \
+            tar -xf tfupdate.tar.gz tfupdate && \
+            install tfupdate /usr/local/bin && \
+            rm tfupdate.tar.gz tfupdate; \
+        fi && \
+        tfupdate --version || true && break; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install terraform-docs with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v${versionTerraformDocs}/terraform-docs-v${versionTerraformDocs}-${TARGETOS}-${TARGETARCH}.tar.gz && \
+           tar -zxf /tmp/terraform-docs.tar.gz --directory=/usr/bin && \
+           chmod +x /usr/bin/terraform-docs; then \
+            terraform-docs --version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
     # Install PowerShell with retries
     for i in {1..3}; do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
