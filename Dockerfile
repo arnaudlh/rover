@@ -77,6 +77,7 @@ RUN set -ex && \
 
 # Install additional packages
 RUN set -ex && \
+    export ARCH=$(dpkg --print-architecture) && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         docker-ce-cli \
@@ -92,7 +93,9 @@ RUN set -ex && \
     gh --version || true && \
     # Cleanup
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Verify architecture
+    echo "Architecture: ${ARCH}"
 
 # Install tools
 RUN set -ex && \
