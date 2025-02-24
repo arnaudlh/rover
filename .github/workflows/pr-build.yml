@@ -270,11 +270,9 @@ jobs:
         id: msdo
         continue-on-error: true
         with:
-          command: run
           categories: IaC
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
-          policy: recommended
 
 
   trivy-scan:
@@ -340,7 +338,7 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.arch) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.arch) }}
           format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
+          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -351,7 +349,7 @@ jobs:
       - name: Debug SARIF files
         run: |
           ls -la
-          sarif_file="${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}"
+          sarif_file="${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}"
           echo "Looking for SARIF file: $sarif_file"
           if [ -f "$sarif_file" ]; then
             echo "Found SARIF file:"
@@ -365,7 +363,7 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}
           category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.arch) || format('trivy-agents-{0}-{1}', matrix.agent, matrix.arch) }}
           wait-for-processing: true
 
