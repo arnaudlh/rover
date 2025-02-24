@@ -252,10 +252,9 @@ jobs:
         uses: microsoft/security-devops-action@v1
         continue-on-error: true
         with:
-          categories: containers,IaC
-          tools: trivy,terrascan,tfsec,checkov
+          categories: IaC
+          tools: terrascan,tfsec,checkov
           config: msdo.yaml
-          policy: Microsoft
 
 
   trivy-scan:
@@ -321,12 +320,8 @@ jobs:
       - name: Debug SARIF files
         run: |
           ls -la
-          echo "Base image SARIF file contents:"
-          cat trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Base image SARIF file not found"
-          if [[ "${{ matrix.platform }}" != "linux/arm64" || "${{ matrix.agent }}" != "tfc" ]]; then
-            echo "Agent SARIF file contents:"
-            cat trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Agent SARIF file not found"
-          fi
+          echo "SARIF file contents:"
+          cat trivy-results.sarif || echo "SARIF file not found"
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
