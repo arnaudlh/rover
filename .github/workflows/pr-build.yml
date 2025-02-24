@@ -163,6 +163,9 @@ jobs:
           provenance: false
           sbom: false
           build-args: |
+            REGISTRY=${{ env.REGISTRY }}
+            GITHUB_REPOSITORY=${{ github.repository }}
+            GITHUB_SHA=${{ github.sha }}
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
             USERNAME=vscode
