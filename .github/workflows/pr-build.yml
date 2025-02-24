@@ -50,6 +50,9 @@ jobs:
       - id: agents
         run: |
           echo "matrix=[\"github\", \"tfc\", \"gitlab\", \"azure_devops\"]" >> $GITHUB_OUTPUT
+      - id: exclude
+        run: |
+          echo "matrix=[{\"platform\":\"linux/arm64\",\"agent\":\"tfc\"}]" >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
