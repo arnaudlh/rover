@@ -213,7 +213,7 @@ jobs:
 
           
   build-report:
-    needs: [build-base, build-agents, msdo-scan]
+    needs: [build-base, build-agents]
     permissions:
       checks: write
       pull-requests: write
