@@ -54,6 +54,14 @@ jobs:
   build-base:
     needs: matrix-prep
     runs-on: ubuntu-latest
+    outputs:
+      github_runner: ${{ steps.versions.outputs.github_runner }}
+      azdo: ${{ steps.versions.outputs.azdo }}
+      tfc: ${{ steps.versions.outputs.tfc }}
+      docker_compose: ${{ steps.versions.outputs.docker_compose }}
+      golang: ${{ steps.versions.outputs.golang }}
+      ansible: ${{ steps.versions.outputs.ansible }}
+      azure_cli: ${{ steps.versions.outputs.azure_cli }}
     strategy:
       matrix:
         platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
@@ -84,6 +92,23 @@ jobs:
             type=sha,prefix=pr-
             type=ref,event=pr
 
+      - name: Parse versions
+        id: versions
+        run: |
+          echo "vault=$(./scripts/parse_versions.sh tool vault)" >> $GITHUB_OUTPUT
+          echo "golang=$(./scripts/parse_versions.sh tool golang)" >> $GITHUB_OUTPUT
+          echo "kubectl=$(./scripts/parse_versions.sh tool kubectl)" >> $GITHUB_OUTPUT
+          echo "kubelogin=$(./scripts/parse_versions.sh tool kubelogin)" >> $GITHUB_OUTPUT
+          echo "docker_compose=$(./scripts/parse_versions.sh tool docker_compose)" >> $GITHUB_OUTPUT
+          echo "terraform_docs=$(./scripts/parse_versions.sh tool terraform_docs)" >> $GITHUB_OUTPUT
+          echo "packer=$(./scripts/parse_versions.sh tool packer)" >> $GITHUB_OUTPUT
+          echo "powershell=$(./scripts/parse_versions.sh tool powershell)" >> $GITHUB_OUTPUT
+          echo "ansible=$(./scripts/parse_versions.sh tool ansible)" >> $GITHUB_OUTPUT
+          echo "azure_cli=$(./scripts/parse_versions.sh tool azure_cli)" >> $GITHUB_OUTPUT
+          echo "terrascan=$(./scripts/parse_versions.sh tool terrascan)" >> $GITHUB_OUTPUT
+          echo "tfupdate=$(./scripts/parse_versions.sh tool tfupdate)" >> $GITHUB_OUTPUT
+          echo "terraform=$(./scripts/parse_versions.sh terraform | head -n1)" >> $GITHUB_OUTPUT
+
       - name: Build and push
         id: build
         uses: docker/build-push-action@v5
@@ -113,20 +138,19 @@ jobs:
             USER_UID=1000
             USER_GID=1000
             USERNAME=vscode
-            versionVault=$(./scripts/parse_versions.sh tool vault)
-            versionGolang=$(./scripts/parse_versions.sh tool golang)
-            versionKubectl=$(./scripts/parse_versions.sh tool kubectl)
-            versionKubelogin=$(./scripts/parse_versions.sh tool kubelogin)
-            versionDockerCompose=$(./scripts/parse_versions.sh tool docker_compose)
-            versionTerraformDocs=$(./scripts/parse_versions.sh tool terraform_docs)
-            versionPacker=$(./scripts/parse_versions.sh tool packer)
-            versionPowershell=$(./scripts/parse_versions.sh tool powershell)
-            versionAnsible=$(./scripts/parse_versions.sh tool ansible)
-            extensionsAzureCli=$(./scripts/parse_versions.sh tool azure_cli)
-            versionTerrascan=$(./scripts/parse_versions.sh tool terrascan)
-            versionTfupdate=$(./scripts/parse_versions.sh tool tfupdate)
-            versionTerraform=$(./scripts/parse_versions.sh terraform | head -n1)
-          
+            versionVault=${{ steps.versions.outputs.vault }}
+            versionGolang=${{ steps.versions.outputs.golang }}
+            versionKubectl=${{ steps.versions.outputs.kubectl }}
+            versionKubelogin=${{ steps.versions.outputs.kubelogin }}
+            versionDockerCompose=${{ steps.versions.outputs.docker_compose }}
+            versionTerraformDocs=${{ steps.versions.outputs.terraform_docs }}
+            versionPacker=${{ steps.versions.outputs.packer }}
+            versionPowershell=${{ steps.versions.outputs.powershell }}
+            versionAnsible=${{ steps.versions.outputs.ansible }}
+            extensionsAzureCli=${{ steps.versions.outputs.azure_cli }}
+            versionTerrascan=${{ steps.versions.outputs.terrascan }}
+            versionTfupdate=${{ steps.versions.outputs.tfupdate }}
+            versionTerraform=${{ steps.versions.outputs.terraform }}
       - name: Move cache
         if: always()
         run: |
@@ -189,14 +213,14 @@ jobs:
             TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
             TARGETOS=linux
             USERNAME=vscode
-            versionGithubRunner=$(./scripts/parse_versions.sh tool github_runner)
-            versionAzdo=$(./scripts/parse_versions.sh tool azdo)
-            versionTfc=$(./scripts/parse_versions.sh tool tfc)
-            versionDockerCompose=$(./scripts/parse_versions.sh tool docker_compose)
-            versionGolang=$(./scripts/parse_versions.sh tool golang)
-            versionAnsible=$(./scripts/parse_versions.sh tool ansible)
-            extensionsAzureCli=$(./scripts/parse_versions.sh tool azure_cli)
-          
+            versionGithubRunner=${{ needs.build-base.outputs.github_runner }}
+            versionAzdo=${{ needs.build-base.outputs.azdo }}
+            versionTfc=${{ needs.build-base.outputs.tfc }}
+            versionDockerCompose=${{ needs.build-base.outputs.docker_compose }}
+            versionGolang=${{ needs.build-base.outputs.golang }}
+            versionAnsible=${{ needs.build-base.outputs.ansible }}
+            extensionsAzureCli=${{ needs.build-base.outputs.azure_cli }}
+
   trivy-scan:
     needs: [build-base, build-agents]
     runs-on: ubuntu-latest
