@@ -168,22 +168,20 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: linux/amd64
-            agent: github
-          - platform: linux/amd64
-            agent: tfc
-          - platform: linux/amd64
-            agent: gitlab
-          - platform: linux/amd64
-            agent: azure_devops
-          - platform: linux/arm64
-            agent: github
-          - platform: linux/arm64
-            agent: gitlab
-          - platform: linux/arm64
-            agent: azure_devops
+          - { platform: 'linux/amd64', agent: 'github' }
+          - { platform: 'linux/amd64', agent: 'tfc' }
+          - { platform: 'linux/amd64', agent: 'gitlab' }
+          - { platform: 'linux/amd64', agent: 'azure_devops' }
+          - { platform: 'linux/arm64', agent: 'github' }
+          - { platform: 'linux/arm64', agent: 'gitlab' }
+          - { platform: 'linux/arm64', agent: 'azure_devops' }
       fail-fast: false
     if: ${{ !(matrix.platform == 'linux/arm64' && matrix.agent == 'tfc') }}
+    env:
+      BUILDKIT_PROGRESS: plain
+      BUILDKIT_COLORS: 1
+      BUILDKIT_STEP_LOG_MAX_SIZE: 10485760
+      BUILDKIT_STEP_LOG_MAX_SPEED: 10485760
     steps:
       - name: Checkout
         uses: actions/checkout@v4
