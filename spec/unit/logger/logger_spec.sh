@@ -85,6 +85,10 @@ Describe 'logger.sh'
       Example "should respect VERBOSE log level"
         When call set_log_severity "VERBOSE"
         The variable "_loggers_level_map[default]" should eq "5"
+      End
+
+      Example "should log verbose messages"
+        When call set_log_severity "VERBOSE"
         When call log_verbose "test message"
         The output should include "test message"
       End
