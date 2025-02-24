@@ -53,7 +53,8 @@ RUN set -ex && \
         zsh \
         zip && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /var/lib/apt/lists/partial
 
 # Set up repositories
 RUN set -ex && \
