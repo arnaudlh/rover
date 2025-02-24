@@ -275,7 +275,7 @@ jobs:
           output: trivy-results-${{ matrix.platform }}.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          exit-code: '0'
+          exit-code: 0
 
       - name: Debug SARIF file
         run: |
