@@ -45,7 +45,7 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        >&2 echo "Error line:0: message:Log folder path is not set status :1"
+        error "0" "Log folder path is not set" 1
         return 1
     fi
 
@@ -108,9 +108,9 @@ __reset_log__() {
     printf "STOPPING LOG OUTPUT TO : %s\n" "$current_log"
     echo "------------------------------------------------------------------------------------------------------"
     exec 2>&4 1>&3
-    unset CURRENT_LOG_FILE TF_LOG_PATH
     LOG_TO_FILE=false
     export LOG_TO_FILE
+    unset CURRENT_LOG_FILE TF_LOG_PATH
     [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
@@ -214,9 +214,8 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            local timestamp
-            timestamp=$(printf '%(%Y-%m-%dT%H:%M:%S)T' -1)
-            printf '%s UTC [%s] [%s] %s\n' "$timestamp" "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
+            printf ' [%s] [%s] %s\n' "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
