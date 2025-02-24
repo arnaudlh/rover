@@ -57,10 +57,8 @@ __log_init__() {
         return 1
     fi
 
-    if [ ! -d "$log_folder_path" ]; then
-        if [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-            __create_dir__ "$log_folder_path"
-        fi
+    if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
+        __create_dir__ "$log_folder_path"
     fi
 
 }
@@ -170,7 +168,7 @@ export_tf_environment_variables() {
       ;;
     *)
       error "0" "Unknown log level" 1
-      exit 1
+      return 1
       ;;
   esac
 
@@ -221,7 +219,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*" >&1
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"

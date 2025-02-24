@@ -21,10 +21,8 @@ Describe 'logger.sh'
         export TEST_DEBUG_CREATE_DIR=false
         return ${code}
     }
-    __create_dir__ (){
-      if [ "$TEST_DEBUG_CREATE_DIR" == "true" ]; then
+    __create_dir__() {
         printf "creating directory %s\n" "$1"
-      fi
     }
 
     Context "Log Path Not Set"
