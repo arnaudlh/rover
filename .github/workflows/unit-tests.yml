@@ -12,14 +12,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install ShellSpec
+    - name: Install Dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install -y jq uuid-runtime
         curl -fsSL https://git.io/shellspec | sh -s -- --yes
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
+    - name: Setup Test Environment
+      run: |
+        mkdir -p /tmp/test_logs
+        export log_folder_path="/tmp/test_logs"
+
     - name: Run Unit Tests
       run: |
-        shellspec --format documentation
+        export log_folder_path="/tmp/test_logs"
+        shellspec --format documentation spec/unit/logger/logger_spec.sh
 
     - name: Upload Test Results
       if: always()
@@ -29,6 +37,7 @@ jobs:
         path: |
           .shellspec-report/
           coverage/
+          /tmp/test_logs/
 
     - name: Microsoft Security DevOps
       uses: microsoft/security-devops-action@v1
