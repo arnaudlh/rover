@@ -445,23 +445,29 @@ jobs:
               name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: buildBaseResult === 'success' && 
-                         Object.values(agentStatuses).every(agent => 
-                           Object.values(agent).every(status => 
-                             status === 'success' || status === 'n/a'
-                           )
-                         ) && 
-                         trivyScanResult === 'success' && 
-                         msdoScanResult === 'success' ? 'success' : 'failure',
+              conclusion: (() => {
+                const agentSuccess = Object.values(agentStatuses).every(agent => 
+                  Object.values(agent).every(status => 
+                    status === 'success' || status === 'n/a'
+                  )
+                );
+                return buildBaseResult === 'success' && 
+                       agentSuccess && 
+                       trivyScanResult === 'success' && 
+                       msdoScanResult === 'success' ? 'success' : 'failure';
+              })(),
               output: {
-                title: `Build Report ${buildBaseResult === 'success' && 
-                                    Object.values(agentStatuses).every(agent => 
-                                      Object.values(agent).every(status => 
-                                        status === 'success' || status === 'n/a'
-                                      )
-                                    ) && 
-                                    trivyScanResult === 'success' && 
-                                    msdoScanResult === 'success' ? '✅' : '❌'}`,
+                title: (() => {
+                  const agentSuccess = Object.values(agentStatuses).every(agent => 
+                    Object.values(agent).every(status => 
+                      status === 'success' || status === 'n/a'
+                    )
+                  );
+                  return `Build Report ${buildBaseResult === 'success' && 
+                                      agentSuccess && 
+                                      trivyScanResult === 'success' && 
+                                      msdoScanResult === 'success' ? '✅' : '❌'}`;
+                })()`,
                 summary: buildSummary
               }
             });
