@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  shellspec:
+    name: ShellSpec Tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -15,7 +16,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y jq uuid-runtime
+        sudo apt-get install -y jq uuid-runtime kcov
         curl -fsSL https://git.io/shellspec | sh -s -- --yes
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
@@ -28,13 +29,35 @@ jobs:
         export script_path="$(pwd)/scripts"
 
     - name: Run Unit Tests
+      id: unit_tests
       run: |
         export log_folder_path="/tmp/test_logs"
-        shellspec --format documentation spec/unit/logger/logger_spec.sh
+        shellspec --format documentation --no-banner spec/unit/logger/logger_spec.sh
+      continue-on-error: true
 
     - name: Generate Coverage Report
+      id: coverage
       run: |
         shellspec --coverage --kcov-options "--include-path=scripts/lib" spec/unit/logger/logger_spec.sh
+      continue-on-error: true
+
+    - name: Process Test Results
+      run: |
+        echo "### Test Results :test_tube:" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.unit_tests.outcome }}" == "success" ]; then
+          echo "✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        
+        echo "### Coverage Report :chart_with_upwards_trend:" >> $GITHUB_STEP_SUMMARY
+        if [ -f "coverage/index.html" ]; then
+          COVERAGE=$(grep -oP 'Total:\s+\K[0-9]+%' coverage/index.html || echo "N/A")
+          echo "Code Coverage: $COVERAGE" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "Coverage report not generated" >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Upload Test Results
       if: always()
