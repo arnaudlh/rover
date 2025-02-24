@@ -60,24 +60,22 @@ RUN set -ex && \
 
 # Set up package repositories
 RUN set -ex && \
-    export ARCH=$(dpkg --print-architecture) && \
     # Microsoft repository
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-    echo "deb [arch=${ARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+    echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
     # Docker repository
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+    echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
     # Kubernetes repository
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-    echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+    echo "deb [arch=${TARGETARCH}] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
     # GitHub CLI repository
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
-    echo "deb [arch=${ARCH} signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
+    echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
 
 # Install additional packages
 RUN set -ex && \
-    export ARCH=$(case ${TARGETARCH} in amd64) echo "amd64" ;; arm64) echo "arm64" ;; *) echo "unsupported" ;; esac) && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         docker-ce-cli \
@@ -95,7 +93,7 @@ RUN set -ex && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # Verify architecture
-    echo "Target Architecture: ${TARGETARCH}, Mapped Architecture: ${ARCH}"
+    echo "Target Architecture: ${TARGETARCH}"
 
 # Install tools
 RUN set -ex && \
