@@ -401,16 +401,22 @@ RUN set -ex && \
     echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME}
 
-# Configure shell
+# Configure shell with retries
 RUN set -ex && \
-    mkdir /commandhistory && \
-    touch /commandhistory/.bash_history && \
-    chown -R ${USERNAME} /commandhistory && \
-    echo "set -o history" >> "/home/${USERNAME}/.bashrc" && \
-    echo "export HISTCONTROL=ignoredups:erasedups" >> "/home/${USERNAME}/.bashrc" && \
-    echo 'PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"' >> "/home/${USERNAME}/.bashrc" && \
-    echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >> "/home/${USERNAME}/.bashrc" && \
-    echo 'alias watch="watch "' >> "/home/${USERNAME}/.bashrc"
+    for i in {1..3}; do \
+        if mkdir -p /commandhistory && \
+           touch /commandhistory/.bash_history && \
+           chown -R ${USERNAME} /commandhistory && \
+           echo "set -o history" >> "/home/${USERNAME}/.bashrc" && \
+           echo "export HISTCONTROL=ignoredups:erasedups" >> "/home/${USERNAME}/.bashrc" && \
+           echo 'PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"' >> "/home/${USERNAME}/.bashrc" && \
+           echo "[ -f /tf/rover/.kubectl_aliases ] && source /tf/rover/.kubectl_aliases" >> "/home/${USERNAME}/.bashrc" && \
+           echo 'alias watch="watch "' >> "/home/${USERNAME}/.bashrc"; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done
 
 # Clean up
 RUN set -ex && \
