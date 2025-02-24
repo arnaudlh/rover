@@ -248,7 +248,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        include:
+          - platform: linux/amd64
+            agent: github
+          - platform: linux/amd64
+            agent: tfc
+          - platform: linux/amd64
+            agent: gitlab
+          - platform: linux/amd64
+            agent: azure_devops
+          - platform: linux/arm64
+            agent: github
+          - platform: linux/arm64
+            agent: gitlab
+          - platform: linux/arm64
+            agent: azure_devops
       fail-fast: false
     steps:
       - name: Run Trivy scan for base image
@@ -264,7 +278,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: 'trivy-results-base-${{ matrix.platform }}.sarif'
+          sarif_file: trivy-results-base-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}.sarif
           category: 'Trivy-Base-${{ matrix.platform }}'
           wait-for-processing: true
           
@@ -281,7 +295,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: 'trivy-results-agents-${{ matrix.platform }}.sarif'
+          sarif_file: trivy-results-agents-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}.sarif
           category: 'Trivy-Agents-${{ matrix.platform }}'
           wait-for-processing: true
 
