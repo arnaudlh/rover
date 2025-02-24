@@ -27,8 +27,9 @@ RUN mkdir -p /home/${USERNAME}/agent && \
     else \
         curl -L -o /tmp/agent_package.tar.gz https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-arm64-${versionAzdo}.tar.gz; \
     fi && \
-    tar zxf /tmp/agent_package.tar.gz && \
+    tar xzf /tmp/agent_package.tar.gz && \
     rm /tmp/agent_package.tar.gz && \
+    sudo DEBIAN_FRONTEND=noninteractive ./bin/installdependencies.sh && \
     sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
 
 COPY ./agents/azure_devops/azdo.sh /home/${USERNAME}/agent/

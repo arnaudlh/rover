@@ -28,7 +28,8 @@ RUN mkdir -p /home/${USERNAME}/agent && \
     fi && \
     tar xzf /tmp/github-runner.tar.gz && \
     rm /tmp/github-runner.tar.gz && \
-    sudo ./bin/installdependencies.sh
+    sudo DEBIAN_FRONTEND=noninteractive ./bin/installdependencies.sh && \
+    sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
 
 COPY ./agents/github/github.sh /home/${USERNAME}/agent/
 RUN chmod +x /home/${USERNAME}/agent/github.sh

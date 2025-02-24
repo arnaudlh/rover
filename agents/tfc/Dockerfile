@@ -23,11 +23,12 @@ ENV TFC_AGENT_TOKEN="" \
 RUN mkdir -p /home/${USERNAME}/agent && \
     cd /home/${USERNAME}/agent && \
     curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_${TARGETARCH}.zip && \
-    sudo mkdir -p /usr/bin && \
-    sudo unzip -d /usr/bin /tmp/tfc-agent.zip && \
+    sudo mkdir -p /usr/local/bin && \
+    sudo unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
     rm /tmp/tfc-agent.zip && \
-    sudo chmod +x /usr/bin/tfc-agent /usr/bin/tfc-agent-core && \
-    mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data}
+    sudo chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
+    mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
+    sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
 
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-plan
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-apply
