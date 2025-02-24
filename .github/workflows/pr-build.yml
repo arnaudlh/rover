@@ -126,10 +126,11 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }},mode=max,sharing=private
-            type=gha,scope=main-${{ matrix.platform }},mode=max,sharing=locked
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }},compression=zstd,sharing=private
-          outputs: type=registry,compression=zstd
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }},mode=max
+            type=gha,scope=main-${{ matrix.platform }},mode=max
+          cache-to: |
+            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+          outputs: type=registry,compression=zstd,force-compression=true
           provenance: false
           sbom: false
           build-args: |
@@ -198,9 +199,10 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max,sharing=private
-            type=gha,scope=main-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max,sharing=locked
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }},compression=zstd
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max
+            type=gha,scope=main-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max
+          cache-to: |
+            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }}
           outputs: type=registry,compression=zstd,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
