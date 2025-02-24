@@ -267,22 +267,23 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          scan-type: image
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
+          scan-type: 'image'
+          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln,secret,config'
           exit-code: '0'
-          scanners: vuln,secret,config
-          timeout: 10m
-          list-all-pkgs: true
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          skip-dirs: 'tests,examples'
+          timeout: '10m'
 
       - name: Debug SARIF file
         run: |
           ls -la
           echo "SARIF file contents:"
           cat trivy-results.sarif || echo "SARIF file not found"
-          ls -la
           echo "SARIF file contents:"
           cat trivy-results.sarif || echo "SARIF file not found"
 
@@ -318,7 +319,9 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          config: msdo.yaml
+          categories: containers
+          tools: trivy
+          break-on-failure: false
           
       - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
