@@ -98,9 +98,9 @@ __set_text_log__() {
     echo "------------------------------------------------------------------------------------------------------"
     printf "STARTING LOG OUTPUT TO : %s\n" "$CURRENT_LOG_FILE"
     echo "------------------------------------------------------------------------------------------------------"
-    exec 1>> $CURRENT_LOG_FILE 2>&1
     LOG_TO_FILE=true
     export LOG_TO_FILE
+    exec 1>> $CURRENT_LOG_FILE 2>&1
 }
 
 __reset_log__() {
@@ -109,11 +109,11 @@ __reset_log__() {
     printf "STOPPING LOG OUTPUT TO : %s\n" "$current_log"
     echo "------------------------------------------------------------------------------------------------------"
     exec 2>&4 1>&3
+    unset CURRENT_LOG_FILE
+    unset TF_LOG_PATH
     LOG_TO_FILE=false
     export LOG_TO_FILE
     [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
-    unset CURRENT_LOG_FILE
-    unset TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
 
