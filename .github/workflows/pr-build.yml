@@ -295,8 +295,6 @@ jobs:
           category: 'trivy'
           wait-for-processing: true
 
-
-
   build-report:
     needs: [build-base, build-agents, trivy-scan]
     permissions:
@@ -306,6 +304,8 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - uses: actions/checkout@v4
+      
       - name: Generate build report
         uses: actions/github-script@v7
         env:
