@@ -310,25 +310,28 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
-            const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            const status = needs.build-base.result === 'success' && 
+                          needs.build-agents.result === 'success' && 
+                          needs.trivy-scan.result === 'success' && 
+                          needs.msdo-scan.result === 'success' ? '✅' : '❌';
             
             const buildSummary = [
               '# Build & Security Report',
               '',
               '## Base Image Builds',
-              '- linux/amd64',
-              '- linux/arm64',
+              `- linux/amd64: ${needs.build-base.result === 'success' ? '✅' : '❌'}`,
+              `- linux/arm64: ${needs.build-base.result === 'success' ? '✅' : '❌'}`,
               '',
               '## Agent Builds',
-              '- github',
-              '- tfc',
-              '- gitlab',
-              '- azure_devops',
+              `- github: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
+              `- tfc: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
+              `- gitlab: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
+              `- azure_devops: ${needs.build-agents.result === 'success' ? '✅' : '❌'}`,
               '',
               '## Security Scans',
-              '- Trivy vulnerability scanning complete',
-              '- MSDO security analysis complete',
-              '- SARIF reports processed',
+              `- Trivy vulnerability scanning: ${needs.trivy-scan.result === 'success' ? '✅' : '❌'}`,
+              `- MSDO security analysis: ${needs.msdo-scan.result === 'success' ? '✅' : '❌'}`,
+              `- SARIF reports processed: ${needs.trivy-scan.result === 'success' && needs.msdo-scan.result === 'success' ? '✅' : '❌'}`,
               '',
               `Overall Status: ${status}`
             ].join('\n');
@@ -348,7 +351,7 @@ jobs:
               name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: '${{ job.status }}' === 'success' ? 'success' : 'failure',
+              conclusion: status === '✅' ? 'success' : 'failure',
               output: {
                 title: `Build Report ${status}`,
                 summary: buildSummary
