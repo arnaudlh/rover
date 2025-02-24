@@ -217,6 +217,15 @@ RUN set -ex && \
 
 # Install shell tools with retries
 RUN set -ex && \
+    # Install kubectl-node_shell with retries
+    for i in {1..3}; do \
+        if curl -L0 -o /usr/local/bin/kubectl-node_shell https://github.com/kvaps/kubectl-node-shell/raw/master/kubectl-node_shell && \
+           chmod +x /usr/local/bin/kubectl-node_shell; then \
+            kubectl-node_shell --help || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
     # Install git bash completion with retries
     for i in {1..3}; do \
         if mkdir -p /etc/bash_completion.d/ && \
