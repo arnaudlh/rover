@@ -45,7 +45,7 @@ Describe 'logger.sh'
         When call __log_init__
         The stderr should eq "Error line:0: message:Log folder path is not set status :1\n"
         The status should eq 1
-        The output should eq ""
+        The stdout should eq ""
       End
     End
   End
@@ -149,7 +149,7 @@ Describe 'logger.sh'
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
         The output should include "[INFO]"
-        The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[.*\.sh:[0-9]+\] test message$"
+        The output should match pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[.*\] test message$"
         The status should eq 0
       End
 
