@@ -252,10 +252,10 @@ jobs:
         uses: microsoft/security-devops-action@v1
         continue-on-error: true
         with:
-          categories: IaC,containers
-          tools: terrascan,tfsec,checkov,trivy
+          categories: IaC
+          tools: terrascan,tfsec,checkov
           config: msdo.yaml
-          policy: security
+          policy: recommended
 
 
   trivy-scan:
@@ -320,6 +320,7 @@ jobs:
           list-all-pkgs: true
           scanners: 'vuln'
           vuln-type: 'os,library'
+          artifact-type: 'container_image'
 
       - name: Debug SARIF files
         run: |
