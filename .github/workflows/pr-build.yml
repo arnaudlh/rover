@@ -320,11 +320,6 @@ jobs:
             platform: linux/arm64
             arch: arm64
             agent: azure_devops
-        exclude:
-          - type: agent
-            platform: linux/arm64
-            arch: arm64
-            agent: tfc
       fail-fast: false
     continue-on-error: true
     steps:
@@ -344,7 +339,7 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.arch) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.arch) }}
           format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}
+          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -369,8 +364,8 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}
-          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.platform) || format('trivy-agents-{0}-{1}', matrix.agent, matrix.platform) }}
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
+          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.arch) || format('trivy-agents-{0}-{1}', matrix.agent, matrix.arch) }}
           wait-for-processing: true
 
   build-report:
