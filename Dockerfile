@@ -215,6 +215,54 @@ RUN set -ex && \
         sleep 5; \
     done
 
+# Install Terraform tools with retries
+RUN set -ex && \
+    # Install tflint with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/latest/download/tflint_${TARGETOS}_${TARGETARCH}.zip && \
+           unzip -d /usr/bin /tmp/tflint.zip && \
+           chmod +x /usr/bin/tflint; then \
+            tflint --version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install terrascan with retries
+    for i in {1..3}; do \
+        if [ "${TARGETARCH}" = "amd64" ]; then \
+            curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz; \
+        else \
+            curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_${TARGETARCH}.tar.gz; \
+        fi && \
+        tar -xf terrascan.tar.gz terrascan && \
+        install terrascan /usr/local/bin && \
+        rm terrascan.tar.gz terrascan && \
+        terrascan version || true && \
+        break; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install tfsec with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /bin/tfsec https://github.com/tfsec/tfsec/releases/latest/download/tfsec-${TARGETOS}-${TARGETARCH} && \
+           chmod +x /bin/tfsec; then \
+            tfsec --version || true && break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install tflint-ruleset-azurerm with retries
+    for i in {1..3}; do \
+        if curl -sSL -o /tmp/tflint-ruleset-azurerm.zip https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/latest/download/tflint-ruleset-azurerm_${TARGETOS}_${TARGETARCH}.zip && \
+           mkdir -p /home/${USERNAME}/.tflint.d/plugins /home/${USERNAME}/.tflint.d/config && \
+           echo "plugin \"azurerm\" {\n    enabled = true\n}" > /home/${USERNAME}/.tflint.d/config/.tflint.hcl && \
+           unzip -d /home/${USERNAME}/.tflint.d/plugins /tmp/tflint-ruleset-azurerm.zip; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done
+
 # Set up user and permissions
 RUN set -ex && \
     groupadd docker && \
