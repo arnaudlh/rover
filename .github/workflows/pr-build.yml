@@ -370,6 +370,7 @@ jobs:
           BUILD_BASE_RESULT: ${{ needs.build-base.result }}
           BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
           TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
+          MSDO_SCAN_RESULT: ${{ needs.msdo-scan.result }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -377,6 +378,7 @@ jobs:
             const buildBaseResult = process.env.BUILD_BASE_RESULT;
             const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
             const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
+            const msdoScanResult = process.env.MSDO_SCAN_RESULT;
 
             
             // Get all agent build jobs
@@ -435,9 +437,10 @@ jobs:
               '',
               '## Security Scans',
               `- Trivy vulnerability scanning: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
+              `- MSDO security analysis: ${msdoScanResult === 'success' || msdoScanResult === 'skipped' ? '✅' : '❌'}`,
               `- SARIF reports processed: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
               '',
-              `Overall Status: ${buildBaseResult === 'success' && buildAgentsResult === 'success' && (trivyScanResult === 'success' || trivyScanResult === 'skipped') ? '✅' : '❌'}`
+              `Overall Status: ${buildBaseResult === 'success' && buildAgentsResult === 'success' && (trivyScanResult === 'success' || trivyScanResult === 'skipped') && (msdoScanResult === 'success' || msdoScanResult === 'skipped') ? '✅' : '❌'}`
             ].join('\n');
             
             if (context.payload.pull_request) {
