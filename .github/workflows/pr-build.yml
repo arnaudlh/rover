@@ -272,26 +272,25 @@ jobs:
           scan-type: 'image'
           image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
           format: 'sarif'
-          output: 'trivy-results-${{ matrix.platform }}.sarif'
+          output: 'trivy-results-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          timeout: '10m'
 
       - name: Debug SARIF file
         run: |
           ls -la
           echo "SARIF file contents:"
-          cat trivy-results-${{ matrix.platform }}.sarif || echo "SARIF file not found"
+          cat trivy-results-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}.sarif || echo "SARIF file not found"
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: trivy-results-${{ matrix.platform }}.sarif
-          category: 'trivy-${{ matrix.platform }}'
+          sarif_file: trivy-results-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}.sarif
+          category: 'trivy'
           wait-for-processing: true
 
   build-report:
