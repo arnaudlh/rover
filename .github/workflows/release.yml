@@ -9,10 +9,35 @@ permissions:
   contents: read
   packages: write
   checks: write
+  pull-requests: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/rover
+  BUILDX_NO_DEFAULT_LOAD: true
+  DOCKER_BUILDKIT: 1
 
 jobs:
-  build:
+  matrix-prep:
     runs-on: ubuntu-latest
+    outputs:
+      platforms: ${{ steps.platforms.outputs.matrix }}
+      agents: ${{ steps.agents.outputs.matrix }}
+    steps:
+      - id: platforms
+        run: |
+          echo "matrix=[\"linux/amd64\", \"linux/arm64\"]" >> $GITHUB_OUTPUT
+      - id: agents
+        run: |
+          echo "matrix=[\"github\", \"tfc\", \"gitlab\", \"azure_devops\"]" >> $GITHUB_OUTPUT
+
+  build-base:
+    needs: matrix-prep
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       
@@ -25,7 +50,7 @@ jobs:
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
@@ -33,7 +58,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/rover
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -44,63 +69,195 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ matrix.platform }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          
-      - name: Run MSDO scan for base image
-        uses: microsoft/security-devops-action@v1
-        id: msdo-base
+          cache-from: type=gha,scope=${{ github.ref_name }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
+          build-args: |
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            TARGETOS=linux
+            USERNAME=vscode
+            versionVault=$(./scripts/parse_versions.sh tool vault)
+            versionGolang=$(./scripts/parse_versions.sh tool golang)
+            versionKubectl=$(./scripts/parse_versions.sh tool kubectl)
+            versionKubelogin=$(./scripts/parse_versions.sh tool kubelogin)
+            versionDockerCompose=$(./scripts/parse_versions.sh tool docker_compose)
+            versionTerraformDocs=$(./scripts/parse_versions.sh tool terraform_docs)
+            versionPacker=$(./scripts/parse_versions.sh tool packer)
+            versionPowershell=$(./scripts/parse_versions.sh tool powershell)
+            versionAnsible=$(./scripts/parse_versions.sh tool ansible)
+            extensionsAzureCli=$(./scripts/parse_versions.sh tool azure_cli)
+            versionTerrascan=$(./scripts/parse_versions.sh tool terrascan)
+            versionTfupdate=$(./scripts/parse_versions.sh tool tfupdate)
+            versionTerraform=$(./scripts/parse_versions.sh terraform | head -n1)
+
+  build-agents:
+    needs: [build-base, matrix-prep]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
-          categories: containers
-          tools: trivy
-          policy: custom
-          config: .msdo.yaml
-          path: ${{ github.workspace }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push agent
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./agents/${{ matrix.agent }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-${{ matrix.agent }}:${{ github.event.release.tag_name }}-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-${{ matrix.agent }}:latest-${{ matrix.platform }}
+          platforms: ${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          build-args: |
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            TARGETOS=linux
+            USERNAME=vscode
+            versionGithubRunner=$(./scripts/parse_versions.sh tool github_runner)
+            versionAzdo=$(./scripts/parse_versions.sh tool azdo)
+            versionTfc=$(./scripts/parse_versions.sh tool tfc)
+
+  security-scan:
+    needs: [build-base, build-agents]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy scan for base image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+          format: 'sarif'
+          output: 'trivy-results-base-${{ matrix.platform }}.sarif'
+          severity: 'CRITICAL,HIGH'
           
-      - name: Upload MSDO scan results for base image
+      - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: '${{ steps.msdo-base.outputs.sarifFile }}'
-          category: 'MSDO-Release-Base'
+          sarif_file: 'trivy-results-base-${{ matrix.platform }}.sarif'
+          category: 'Trivy-Base-${{ matrix.platform }}'
           wait-for-processing: true
           
-      - name: Run MSDO scan for agents
-        uses: microsoft/security-devops-action@v1
-        id: msdo-agents
+      - name: Run Trivy scans for agents
+        uses: aquasecurity/trivy-action@master
         with:
-          categories: containers
           image: |
-            ghcr.io/${{ github.repository }}/rover-agent:latest-github
-            ghcr.io/${{ github.repository }}/rover-agent:latest-tfc
-            ghcr.io/${{ github.repository }}/rover-agent:latest-gitlab
-            ghcr.io/${{ github.repository }}/rover-agent:latest-azure_devops
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-github:${{ github.event.release.tag_name }}-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-tfc:${{ github.event.release.tag_name }}-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-gitlab:${{ github.event.release.tag_name }}-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-azure_devops:${{ github.event.release.tag_name }}-${{ matrix.platform }}
+          format: 'sarif'
+          output: 'trivy-results-agents-${{ matrix.platform }}.sarif'
+          severity: 'CRITICAL,HIGH'
           
-      - name: Upload MSDO scan results for agents
+      - name: Upload agent scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: ${{ steps.msdo-agents.outputs.sarifFile }}
-          category: 'MSDO-Release-Agents'
+          sarif_file: 'trivy-results-agents-${{ matrix.platform }}.sarif'
+          category: 'Trivy-Agents-${{ matrix.platform }}'
           wait-for-processing: true
 
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+  release-notes:
+    needs: [security-scan]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate release notes
+        id: release-notes
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          config-name: release-drafter.yml
+          publish: false
+          prerelease: false
+          
+      - name: Update release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const release_id = context.payload.release.id;
+            const notes = `${{ steps.release-notes.outputs.body }}`;
+            
+            await github.rest.repos.updateRelease({
+              owner,
+              repo,
+              release_id,
+              body: notes
+            });
 
-      - name: Report build status
-        if: always()
+  build-report:
+    needs: [build-base, build-agents, security-scan, release-notes]
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: read
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate build report
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
             const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
             
-            // Create check run
+            const buildSummary = [
+              '# Release Build & Security Report',
+              '',
+              '## Base Image',
+              '- linux/amd64',
+              '- linux/arm64',
+              '',
+              '## Agents',
+              '- github',
+              '- tfc',
+              '- gitlab',
+              '- azure_devops',
+              '',
+              '## Security Scans',
+              '- Trivy vulnerability scanning complete',
+              '- SARIF reports processed',
+              '',
+              `Overall Status: ${status}`,
+              '',
+              '## Release Information',
+              `- Version: ${process.env.GITHUB_REF_NAME}`,
+              `- Images: ${process.env.REGISTRY}/${process.env.IMAGE_NAME}`
+            ].join('\n');
+            
             await github.rest.checks.create({
               owner,
               repo,
@@ -110,11 +267,6 @@ jobs:
               conclusion: '${{ job.status }}' === 'success' ? 'success' : 'failure',
               output: {
                 title: `Release Build ${status}`,
-                summary: `Build Status: ${status}
-
-Build Information:
-- Platforms: linux/amd64, linux/arm64
-- Security: MSDO analysis complete (includes container security scanning)
-- Images: ${steps.meta.outputs.tags}`
+                summary: buildSummary
               }
             });
