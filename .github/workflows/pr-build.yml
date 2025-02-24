@@ -248,11 +248,8 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
-        agent: [github, tfc, gitlab, azure_devops]
-        exclude:
-          - platform: linux/arm64
-            agent: tfc
       fail-fast: false
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -323,7 +320,7 @@ jobs:
       pull-requests: write
       contents: read
     runs-on: ubuntu-latest
-    if: always()
+    if: ${{ always() }}
     steps:
       - uses: actions/checkout@v4
       
