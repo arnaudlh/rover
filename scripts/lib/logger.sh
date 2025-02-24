@@ -45,7 +45,6 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        TEST_DEBUG_CREATE_DIR=false
         printf "Error line:0: message:Log folder path is not set status :1\n" >&2
         return 1
     fi
@@ -215,7 +214,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$1"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
