@@ -165,8 +165,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
-        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+        include:
+          - platform: linux/amd64
+            agent: github
+          - platform: linux/amd64
+            agent: tfc
+          - platform: linux/amd64
+            agent: gitlab
+          - platform: linux/amd64
+            agent: azure_devops
+          - platform: linux/arm64
+            agent: github
+          - platform: linux/arm64
+            agent: gitlab
+          - platform: linux/arm64
+            agent: azure_devops
       fail-fast: false
     steps:
       - name: Checkout
@@ -360,7 +373,7 @@ jobs:
             
             const agentStatuses = {
               github: { amd64: 'pending', arm64: 'pending' },
-              tfc: { amd64: 'pending', arm64: 'pending' },
+              tfc: { amd64: 'pending', arm64: 'n/a' },
               gitlab: { amd64: 'pending', arm64: 'pending' },
               azure_devops: { amd64: 'pending', arm64: 'pending' }
             };
@@ -382,6 +395,10 @@ jobs:
               const amd64Status = agentStatuses[agent].amd64;
               const arm64Status = agentStatuses[agent].arm64;
               
+              if (arm64Status === 'n/a') {
+                return amd64Status === 'success' ? '✅' : 
+                       amd64Status === 'pending' ? '⏳' : '❌';
+              }
               if (amd64Status === 'success' && arm64Status === 'success') return '✅';
               if (amd64Status === 'pending' || arm64Status === 'pending') return '⏳';
               if (amd64Status === 'success' || arm64Status === 'success') return '⚠️';
