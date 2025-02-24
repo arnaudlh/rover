@@ -203,17 +203,19 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-latest-${{ matrix.platform }}-${{ matrix.agent }}
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max
-            type=gha,scope=main-agent-${{ matrix.platform }}-${{ matrix.agent }},mode=max
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}-${{ matrix.agent }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.agent }},mode=max
+            type=gha,scope=main-agent-${{ matrix.agent }},mode=max
           cache-to: |
-            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.platform }}-${{ matrix.agent }}-${{ github.sha }},compression=zstd
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:cache-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}-${{ matrix.agent }},mode=max,compression=zstd
+            type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-agent-${{ matrix.agent }}-${{ github.sha }},compression=zstd
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+          build-args: |
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            TARGETOS=linux
+            USERNAME=vscode
           provenance: false
           sbom: false
           build-args: |
@@ -340,32 +342,42 @@ jobs:
         
       - name: Generate build report
         uses: actions/github-script@v7
+        env:
+          BUILD_BASE_RESULT: ${{ needs.build-base.result }}
+          BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
+          TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
+          MSDO_SCAN_RESULT: ${{ needs.msdo-scan.result }}
         with:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
+            const buildBaseResult = process.env.BUILD_BASE_RESULT;
+            const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
+            const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
+            const msdoScanResult = process.env.MSDO_SCAN_RESULT;
+            
             const buildSummary = [
               '# Build & Security Report',
               '',
               '## Base Image Builds',
-              `- linux/amd64: ${needs.build-base.result === 'success' ? '✅' : '❌'}`,
-              `- linux/arm64: ${needs.build-base.result === 'success' ? '✅' : '❌'}`,
+              `- linux/amd64: ${buildBaseResult === 'success' ? '✅' : '❌'}`,
+              `- linux/arm64: ${buildBaseResult === 'success' ? '✅' : '❌'}`,
               '',
               '## Agent Builds',
-              `- github: ${needs['build-agents'].result === 'success' ? '✅' : '❌'}`,
-              `- tfc: ${needs['build-agents'].result === 'success' ? '✅' : '❌'}`,
-              `- gitlab: ${needs['build-agents'].result === 'success' ? '✅' : '❌'}`,
-              `- azure_devops: ${needs['build-agents'].result === 'success' ? '✅' : '❌'}`,
+              `- github: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
+              `- tfc: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
+              `- gitlab: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
+              `- azure_devops: ${buildAgentsResult === 'success' ? '✅' : '❌'}`,
               '',
               '## Security Scans',
-              `- Trivy vulnerability scanning: ${needs['trivy-scan'].result === 'success' ? '✅' : '❌'}`,
-              `- MSDO security analysis: ${needs['msdo-scan'].result === 'success' ? '✅' : '❌'}`,
-              `- SARIF reports processed: ${needs['trivy-scan'].result === 'success' && needs['msdo-scan'].result === 'success' ? '✅' : '❌'}`,
+              `- Trivy vulnerability scanning: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
+              `- MSDO security analysis: ${msdoScanResult === 'success' ? '✅' : '❌'}`,
+              `- SARIF reports processed: ${trivyScanResult === 'success' && msdoScanResult === 'success' ? '✅' : '❌'}`,
               '',
-              `Overall Status: ${needs['build-base'].result === 'success' && 
-                                needs['build-agents'].result === 'success' && 
-                                needs['trivy-scan'].result === 'success' && 
-                                needs['msdo-scan'].result === 'success' ? '✅' : '❌'}`
+              `Overall Status: ${buildBaseResult === 'success' && 
+                                buildAgentsResult === 'success' && 
+                                trivyScanResult === 'success' && 
+                                msdoScanResult === 'success' ? '✅' : '❌'}`
             ].join('\n');
             
             if (context.payload.pull_request) {
@@ -383,15 +395,15 @@ jobs:
               name: 'Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: needs['build-base'].result === 'success' && 
-                         needs['build-agents'].result === 'success' && 
-                         needs['trivy-scan'].result === 'success' && 
-                         needs['msdo-scan'].result === 'success' ? 'success' : 'failure',
+              conclusion: buildBaseResult === 'success' && 
+                         buildAgentsResult === 'success' && 
+                         trivyScanResult === 'success' && 
+                         msdoScanResult === 'success' ? 'success' : 'failure',
               output: {
-                title: `Build Report ${needs['build-base'].result === 'success' && 
-                                    needs['build-agents'].result === 'success' && 
-                                    needs['trivy-scan'].result === 'success' && 
-                                    needs['msdo-scan'].result === 'success' ? '✅' : '❌'}`,
+                title: `Build Report ${buildBaseResult === 'success' && 
+                                    buildAgentsResult === 'success' && 
+                                    trivyScanResult === 'success' && 
+                                    msdoScanResult === 'success' ? '✅' : '❌'}`,
                 summary: buildSummary
               }
             });
