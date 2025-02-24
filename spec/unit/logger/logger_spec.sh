@@ -44,6 +44,7 @@ Describe 'logger.sh'
         unset log_folder_path
         When call __log_init__
         The stderr should include "Error line:0: message:Log folder path is not set status :1"
+        The error should include "Error line:0: message:Log folder path is not set status :1"
         The status should eq 1
         The output should not include "creating directory"
       End
@@ -114,8 +115,7 @@ Describe 'logger.sh'
       End
 
       It 'should handle reset correctly'
-        When call __set_text_log__ "test"
-        The output should include "Detailed Logs @"
+        __set_text_log__ "test"
         When call __reset_log__
         The variable "LOG_TO_FILE" should eq "false"
         The variable "CURRENT_LOG_FILE" should be undefined
