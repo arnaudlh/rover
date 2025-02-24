@@ -107,10 +107,9 @@ __reset_log__() {
     printf "STOPPING LOG OUTPUT TO : %s\n" "$current_log"
     echo "------------------------------------------------------------------------------------------------------"
     exec 2>&4 1>&3
-    unset CURRENT_LOG_FILE
-    unset TF_LOG_PATH
     LOG_TO_FILE=false
-    sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
+    unset CURRENT_LOG_FILE TF_LOG_PATH
+    [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
 
