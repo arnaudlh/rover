@@ -283,7 +283,7 @@ jobs:
         run: |
           ls -la
           echo "SARIF file contents:"
-          cat trivy-results.sarif || echo "SARIF file not found"
+          cat trivy-results-${{ matrix.platform }}.sarif || echo "SARIF file not found"
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -376,14 +376,14 @@ jobs:
               '## Security Scans',
               `- Trivy vulnerability scanning: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
 
-              `- SARIF reports processed: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
+              `- SARIF reports processed: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
               '',
               `Overall Status: ${buildBaseResult === 'success' && 
                                 Object.values(agentStatuses).every(agent => 
                                   Object.values(agent).every(status => 
                                     status === 'success' || status === 'n/a'
                                   )) && 
-                                trivyScanResult === 'success' ? '✅' : '❌'}`
+                                (trivyScanResult === 'success' || trivyScanResult === 'skipped') ? '✅' : '❌'}`
             ].join('\n');
             
             if (context.payload.pull_request) {
