@@ -1,0 +1,19 @@
+{
+  "tools": {
+    "vault": "1.15.0",
+    "golang": "1.21.6",
+    "kubectl": "1.28.4",
+    "kubelogin": "0.1.0",
+    "docker_compose": "2.24.1",
+    "terraform_docs": "0.17.0",
+    "packer": "1.10.0",
+    "powershell": "7.4.1",
+    "ansible": "2.16.2",
+    "terrascan": "1.18.3",
+    "tfupdate": "0.7.2",
+    "terraform": "1.7.4"
+  },
+  "extensions": {
+    "azure_cli": ["aks-preview"]
+  }
+}
