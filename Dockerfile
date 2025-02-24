@@ -1,4 +1,4 @@
-FROM ubuntu:22.04@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e as base
+FROM ubuntu:22.04@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e AS base
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -6,18 +6,18 @@ ARG USER_GID=1000
 ARG TF_PLUGIN_CACHE_DIR=/tf/cache
 ARG TARGETARCH
 ARG TARGETOS
-ARG versionVault
-ARG versionGolang
-ARG versionKubectl
-ARG versionKubelogin
-ARG versionDockerCompose
-ARG versionTerraformDocs
-ARG versionPacker
-ARG versionPowershell
-ARG versionAnsible
-ARG extensionsAzureCli
-ARG versionTerrascan
-ARG versionTfupdate
+ARG versionVault=1.15.0
+ARG versionGolang=1.21.6
+ARG versionKubectl=1.28.4
+ARG versionKubelogin=0.1.0
+ARG versionDockerCompose=2.24.1
+ARG versionTerraformDocs=0.17.0
+ARG versionPacker=1.10.0
+ARG versionPowershell=7.4.1
+ARG versionAnsible=2.16.2
+ARG extensionsAzureCli=aks-preview
+ARG versionTerrascan=1.18.3
+ARG versionTfupdate=0.7.2
 
 WORKDIR /tf/rover
 
@@ -60,8 +60,9 @@ RUN set -ex && \
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
     echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/docker-archive-keyring.gpg && \
-    echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
     echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
