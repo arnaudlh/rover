@@ -306,9 +306,26 @@ jobs:
           scanners: 'vuln,secret,config'
           exit-code: '0'
 
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Debug SARIF files
+        run: |
+          echo "Base SARIF file:"
+          ls -la trivy-base.sarif || echo "Base SARIF file not found"
+          echo "Agent SARIF file:"
+          ls -la trivy-agent.sarif || echo "Agent SARIF file not found"
+
       - name: Merge SARIF files
         run: |
-          jq -s '.[0].runs + .[1].runs | {version: "2.1.0", $schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json", runs: .}' trivy-base.sarif trivy-agent.sarif > trivy-results.sarif
+          if [ -f trivy-base.sarif ] && [ -f trivy-agent.sarif ]; then
+            jq -s '.[0].runs + .[1].runs | {version: "2.1.0", $schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json", runs: .}' trivy-base.sarif trivy-agent.sarif > trivy-results.sarif
+          else
+            echo "One or both SARIF files missing, copying base SARIF file"
+            cp trivy-base.sarif trivy-results.sarif || cp trivy-agent.sarif trivy-results.sarif || echo "No SARIF files found"
+          fi
 
       - name: Debug output
         run: |
