@@ -111,7 +111,7 @@ jobs:
 
 Build Information:
 - Platforms: linux/amd64, linux/arm64
-- Security: Trivy scan results uploaded to Security tab
+- Security: MSDO analysis complete (includes container security scanning)
 - Images: ${steps.meta.outputs.tags}`
               }
             });

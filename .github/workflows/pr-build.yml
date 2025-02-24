@@ -134,14 +134,12 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
-      - name: Upload build info
+      - name: Upload MSDO results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-info-${{ matrix.platform }}
-          path: |
-            trivy-results.txt
-            trivy-results.sarif
+          name: msdo-results-base-${{ matrix.platform }}
+          path: ${{ steps.msdo-base.outputs.sarifFile }}
 
   build-agents:
     needs: [build-base, matrix-prep]
