@@ -126,32 +126,28 @@ RUN set -ex && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             apt-transport-https \
             ca-certificates \
+            curl \
             gnupg2 \
             lsb-release \
             python3-pip \
-            python3-dev; then \
-            echo "Successfully installed base packages" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
-    done && \
-    # Add package repositories with retries
-    for i in {1..5}; do \
-        echo "Attempt $i: Configuring package repositories..." && \
-        if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
+            python3-dev && \
+           # Add package repositories
+           mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
+           # Microsoft repository
            curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           # Docker repository
            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           # Kubernetes repository
            curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           echo "deb [arch=$(dpkg --print-architecture)] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           # GitHub CLI repository
            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
-           echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+           echo "deb [arch=$(dpkg --print-architecture)] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
            apt-get update; then \
-            echo "Successfully configured package repositories" && \
+            echo "Successfully installed base packages and configured repositories" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 10 seconds..." && \
