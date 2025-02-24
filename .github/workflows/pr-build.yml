@@ -269,10 +269,12 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          command: analyze
           categories: IaC
           tools: terrascan,tfsec,checkov
+          policy: Microsoft.Security.Baseline
 
 
   trivy-scan:
@@ -345,6 +347,7 @@ jobs:
           timeout: '10m'
           scanners: 'vuln'
           vuln-type: 'os,library'
+          artifact-type: 'container_image'
 
       - name: Debug SARIF files
         run: |
