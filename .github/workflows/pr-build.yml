@@ -274,49 +274,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Trivy
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          scan-type: 'image'
+          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln,secret,config'
+          exit-code: '0'
+
+      - name: Debug SARIF file
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install -y trivy
-
-      - name: Run Trivy scan
-        run: |
-          # Create results directory
-          mkdir -p trivy-results
-
-          # Pull images first
-          docker pull ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-
-          # Scan base image
-          trivy image \
-            --format sarif \
-            --output trivy-results/base.sarif \
-            --severity HIGH,CRITICAL \
-            --scanners vuln,secret,config \
-            --quiet \
-            --no-progress \
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-
-          # Debug output
-          echo "Current directory:"
           pwd
-          echo "Directory contents:"
           ls -la
-          echo "Trivy results directory:"
-          ls -la trivy-results/
-          echo "Base SARIF file contents:"
-          cat trivy-results/base.sarif || echo "Base SARIF file not found"
+          echo "SARIF file contents:"
+          cat trivy-results.sarif || echo "SARIF file not found"
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: trivy-results/base.sarif
-          category: 'Trivy-Base-${{ matrix.platform }}'
+          sarif_file: trivy-results.sarif
+          category: 'trivy'
           wait-for-processing: true
 
   msdo-scan:
