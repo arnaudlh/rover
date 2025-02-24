@@ -92,7 +92,8 @@ __set_text_log__() {
       mkdir -p "$log_folder_path/$logDate"
     fi
 
-    export CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
+    CURRENT_LOG_FILE="$log_folder_path/$logDate/$name.log"
+    export CURRENT_LOG_FILE
     information "Detailed Logs @ $CURRENT_LOG_FILE"
     exec 3>&1 4>&2
     echo "------------------------------------------------------------------------------------------------------"
@@ -100,7 +101,7 @@ __set_text_log__() {
     echo "------------------------------------------------------------------------------------------------------"
     LOG_TO_FILE=true
     export LOG_TO_FILE
-    exec 1>> $CURRENT_LOG_FILE 2>&1
+    exec 1>> "$CURRENT_LOG_FILE" 2>&1
 }
 
 __reset_log__() {
@@ -109,8 +110,10 @@ __reset_log__() {
     printf "STOPPING LOG OUTPUT TO : %s\n" "$current_log"
     echo "------------------------------------------------------------------------------------------------------"
     exec 2>&4 1>&3
-    unset LOG_TO_FILE CURRENT_LOG_FILE TF_LOG_PATH
     [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
+    unset LOG_TO_FILE
+    unset CURRENT_LOG_FILE
+    unset TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
 
@@ -213,10 +216,14 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
+            local timestamp
+            timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
+            printf "%s UTC [%s] [%s] %s\n" "$timestamp" "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
          fi
      else
-         printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
+         local timestamp
+         timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
+         printf "%s UTC [%s] [%s] Unknown logger %s\n" "$timestamp" "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
     fi
 }
 
