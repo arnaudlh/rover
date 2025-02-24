@@ -257,30 +257,52 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner for base image
         uses: aquasecurity/trivy-action@0.12.0
         with:
-          scan-type: image
+          scan-type: 'image'
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
-          format: sarif
-          output: trivy-results-${{ matrix.platform }}.sarif
-          severity: CRITICAL,HIGH
+          format: 'sarif'
+          output: 'trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
+          severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-          exit-code: 0
+          exit-code: '0'
 
-      - name: Debug SARIF file
+      - name: Run Trivy vulnerability scanner for agents
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          scan-type: 'image'
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-github-${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results-agents-github-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '0'
+
+      - name: Debug SARIF files
         run: |
           ls -la
-          echo "SARIF file contents:"
-          cat trivy-results-${{ matrix.platform }}.sarif || echo "SARIF file not found"
+          echo "Base image SARIF file contents:"
+          cat trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Base image SARIF file not found"
+          echo "Agent SARIF file contents:"
+          cat trivy-results-agents-github-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif || echo "Agent SARIF file not found"
 
-      - name: Upload scan results
+      - name: Upload base image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: trivy-results-${{ matrix.platform }}.sarif
-          category: 'trivy'
+          sarif_file: trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif
+          category: 'trivy-base'
+          wait-for-processing: true
+
+      - name: Upload agent scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        continue-on-error: true
+        with:
+          sarif_file: trivy-results-agents-github-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif
+          category: 'trivy-agents'
           wait-for-processing: true
 
   build-report:
