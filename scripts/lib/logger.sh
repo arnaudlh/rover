@@ -215,9 +215,7 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            local timestamp
-            timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
-            printf "%s UTC [%s] [%s] %s\n" "$timestamp" "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$*"
          fi
      else
          printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
