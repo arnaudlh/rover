@@ -252,10 +252,12 @@ jobs:
         uses: microsoft/security-devops-action@v1
         continue-on-error: true
         with:
+          command: analyze
           categories: IaC
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
           workspace: ${{ github.workspace }}
+          break-on-failure: false
 
 
   trivy-scan:
@@ -310,14 +312,14 @@ jobs:
         continue-on-error: true
         with:
           scan-type: 'image'
-          image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('{0}/{1}/rover-agent:pr-{2}-{3}', env.REGISTRY, github.repository, matrix.agent, github.sha) }}
+          scan-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('{0}/{1}/rover-agent:pr-{2}-{3}', env.REGISTRY, github.repository, matrix.agent, github.sha) }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
           timeout: '10m'
-          artifact-type: 'container_image'
+          scanners: 'vuln'
 
       - name: Debug SARIF files
         run: |
