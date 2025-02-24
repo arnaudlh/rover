@@ -111,9 +111,9 @@ __reset_log__() {
     echo "------------------------------------------------------------------------------------------------------"
     exec 2>&4 1>&3
     [ -f "$current_log" ] && sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
-    export LOG_TO_FILE=false
-    unset CURRENT_LOG_FILE TF_LOG_PATH
+    unset LOG_TO_FILE CURRENT_LOG_FILE TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
+    export LOG_TO_FILE=false
 }
 
 #------------------------------------------------------------------------------
@@ -215,16 +215,10 @@ _log() {
 
     if [[ $log_level_set ]]; then
          if [ "$log_level_set" -ge "$log_level" ]; then
-            local timestamp
-            timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
-            printf "%s UTC" "$timestamp"
-            printf ' [%s] [%s] %s\n' "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] %s\n' -1 "$in_level" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$@"
          fi
      else
-         local timestamp
-         timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
-         printf "%s UTC" "$timestamp"
-         printf ' [%s] [%s] Unknown logger %s\n' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
+         printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown logger %s\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$logger"
     fi
 }
 
