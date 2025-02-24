@@ -254,9 +254,10 @@ jobs:
       - name: Run Trivy scan for base image
         uses: aquasecurity/trivy-action@master
         with:
-          image: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+          scan-type: 'image'
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: 'trivy-results-base-${{ matrix.platform }}.sarif'
+          output: trivy-results-base-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}.sarif
           severity: 'CRITICAL,HIGH'
           
       - name: Upload base image scan results
@@ -270,13 +271,10 @@ jobs:
       - name: Run Trivy scans for agents
         uses: aquasecurity/trivy-action@master
         with:
-          image: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-github
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-tfc
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-gitlab
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ github.sha }}-${{ matrix.platform }}-azure_devops
+          scan-type: 'image'
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           format: 'sarif'
-          output: 'trivy-results-agents-${{ matrix.platform }}.sarif'
+          output: trivy-results-agents-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}.sarif
           severity: 'CRITICAL,HIGH'
           
       - name: Upload agent scan results
@@ -313,13 +311,7 @@ jobs:
           category: 'MSDO-${{ matrix.platform }}'
           wait-for-processing: true
           
-      - name: Upload MSDO scan results for agents
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: ${{ steps.msdo-agents.outputs.sarifFile }}
-          category: 'MSDO-Agents-${{ matrix.platform }}'
-          wait-for-processing: true
+
 
 
   build-report:
