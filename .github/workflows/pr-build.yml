@@ -285,11 +285,6 @@ jobs:
           ls -la
           echo "SARIF file contents:"
           cat trivy-results.sarif || echo "SARIF file not found"
-          ls -la
-          echo "Text results:"
-          cat trivy-results.txt || echo "Text results not found"
-          echo "SARIF results:"
-          cat trivy-results.sarif || echo "SARIF results not found"
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -314,11 +309,12 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          categories: containers
-          tools: trivy
+          categories: 'containers'
+          tools: 'trivy'
           break-on-failure: false
           upload-sarif: true
-          output: msdo-results.sarif
+          output: 'msdo-results.sarif'
+          args: '--no-progress --no-color'
           
       - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
