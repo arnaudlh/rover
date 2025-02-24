@@ -45,11 +45,14 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        error_message "Error: Log folder path is not set"
+        printf >&2 "Error line:0: message:Log folder path is not set status :1\n"
         return 1
     fi
 
-    __create_dir__ "$log_folder_path"
+    if [ ! -d "$log_folder_path" ]; then
+        printf "creating directory %s\n" "$log_folder_path"
+        __create_dir__ "$log_folder_path"
+    fi
 
 }
 
@@ -155,7 +158,7 @@ export_tf_environment_variables() {
       isAutomation=true
       ;;
     *)
-      error_message "Error: Unknown log level"
+      printf >&2 "Error scripts/lib/logger.sh on or near line 0: Unknown log level; exiting with status 1\n"
       return 1
       ;;
   esac

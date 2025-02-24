@@ -7,6 +7,9 @@ Describe 'logger.sh'
   Include scripts/functions.sh
   Include scripts/lib/logger.sh
   
+  # Mock functions
+  tfstate_cleanup() { :; }
+  
   Describe "__log_init__"
     #Function Mocks
     export TEST_DEBUG_CREATE_DIR=true
