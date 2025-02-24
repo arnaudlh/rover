@@ -215,6 +215,27 @@ RUN set -ex && \
         sleep 5; \
     done
 
+# Install shell tools with retries
+RUN set -ex && \
+    # Install git bash completion with retries
+    for i in {1..3}; do \
+        if mkdir -p /etc/bash_completion.d/ && \
+           curl -fsSL https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o /etc/bash_completion.d/git-completion.bash; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Install Oh My Zsh with retries
+    for i in {1..3}; do \
+        if curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended && \
+           chmod 700 -R /home/${USERNAME}/.oh-my-zsh; then \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done
+
 # Install Terraform and HashiCorp tools with retries
 RUN set -ex && \
     # Install tfupdate with retries
