@@ -258,6 +258,8 @@ jobs:
           config: msdo.yaml
           workspace: ${{ github.workspace }}
           break-on-failure: false
+          output: msdo-results.sarif
+          includeTools: true
 
 
   trivy-scan:
