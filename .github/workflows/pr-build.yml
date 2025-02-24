@@ -205,11 +205,11 @@ jobs:
           category: 'MSDO-Agent-${{ matrix.platform }}-${{ matrix.agent }}'
           wait-for-processing: true
 
-      - name: Upload build info
+      - name: Upload MSDO results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-info-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          name: msdo-results-agent-${{ matrix.platform }}-${{ matrix.agent }}
           path: ${{ steps.msdo-agent.outputs.sarifFile }}
 
 
@@ -248,8 +248,7 @@ jobs:
               '- azure_devops',
               '',
               '## Security Scans',
-              '- MSDO analysis complete',
-              '- Trivy vulnerability scans uploaded',
+              '- MSDO analysis complete (includes container security scanning)',
               '- SARIF reports processed',
               '',
               `Overall Status: ${status}`
