@@ -264,7 +264,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
-          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}
           format: 'sarif'
           output: 'trivy-results-base-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
@@ -277,7 +277,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
-          scan-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results-agents-${{ matrix.agent }}-${{ (matrix.platform == 'linux/amd64') && 'amd64' || 'arm64' }}.sarif'
           severity: 'CRITICAL,HIGH'
@@ -330,12 +330,12 @@ jobs:
           BUILD_BASE_RESULT: ${{ needs.build-base.result }}
           BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
           TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
-
         with:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT;
+            const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
             const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
 
             
