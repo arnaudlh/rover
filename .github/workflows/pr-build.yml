@@ -264,18 +264,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner for base image
         uses: aquasecurity/trivy-action@0.12.0
         with:
           scan-type: 'image'
           image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-results-base.sarif'
           severity: 'CRITICAL,HIGH'
           scanners: 'vuln,secret,config'
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
+
+      - name: Run Trivy vulnerability scanner for agents
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          scan-type: 'image'
+          image-ref: '${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.platform == "linux/amd64" && "amd64" || "arm64" }}-${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results-agents.sarif'
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln,secret,config'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+
+      - name: Merge SARIF files
+        run: |
+          jq -s '.[0].runs + .[1].runs | {version: "2.1.0", $schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json", runs: .}' trivy-results-base.sarif trivy-results-agents.sarif > trivy-results.sarif
 
       - name: Debug SARIF file
         run: |
@@ -316,9 +333,9 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          categories: containers
-          policy: GitHub
-          tools: trivy
+          categories: 'containers'
+          policy: 'Microsoft'
+          tools: 'trivy'
           
       - name: Upload MSDO scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -332,7 +349,7 @@ jobs:
 
 
   build-report:
-    needs: [build-base, build-agents]
+    needs: [build-base, build-agents, trivy-scan, msdo-scan]
     permissions:
       checks: write
       pull-requests: write
