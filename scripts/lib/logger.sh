@@ -199,8 +199,7 @@ set_log_severity() {
             _loggers_level_map[$logger]=$l
 
         else
-            printf '%(%Y-%m-%dT%H:%M:%S)T UTC [%s] [%s] Unknown log level %s for logger %s; setting to INFO\n' -1 "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}" "$in_level" "$logger"
-            _loggers_level_map[$logger]=3
+            printf "Error line:0: message:Unknown log level status :1\n" >&2
             return 1
         fi
     else
