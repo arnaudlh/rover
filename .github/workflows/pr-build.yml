@@ -274,9 +274,11 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: '0'
 
-      - name: Merge SARIF files
+      - name: Debug SARIF file
         run: |
-          jq -s '.[0].runs + .[1].runs | {version: "2.1.0", $schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json", runs: .}' trivy-results-base.sarif trivy-results-agents.sarif > trivy-results.sarif
+          ls -la
+          echo "SARIF file contents:"
+          cat trivy-results.sarif || echo "SARIF file not found"
 
       - name: Debug SARIF file
         run: |
@@ -317,7 +319,7 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          categories: containers
+          config: msdo.yaml
           policy: Microsoft
           
       - name: Upload MSDO scan results
