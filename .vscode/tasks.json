@@ -2,13 +2,35 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Local",
+      "label": "Build Base Image",
       "type": "shell",
-      "command": "make local",
+      "command": "docker buildx bake -f docker-bake.hcl base",
       "group": {
         "kind": "build",
         "isDefault": true
       },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Agents",
+      "type": "shell",
+      "command": "docker buildx bake -f docker-bake-agents.hcl agents",
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Local",
+      "type": "shell",
+      "command": "make local",
+      "group": "build",
       "presentation": {
         "reveal": "always",
         "panel": "shared"
