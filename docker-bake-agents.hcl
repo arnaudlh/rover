@@ -1,3 +1,15 @@
+variable "versionGithubRunner" {
+  default = "2.314.1"
+}
+
+variable "versionAzdo" {
+  default = "3.234.0"
+}
+
+variable "versionTfc" {
+  default = "1.7.4"
+}
+
 group "agents" {
   targets = ["agent-matrix"]
 }
@@ -8,6 +20,9 @@ target "agent-common" {
     TARGETARCH = "${TARGETARCH}"
     TARGETOS = "${TARGETOS}"
     USERNAME = "vscode"
+    versionGithubRunner = "${versionGithubRunner}"
+    versionAzdo = "${versionAzdo}"
+    versionTfc = "${versionTfc}"
   }
   cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
   cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
