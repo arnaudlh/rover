@@ -72,12 +72,15 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean && \
     apt-get update && \
+    # Install base packages
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         apt-transport-https \
         apt-utils \
         bsdmainutils \
         ca-certificates \
-        curl \
+        curl && \
+    # Install development tools
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         fonts-powerline \
         gcc \
         gettext \
@@ -88,16 +91,20 @@ RUN set -ex && \
         less \
         locales \
         make && \
+    # Install networking tools
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         dnsutils \
         net-tools \
         iputils-ping \
-        traceroute \
+        traceroute && \
+    # Install Python and VPN tools
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         python3-dev \
         python3-pip \
         rsync \
         openvpn \
         network-manager-openvpn && \
+    # Install security and system tools
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         strongswan \
         strongswan-pki \
