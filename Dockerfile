@@ -6,6 +6,18 @@ ARG USER_GID=1000
 ARG TF_PLUGIN_CACHE_DIR=/tf/cache
 ARG TARGETARCH
 ARG TARGETOS
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
+    TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
+    TF_PLUGIN_CACHE_DIR="${TF_PLUGIN_CACHE_DIR}" \
+    TF_REGISTRY_DISCOVERY_RETRY=5 \
+    TF_REGISTRY_CLIENT_TIMEOUT=15 \
+    ARM_USE_MSGRAPH=true
+
 ARG versionVault
 ARG versionGolang
 ARG versionKubectl
