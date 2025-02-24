@@ -50,23 +50,14 @@ RUN set -ex && \
         if [ $i -eq 5 ]; then exit 1; fi; \
         sleep 10; \
     done && \
-    # Install packages in smaller groups with retries
+    # Install core packages with retries
     for i in {1..5}; do \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             apt-transport-https \
             ca-certificates \
             curl \
             gnupg \
-            lsb-release; then \
-            echo "Successfully installed core packages" && \
-            break; \
-        fi; \
-        echo "Attempt $i to install core packages failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
-    done && \
-    for i in {1..5}; do \
-        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            lsb-release \
             apt-utils \
             bsdmainutils \
             fonts-powerline \
@@ -87,10 +78,10 @@ RUN set -ex && \
             wget \
             zsh \
             zip; then \
-            echo "Successfully installed additional packages" && \
+            echo "Successfully installed core packages" && \
             break; \
         fi; \
-        echo "Attempt $i to install additional packages failed, retrying in 10 seconds..." && \
+        echo "Attempt $i to install packages failed, retrying in 10 seconds..." && \
         if [ $i -eq 5 ]; then exit 1; fi; \
         sleep 10; \
     done && \
@@ -100,54 +91,10 @@ RUN set -ex && \
 # Set up package repositories with retries
 ARG TARGETARCH
 RUN set -ex && \
-    # Create required directories
+    # Create required directories and verify architecture
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
-    # Update and install base packages with retries
-    for i in {1..5}; do \
-        echo "Attempt $i: Installing base packages..." && \
-        if apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release; then \
-            echo "Successfully installed base packages" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
-    done && \
-
-    # Verify architecture
-    echo "Building for architecture: ${TARGETARCH}"
-
-# Install additional packages with retries
-RUN set -ex && \
-    # Install system packages with retries
-    for i in {1..5}; do \
-        echo "Attempt $i: Installing system packages..." && \
-        if apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg2 \
-            lsb-release \
-            dpkg-dev \
-            python3-pip \
-            python3-dev; then \
-            echo "Successfully installed base packages" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
-    done && \
-    # Set architecture variables
-    ARCH=$(dpkg --print-architecture) && \
-    echo "Building for architecture: $ARCH" && \
-    # Add package repositories with retries
+    echo "Building for architecture: ${TARGETARCH}" && \
+    # Configure package repositories with retries
     for i in {1..5}; do \
         echo "Attempt $i: Configuring package repositories..." && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
@@ -171,7 +118,26 @@ RUN set -ex && \
         echo "Attempt $i failed, retrying in 10 seconds..." && \
         if [ $i -eq 5 ]; then exit 1; fi; \
         sleep 10; \
-    done&& \
+    done
+
+# Install additional packages with retries
+RUN set -ex && \
+    # Install system packages with retries
+    for i in {1..5}; do \
+        echo "Attempt $i: Installing system packages..." && \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            docker-ce-cli \
+            kubectl \
+            gh \
+            python3-pip \
+            python3-dev; then \
+            echo "Successfully installed packages" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done && \
     # Install additional packages with retries
     for i in {1..5}; do \
         echo "Attempt $i: Installing additional packages..." && \
