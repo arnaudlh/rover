@@ -167,16 +167,12 @@ jobs:
       result: success
     strategy:
       matrix:
-        include:
-          - { platform: 'linux/amd64', agent: 'github' }
-          - { platform: 'linux/amd64', agent: 'tfc' }
-          - { platform: 'linux/amd64', agent: 'gitlab' }
-          - { platform: 'linux/amd64', agent: 'azure_devops' }
-          - { platform: 'linux/arm64', agent: 'github' }
-          - { platform: 'linux/arm64', agent: 'gitlab' }
-          - { platform: 'linux/arm64', agent: 'azure_devops' }
+        platform: [linux/amd64, linux/arm64]
+        agent: [github, tfc, gitlab, azure_devops]
+        exclude:
+          - platform: linux/arm64
+            agent: tfc
       fail-fast: false
-    if: ${{ !(matrix.platform == 'linux/arm64' && matrix.agent == 'tfc') }}
     continue-on-error: true
     env:
       BUILDKIT_PROGRESS: plain
