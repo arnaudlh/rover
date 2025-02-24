@@ -126,10 +126,10 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-${{ matrix.platform }},mode=max
+            type=gha,scope=pr-${{ github.sha }}-${{ matrix.platform }},mode=max
             type=gha,scope=main-${{ matrix.platform }},mode=max
           cache-to: |
-            type=gha,mode=max,scope=pr-${{ matrix.platform }},compression=zstd
+            type=gha,mode=max,scope=pr-${{ github.sha }}-${{ matrix.platform }},compression=zstd
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
@@ -223,10 +223,10 @@ jobs:
             ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=pr-agent-${{ matrix.agent }},mode=max
+            type=gha,scope=pr-agent-${{ github.sha }}-${{ matrix.agent }},mode=max
             type=gha,scope=main-agent-${{ matrix.agent }},mode=max
           cache-to: |
-            type=gha,mode=max,scope=pr-agent-${{ matrix.agent }},compression=zstd
+            type=gha,mode=max,scope=pr-agent-${{ github.sha }}-${{ matrix.agent }},compression=zstd
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
@@ -281,7 +281,7 @@ jobs:
         run: |
           ls -la
           echo "SARIF file contents:"
-          cat trivy-results.sarif || echo "SARIF file not found"
+          cat trivy-results-${{ matrix.platform }}.sarif || echo "SARIF file not found"
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
