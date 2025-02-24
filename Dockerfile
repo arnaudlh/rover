@@ -87,7 +87,8 @@ RUN set -ex && \
         jq \
         less \
         locales \
-        make \
+        make && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         dnsutils \
         net-tools \
         iputils-ping \
@@ -96,7 +97,8 @@ RUN set -ex && \
         python3-pip \
         rsync \
         openvpn \
-        network-manager-openvpn \
+        network-manager-openvpn && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         strongswan \
         strongswan-pki \
         libstrongswan-extra-plugins \
