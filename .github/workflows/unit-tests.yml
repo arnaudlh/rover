@@ -22,7 +22,10 @@ jobs:
     - name: Setup Test Environment
       run: |
         mkdir -p /tmp/test_logs
+        mkdir -p scripts/tfcloud
+        touch scripts/tfcloud/mock.sh
         export log_folder_path="/tmp/test_logs"
+        export script_path="$(pwd)/scripts"
 
     - name: Run Unit Tests
       run: |
