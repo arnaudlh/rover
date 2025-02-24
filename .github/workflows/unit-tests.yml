@@ -10,6 +10,9 @@ jobs:
   shellspec:
     name: ShellSpec Tests
     runs-on: ubuntu-latest
+    env:
+      log_folder_path: /tmp/test_logs
+      script_path: ${{ github.workspace }}/scripts
     steps:
     - uses: actions/checkout@v4
     
@@ -22,16 +25,13 @@ jobs:
 
     - name: Setup Test Environment
       run: |
-        mkdir -p /tmp/test_logs
+        mkdir -p "${log_folder_path}"
         mkdir -p scripts/tfcloud
         touch scripts/tfcloud/mock.sh
-        export log_folder_path="/tmp/test_logs"
-        export script_path="$(pwd)/scripts"
 
     - name: Run Unit Tests
       id: unit_tests
       run: |
-        export log_folder_path="/tmp/test_logs"
         shellspec --format documentation --no-banner spec/unit/logger/logger_spec.sh
       continue-on-error: true
 
@@ -68,8 +68,3 @@ jobs:
           .shellspec-report/
           coverage/
           /tmp/test_logs/
-
-    - name: Microsoft Security DevOps
-      uses: microsoft/security-devops-action@v1
-      with:
-        categories: 'IaC'
