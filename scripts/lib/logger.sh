@@ -45,7 +45,8 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        error "0" "Log folder path is not set" 1
+        printf "Error line:0: message:Log folder path is not set status :1\n" >&2
+        return 1
     fi
 
     if [ ! -d "$log_folder_path" ]; then
@@ -108,7 +109,8 @@ __reset_log__() {
     sed -i 's/\x1b\[[0-9;]*m//g' "$current_log"
     exec 2>&4 1>&3
     export LOG_TO_FILE=false
-    unset CURRENT_LOG_FILE TF_LOG_PATH
+    unset CURRENT_LOG_FILE
+    unset TF_LOG_PATH
     export_tf_environment_variables $LOG_SEVERITY #reset log to serverity to original values
 }
 
@@ -188,13 +190,15 @@ set_log_severity() {
             _loggers_level_map[$logger]=$l
 
         else
-            printf '%(%Y-%m-%dT%H:%M:%S %Z)T %-7s %s ' -1 WARN \
-                "${BASH_SOURCE[2]}:${BASH_LINENO[1]} Unknown log level '$in_level' for logger '$logger'; setting to INFO"
+            printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
+            printf ' [%s] [%s] ' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}"
+            printf 'Unknown log level %s for logger %s; setting to INFO\n' "$in_level" "$logger"
             _loggers_level_map[$logger]=3
         fi
     else
-        printf '%(%Y-%m-%dT%H:%M:%S %Z)T %-7s %s ' -1 WARN \
-            "${BASH_SOURCE[2]}:${BASH_LINENO[1]} Option '-l' needs an argument" >&2
+        printf '%(%Y-%m-%dT%H:%M:%S)T UTC' -1
+        printf ' [%s] [%s] ' "WARN" "${BASH_SOURCE[2]}:${BASH_LINENO[1]}"
+        printf 'Option -l needs an argument\n' >&2
     fi
 }
 
