@@ -23,7 +23,7 @@ Describe 'logger.sh'
     }
     __create_dir__ (){
       if [ "$TEST_DEBUG_CREATE_DIR" == "true" ]; then
-        echo "creating directory $1"
+        printf "creating directory %s\n" "$1"
       fi
     }
 
