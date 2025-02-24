@@ -110,12 +110,33 @@ RUN set -ex && \
         lsb-release \
         apt-transport-https \
         ca-certificates \
-        gnupg2 && \
+        gnupg2 \
+        python3-pip \
+        python3-dev && \
     # Verify installations
     docker --version || true && \
     kubectl version --client || true && \
     gh --version || true && \
+    python3 --version || true && \
+    # Install pip packages with retries
+    for i in {1..3}; do \
+        if pip3 install --no-cache-dir \
+            pre-commit \
+            yq \
+            azure-cli \
+            checkov \
+            pywinrm \
+            ansible-core==${versionAnsible}; then \
+            python3 -m pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
+            break; \
+        fi; \
+        if [ $i -eq 3 ]; then \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done && \
     # Cleanup
+    apt-get remove -y python3-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     # Verify architecture
