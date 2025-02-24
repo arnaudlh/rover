@@ -39,7 +39,7 @@ Describe 'logger.sh'
 
       It 'should throw an error and not create directory'
         unset log_folder_path
-        When run source scripts/lib/logger.sh
+        When run __log_init__
         The stderr should include "Error: Log folder path is not set"
         The status should eq 1
         The output should not include "creating directory"
@@ -75,39 +75,37 @@ Describe 'logger.sh'
       BeforeEach 'setup'
 
       It 'should respect log level hierarchy'
-        When call set_log_severity "INFO"
-        The variable "_loggers_level_map[default]" should eq "3"
+        set_log_severity "INFO"
+        Assert "_loggers_level_map[default]" eq "3"
         
-        %data:test_message="test message"
-        When call log_debug "$test_message"
+        When call log_debug "test message"
         The output should eq ""
         
-        When call log_info "$test_message"
-        The output should include "$test_message"
+        When call log_info "test message"
+        The output should include "test message"
       End
 
       It 'should allow logging at all defined levels'
-        When call set_log_severity "VERBOSE"
-        The variable "_loggers_level_map[default]" should eq "5"
+        set_log_severity "VERBOSE"
+        Assert "_loggers_level_map[default]" eq "5"
         
-        %data:test_message="test message"
-        When call log_verbose "$test_message"
-        The output should include "$test_message"
+        When call log_verbose "test message"
+        The output should include "test message"
         
-        When call log_debug "$test_message"
-        The output should include "$test_message"
+        When call log_debug "test message"
+        The output should include "test message"
         
-        When call log_info "$test_message"
-        The output should include "$test_message"
+        When call log_info "test message"
+        The output should include "test message"
         
-        When call log_warn "$test_message"
-        The output should include "$test_message"
+        When call log_warn "test message"
+        The output should include "test message"
         
-        When call log_error "$test_message"
-        The output should include "$test_message"
+        When call log_error "test message"
+        The output should include "test message"
         
-        When call log_fatal "$test_message"
-        The output should include "$test_message"
+        When call log_fatal "test message"
+        The output should include "test message"
       End
     End
   End
@@ -173,13 +171,12 @@ Describe 'logger.sh'
 
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
-        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC [INFO]"
+        The output should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\]"
       End
 
       It 'should include source file and line information'
         When call log_info "test message"
-        The output should include "BASH_SOURCE"
-        The output should include "BASH_LINENO"
+        The output should include "[${BASH_SOURCE[1]}:${BASH_LINENO[0]}]"
       End
     End
   End
