@@ -326,14 +326,11 @@ jobs:
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('trivy-results-agent-{0}.sarif', matrix.agent) }}
-          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('trivy-agent-{0}', matrix.agent) }}
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: trivy-results.sarif
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('trivy-results-agent-{0}.sarif', matrix.agent) }}
+          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('trivy-agent-{0}', matrix.agent) }}
           category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') || format('trivy-agents-{0}-{1}', matrix.agent, matrix.platform == 'linux/amd64' && 'amd64' || 'arm64') }}
           wait-for-processing: true
 
