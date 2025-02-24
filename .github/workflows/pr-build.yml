@@ -288,9 +288,11 @@ jobs:
           - type: base
             platform: linux/amd64
             arch: amd64
+            agent: null
           - type: base
             platform: linux/arm64
             arch: arm64
+            agent: null
           - type: agent
             platform: linux/amd64
             arch: amd64
