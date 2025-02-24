@@ -269,10 +269,13 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           categories: IaC
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
+          break-on-failure: false
 
 
   trivy-scan:
@@ -338,7 +341,7 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.platform) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.platform) }}
           format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}
+          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', contains(matrix.platform, '/') && split(matrix.platform, '/')[1] || matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, contains(matrix.platform, '/') && split(matrix.platform, '/')[1] || matrix.platform) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -363,8 +366,8 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.platform) }}
-          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.platform) || format('trivy-agents-{0}-{1}', matrix.agent, matrix.platform) }}
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', contains(matrix.platform, '/') && split(matrix.platform, '/')[1] || matrix.platform) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, contains(matrix.platform, '/') && split(matrix.platform, '/')[1] || matrix.platform) }}
+          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', contains(matrix.platform, '/') && split(matrix.platform, '/')[1] || matrix.platform) || format('trivy-agents-{0}-{1}', matrix.agent, contains(matrix.platform, '/') && split(matrix.platform, '/')[1] || matrix.platform) }}
           wait-for-processing: true
 
   build-report:
