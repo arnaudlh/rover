@@ -157,10 +157,9 @@ Describe 'logger.sh'
       End
 
       It 'should include timestamp and level in log messages'
+        timestamp() { printf '%(%Y-%m-%dT%H:%M:%S)T' -1; }
         When call log_info "test message"
-        The stdout should start with "2025-02-24T"
-        The stdout should include " UTC [INFO] ["
-        The stdout should end with "] test message"
+        The stdout should eq "$(timestamp) UTC [INFO] [${SHELLSPEC_SPECFILE}:${SHELLSPEC_LINENUM}] test message"
         The stderr should eq ""
         The status should eq 0
       End
