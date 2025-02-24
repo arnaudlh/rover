@@ -55,13 +55,12 @@ jobs:
         id: msdo-base
         with:
           categories: containers
-          image: 'ghcr.io/${{ github.repository }}/rover:latest'
           
       - name: Upload MSDO scan results for base image
         uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: ${{ steps.msdo-base.outputs.sarifFile }}
+          sarif_file: '${{ steps.msdo-base.outputs.sarifFile }}'
           category: 'MSDO-Release-Base'
           wait-for-processing: true
           
