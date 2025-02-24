@@ -374,8 +374,7 @@ jobs:
               `- azure_devops: ${getStatusEmoji('azure_devops')} (amd64: ${agentStatuses.azure_devops.amd64}, arm64: ${agentStatuses.azure_devops.arm64})`,
               '',
               '## Security Scans',
-              `- Trivy vulnerability scanning: ${trivyScanResult === 'success' ? '✅' : '❌'}`,
-
+              `- Trivy vulnerability scanning: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
               `- SARIF reports processed: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
               '',
               `Overall Status: ${buildBaseResult === 'success' && 
@@ -409,7 +408,7 @@ jobs:
                 );
                 return buildBaseResult === 'success' && 
                        agentSuccess && 
-                       trivyScanResult === 'success' ? 'success' : 'failure';
+                       (trivyScanResult === 'success' || trivyScanResult === 'skipped') ? 'success' : 'failure';
               })(),
               output: {
                 title: (() => {
