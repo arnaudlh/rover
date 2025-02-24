@@ -54,8 +54,7 @@ __log_init__() {
     #------------------------------------------------------------------------------
 
     if [ -z "$log_folder_path" ]; then
-        echo -n "Error line:0: message:Log folder path is not set status :1" >&2
-        echo >&2
+        printf "Error line:0: message:Log folder path is not set status :1\n" >&2
         return 1
     fi
 
@@ -201,7 +200,7 @@ set_log_severity() {
             _loggers_level_map[$logger]=$l
 
         else
-            error "0" "Unknown log level" 1
+            printf "Error line:0: message:Unknown log level status :1\n" >&2
             return 1
         fi
     else
