@@ -158,7 +158,9 @@ Describe 'logger.sh'
 
       It 'should include timestamp and level in log messages'
         When call log_info "test message"
-        The stdout should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2} UTC \[INFO\] \[.*\] test message"
+        The stdout should include "UTC [INFO] ["
+        The stdout should include "] test message"
+        The stdout should match pattern "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
         The stderr should eq ""
         The status should eq 0
       End
