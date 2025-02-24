@@ -5,8 +5,8 @@ error() {
     local parent_lineno="$1"
     local message="$2"
     local code="${3:-1}"
-    printf "Error line:%s: message:%s status :%s\n" "$parent_lineno" "$message" "$code" >&2
-    return "$code"
+    printf "Error line:${parent_lineno}: message:${message} status :${code}\n" >&2
+    return "${code}"
 }
 
 error_message() {
