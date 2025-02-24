@@ -273,7 +273,6 @@ jobs:
           tools: terrascan,tfsec,checkov
           config: msdo.yaml
           policy: recommended
-          upload-results: true
 
 
   trivy-scan:
@@ -370,6 +369,8 @@ jobs:
 
   build-report:
     needs: [build-base, build-agents, trivy-scan, msdo-scan]
+    runs-on: ubuntu-latest
+    if: always()
     permissions:
       checks: write
       pull-requests: write
