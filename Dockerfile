@@ -54,30 +54,41 @@ RUN set -ex && \
     for i in {1..5}; do \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release \
             apt-utils \
             bsdmainutils \
+            ca-certificates \
+            curl \
+            dnsutils \
             fonts-powerline \
             gcc \
             gettext \
             git \
+            gnupg \
+            gpg \
+            gpg-agent \
             jq \
             less \
+            libstrongswan-extra-plugins \
+            libtss2-tcti-tabrmd0 \
             locales \
             make \
+            net-tools \
+            network-manager-openvpn \
+            openssh-client \
+            openvpn \
             python3-dev \
             python3-pip \
             rsync \
             software-properties-common \
+            strongswan \
+            strongswan-pki \
             sudo \
+            traceroute \
             unzip \
             vim \
             wget \
-            zsh \
-            zip; then \
+            zip \
+            zsh; then \
             echo "Successfully installed core packages" && \
             break; \
         fi; \
@@ -111,8 +122,22 @@ RUN set -ex && \
            # GitHub CLI repository
            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
            echo "deb [arch=${TARGETARCH}] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+           # Update package lists after adding repositories
            apt-get update; then \
             echo "Successfully configured package repositories" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done && \
+    # Install repository-specific packages with retries
+    for i in {1..5}; do \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            docker-ce-cli \
+            gh \
+            kubectl; then \
+            echo "Successfully installed repository packages" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 10 seconds..." && \
