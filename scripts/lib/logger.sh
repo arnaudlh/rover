@@ -58,7 +58,6 @@ __log_init__() {
     fi
 
     if [ ! -d "$log_folder_path" ] && [ "$TEST_DEBUG_CREATE_DIR" = "true" ]; then
-        printf "creating directory %s\n" "$log_folder_path"
         __create_dir__ "$log_folder_path"
     fi
 
@@ -169,7 +168,7 @@ export_tf_environment_variables() {
       ;;
     *)
       error "0" "Unknown log level" 1
-      return 1
+      exit 1
       ;;
   esac
 
