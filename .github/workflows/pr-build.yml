@@ -363,11 +363,14 @@ jobs:
       - name: Debug SARIF files
         run: |
           ls -la
-          sarif_file="${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') }}"
+          sarif_file="${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}"
           echo "Looking for SARIF file: $sarif_file"
           if [ -f "$sarif_file" ]; then
             echo "Found SARIF file:"
-            cat "$sarif_file"
+            echo "Checking SARIF file structure..."
+            jq -r '.runs[].tool.driver | {name, rules_count: (.rules | length)}' "$sarif_file" || true
+            echo "Checking artifact locations..."
+            jq -r '.runs[].artifacts[] | {location: .location.uri, description: .description.text}' "$sarif_file" || true
           else
             echo "SARIF file not found"
           fi
