@@ -395,7 +395,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         id: trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.25.0
         with:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('ghcr.io/{0}/rover:pr-{1}-{2}', github.repository, github.sha, matrix.arch) || format('ghcr.io/{0}/rover-agent:pr-{1}-{2}-{3}', github.repository, matrix.agent, github.sha, matrix.arch) }}
