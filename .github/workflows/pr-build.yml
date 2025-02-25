@@ -274,6 +274,9 @@ jobs:
           categories: IaC
           config: msdo.yaml
           break-on-failure: false
+          upload-results: true
+          output-format: sarif
+          output-name: msdo-results
 
 
   trivy-scan:
@@ -358,6 +361,8 @@ jobs:
           vuln-type: 'os,library'
           list-all-pkgs: true
           limit-severities-for-sarif: true
+          skip-dirs: 'tests/'
+          skip-files: 'test_*.py'
 
 
       - name: Debug SARIF files
