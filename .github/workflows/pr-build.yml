@@ -251,8 +251,112 @@ jobs:
             versionAzdo=${{ steps.versions.outputs.azdo }}
             versionTfc=${{ steps.versions.outputs.tfc }}
 
-  msdo-scan:
+  grype-scan:
     needs: [build-base, build-agents]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    strategy:
+      matrix:
+        include:
+          - type: base
+            platform: linux/amd64
+            arch: amd64
+          - type: base
+            platform: linux/arm64
+            arch: arm64
+          - type: agent
+            platform: linux/amd64
+            arch: amd64
+            agent: github
+          - type: agent
+            platform: linux/amd64
+            arch: amd64
+            agent: tfc
+          - type: agent
+            platform: linux/amd64
+            arch: amd64
+            agent: gitlab
+          - type: agent
+            platform: linux/amd64
+            arch: amd64
+            agent: azure_devops
+          - type: agent
+            platform: linux/arm64
+            arch: arm64
+            agent: github
+          - type: agent
+            platform: linux/arm64
+            arch: arm64
+            agent: gitlab
+          - type: agent
+            platform: linux/arm64
+            arch: arm64
+            agent: azure_devops
+      exclude:
+        - type: agent
+          platform: linux/arm64
+          arch: arm64
+          agent: tfc
+      fail-fast: false
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Create results directory
+        run: mkdir -p results
+
+      - name: Run Grype scan
+        id: scan
+        continue-on-error: false
+        run: |
+          set -e
+          echo "Starting Grype scan for ${{ matrix.type }} (${{ matrix.arch }})"
+          if [ "${{ matrix.type }}" = "base" ]; then
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.arch }} \
+              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.arch }}.sarif \
+              --fail-on high
+          else
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }} \
+              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ matrix.arch }}.sarif \
+              --fail-on high
+          fi
+
+      - name: Upload scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: results/results-${{ matrix.type }}${{ matrix.type == 'agent' && format('-{0}', matrix.agent) || '' }}-${{ matrix.arch }}.sarif
+          category: scan-${{ matrix.type }}${{ matrix.type == 'agent' && format('-{0}', matrix.agent) || '' }}-${{ matrix.arch }}
+          wait-for-processing: true
+
+      - name: Set job result
+        id: set-result
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "result=success" >> $GITHUB_OUTPUT
+          else
+            echo "result=failure" >> $GITHUB_OUTPUT
+          fi
+
+  msdo-scan:
+    needs: [build-base, build-agents, grype-scan]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -351,13 +455,13 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
-          category: ${{ matrix.type == 'base' && format('trivy-{0}-{1}', matrix.type, matrix.arch) || format('trivy-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
+          sarif_file: ${{ matrix.type == 'base' && format('results/results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('results/results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
+          category: ${{ matrix.type == 'base' && format('scan-{0}-{1}', matrix.type, matrix.arch) || format('scan-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
           wait-for-processing: true
           checkout_path: ${{ github.workspace }}
 
   build-report:
-    needs: [build-base, build-agents, trivy-scan, msdo-scan]
+    needs: [build-base, build-agents, grype-scan, msdo-scan]
     runs-on: ubuntu-latest
     if: always()
     permissions:
@@ -375,7 +479,7 @@ jobs:
         env:
           BUILD_BASE_RESULT: ${{ needs.build-base.result }}
           BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
-          TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
+          GRYPE_SCAN_RESULT: ${{ needs.grype-scan.result }}
           MSDO_SCAN_RESULT: ${{ needs.msdo-scan.result }}
         with:
           script: |
@@ -383,7 +487,7 @@ jobs:
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT;
             const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
-            const trivyScanResult = process.env.TRIVY_SCAN_RESULT;
+            const grypeScanResult = process.env.GRYPE_SCAN_RESULT;
             const msdoScanResult = process.env.MSDO_SCAN_RESULT;
 
             
@@ -421,13 +525,9 @@ jobs:
               const arm64Status = agentStatuses[agent].arm64;
               
               if (arm64Status === 'n/a') {
-                return amd64Status === 'success' ? '✅' : 
-                       amd64Status === 'pending' ? '⏳' : '❌';
+                return amd64Status === 'success' ? '✅' : '❌';
               }
-              if (amd64Status === 'success' && arm64Status === 'success') return '✅';
-              if (amd64Status === 'pending' || arm64Status === 'pending') return '⏳';
-              if (amd64Status === 'success' || arm64Status === 'success') return '⚠️';
-              return '❌';
+              return (amd64Status === 'success' && (arm64Status === 'success' || arm64Status === 'n/a')) ? '✅' : '❌';
             };
             
             const buildSummary = [
@@ -444,9 +544,16 @@ jobs:
               `- azure_devops: ${getStatusEmoji('azure_devops')} (amd64: ${agentStatuses.azure_devops.amd64}, arm64: ${agentStatuses.azure_devops.arm64})`,
               '',
               '## Security Scans',
-              `- MSDO security analysis: ${msdoScanResult === 'success' || msdoScanResult === 'skipped' ? '✅' : '❌'}`,
+              `- Container security scan: ${grypeScanResult === 'success' ? '✅' : '❌'}`,
+              `- MSDO security analysis: ${msdoScanResult === 'success' ? '✅' : '❌'}`,
               '',
-              `Overall Status: ${buildBaseResult === 'success' && buildAgentsResult === 'success' && (trivyScanResult === 'success' || trivyScanResult === 'skipped') && (msdoScanResult === 'success' || msdoScanResult === 'skipped') ? '✅' : '❌'}`
+              `Overall Status: ${buildBaseResult === 'success' && buildAgentsResult === 'success' && grypeScanResult === 'success' && msdoScanResult === 'success' ? '✅' : '❌'}`,
+              '',
+              '### Status Details',
+              `- Base Build: ${buildBaseResult}`,
+              `- Agent Builds: ${buildAgentsResult}`,
+              `- Container Security: ${grypeScanResult}`,
+              `- MSDO Analysis: ${msdoScanResult}`
             ].join('\n');
             
             if (context.payload.pull_request) {
@@ -471,7 +578,9 @@ jobs:
                   )
                 );
                 return buildBaseResult === 'success' && 
-                       agentSuccess ? 'success' : 'failure';
+                       agentSuccess && 
+                       grypeScanResult === 'success' && 
+                       msdoScanResult === 'success' ? 'success' : 'failure';
               })(),
               output: {
                 title: (() => {
@@ -481,7 +590,9 @@ jobs:
                     )
                   );
                   return `Build Report ${buildBaseResult === 'success' && 
-                         agentSuccess ? '✅' : '❌'}`;
+                         agentSuccess && 
+                         grypeScanResult === 'success' && 
+                         msdoScanResult === 'success' ? '✅' : '❌'}`;
                 })(),
                 summary: buildSummary
               }
