@@ -1,7 +1,0 @@
-format: sarif
-severity: CRITICAL,HIGH
-skip-check: []
-quiet: true
-no-guide: true
-compact: true
-output: checkov.sarif
