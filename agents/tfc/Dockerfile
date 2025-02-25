@@ -20,21 +20,36 @@ ENV TFC_AGENT_TOKEN="" \
     TFC_AGENT_LOG_LEVEL="info" \
     ROVER_RUNNER=true
 
-RUN mkdir -p /home/${USERNAME}/agent && \
-    cd /home/${USERNAME}/agent && \
-    DEBIAN_FRONTEND=noninteractive apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y unzip && \
-    if [ "${TARGETARCH}" = "amd64" ]; then \
-        curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_amd64.zip; \
-    else \
-        curl -L -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_arm64.zip; \
-    fi && \
-    mkdir -p /usr/local/bin && \
-    unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
-    rm /tmp/tfc-agent.zip && \
-    chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
-    mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
-    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
+RUN set -ex && \
+    for i in {1..3}; do \
+        echo "Attempt $i: Installing TFC agent..." && \
+        if mkdir -p /home/${USERNAME}/agent && \
+           cd /home/${USERNAME}/agent && \
+           DEBIAN_FRONTEND=noninteractive apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends unzip && \
+           if [ "${TARGETARCH}" = "amd64" ]; then \
+               curl -L --retry 3 --retry-delay 5 -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_amd64.zip; \
+           else \
+               curl -L --retry 3 --retry-delay 5 -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_arm64.zip; \
+           fi && \
+           mkdir -p /usr/local/bin && \
+           unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
+           rm /tmp/tfc-agent.zip && \
+           chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
+           mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
+           chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent && \
+           apt-get clean && \
+           rm -rf /var/lib/apt/lists/*; then \
+            echo "TFC agent installed successfully" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install TFC agent after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done
 
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-plan
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-apply
