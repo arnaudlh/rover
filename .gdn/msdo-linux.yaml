@@ -7,27 +7,11 @@ tools:
   - checkov
 analysis_config:
   terrascan:
-    format: sarif
-    severity: CRITICAL,HIGH
-    skip-rules: []
-    output-type: sarif
-    use-colors: auto
-    log-level: error
+    config: terrascan-linux.yaml
   tfsec:
-    format: sarif
-    severity: CRITICAL,HIGH
-    exclude: []
-    out: tfsec.sarif
-    no-color: true
-    update: false
+    config: tfsec-linux.yaml
   checkov:
-    format: sarif
-    severity: CRITICAL,HIGH
-    skip-check: []
-    quiet: true
-    no-guide: true
-    compact: true
-    output: checkov.sarif
+    config: checkov-linux.yaml
 analysis_type: IaC
 platform: linux
 sarif:
