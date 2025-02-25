@@ -286,8 +286,8 @@ jobs:
     permissions:
       id-token: write
       security-events: write
-          
-      - name: Report MSDO scan status
+      
+    - name: Report MSDO scan status
         if: always()
         run: |
           if [ "${{ steps.msdo.outcome }}" != "success" ]; then
