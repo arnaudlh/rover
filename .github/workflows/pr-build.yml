@@ -3,7 +3,10 @@ name: PR Build & Test
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types:
+      - opened
+      - synchronize
+      - reopened
   push:
     branches:
       - main
@@ -17,7 +20,7 @@ env:
   BUILDKIT_COLORS: 1
   BUILDKIT_STEP_LOG_MAX_SIZE: 10485760
   BUILDKIT_STEP_LOG_MAX_SPEED: 10485760
-  DOCKER_BUILDKIT: 1
+  DOCKER_BUILDKIT: true
   DOCKER_SCAN_SUGGEST: false
   BUILDX_NO_DEFAULT_LOAD: true
   REGISTRY: ghcr.io
@@ -46,10 +49,10 @@ jobs:
     steps:
       - id: platforms
         run: |
-          echo "matrix=[\"linux/amd64\", \"linux/arm64\"]" >> $GITHUB_OUTPUT
+          echo "matrix=[\"linux/amd64\",\"linux/arm64\"]" >> $GITHUB_OUTPUT
       - id: agents
         run: |
-          echo "matrix=[\"github\", \"tfc\", \"gitlab\", \"azure_devops\"]" >> $GITHUB_OUTPUT
+          echo "matrix=[\"github\",\"tfc\",\"gitlab\",\"azure_devops\"]" >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
