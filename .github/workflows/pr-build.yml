@@ -282,7 +282,7 @@ jobs:
           policy: none
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
-          config: msdo.yaml
+          config: msdo-linux.yaml
           
       - name: Report MSDO scan status
         if: always()
