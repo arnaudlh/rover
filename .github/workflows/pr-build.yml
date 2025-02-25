@@ -175,24 +175,12 @@ jobs:
       result: success
     strategy:
       matrix:
-        include:
-          - platform: linux/amd64
-            agent: github
-          - platform: linux/amd64
-            agent: tfc
-          - platform: linux/amd64
-            agent: gitlab
-          - platform: linux/amd64
-            agent: azure_devops
-          - platform: linux/arm64
-            agent: github
-          - platform: linux/arm64
-            agent: gitlab
-          - platform: linux/arm64
-            agent: azure_devops
+        platform: [linux/amd64, linux/arm64]
+        agent: [github, tfc, gitlab, azure_devops]
         exclude:
           - platform: linux/arm64
             agent: tfc
+      fail-fast: false
       fail-fast: false
     continue-on-error: false
     env:
@@ -280,41 +268,21 @@ jobs:
       result: ${{ steps.set-result.outputs.result }}
     strategy:
       matrix:
-        include:
+        type: [base, agent]
+        platform: [linux/amd64, linux/arm64]
+        agent: [github, tfc, gitlab, azure_devops]
+        exclude:
           - type: base
-            platform: linux/amd64
-            arch: amd64
-          - type: base
-            platform: linux/arm64
-            arch: arm64
-          - type: agent
-            platform: linux/amd64
-            arch: amd64
             agent: github
-          - type: agent
-            platform: linux/amd64
-            arch: amd64
+          - type: base
             agent: tfc
-          - type: agent
-            platform: linux/amd64
-            arch: amd64
+          - type: base
             agent: gitlab
-          - type: agent
-            platform: linux/amd64
-            arch: amd64
+          - type: base
             agent: azure_devops
           - type: agent
             platform: linux/arm64
-            arch: arm64
-            agent: github
-          - type: agent
-            platform: linux/arm64
-            arch: arm64
-            agent: gitlab
-          - type: agent
-            platform: linux/arm64
-            arch: arm64
-            agent: azure_devops
+            agent: tfc
       fail-fast: false
     permissions:
       contents: read
@@ -377,8 +345,8 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: results/results-${{ matrix.type }}${{ matrix.type == 'agent' && format('-{0}', matrix.agent) || '' }}-${{ matrix.arch }}.sarif
-          category: scan-${{ matrix.type }}${{ matrix.type == 'agent' && format('-{0}', matrix.agent) || '' }}-${{ matrix.arch }}
+          sarif_file: results/results-${{ matrix.type }}${{ matrix.type == 'agent' && format('-{0}', matrix.agent) || '' }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}.sarif
+          category: scan-${{ matrix.type }}${{ matrix.type == 'agent' && format('-{0}', matrix.agent) || '' }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           wait-for-processing: true
 
       - name: Set job result
@@ -521,8 +489,8 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('results/results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('results/results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
-          category: ${{ matrix.type == 'base' && format('scan-{0}-{1}', matrix.type, matrix.arch) || format('scan-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
+          sarif_file: /home/runner/work/rover/rover/.gdn/sarif/*.sarif
+          category: msdo-scan
           wait-for-processing: true
           checkout_path: ${{ github.workspace }}
 
