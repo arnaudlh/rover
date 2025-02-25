@@ -1,6 +1,6 @@
 format: sarif
 severity: CRITICAL,HIGH
 exclude: []
-out: tfsec.sarif
+out: /home/runner/work/rover/rover/.gdn/tfsec.sarif
 no-color: true
 update: false

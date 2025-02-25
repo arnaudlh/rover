@@ -4,4 +4,4 @@ skip-check: []
 quiet: true
 no-guide: true
 compact: true
-output: checkov.sarif
+output: /home/runner/work/rover/rover/.gdn/checkov.sarif
