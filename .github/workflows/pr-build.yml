@@ -272,6 +272,7 @@ jobs:
           policy: Microsoft.Security.Baseline.IaC
           tools: terrascan,tfsec,checkov
           categories: IaC
+          config: msdo.yaml
 
 
   trivy-scan:
@@ -352,6 +353,7 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
+          artifact-type: 'container_image'
 
 
       - name: Debug SARIF files
