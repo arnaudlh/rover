@@ -43,6 +43,7 @@ jobs:
     outputs:
       platforms: ${{ steps.platforms.outputs.matrix }}
       agents: ${{ steps.agents.outputs.matrix }}
+      exclude: ${{ steps.exclude.outputs.matrix }}
     steps:
       - id: platforms
         run: |
@@ -168,23 +169,11 @@ jobs:
       result: success
     strategy:
       matrix:
-        include:
-          - platform: linux/amd64
-            agent: github
-          - platform: linux/amd64
-            agent: tfc
-          - platform: linux/amd64
-            agent: gitlab
-          - platform: linux/amd64
-            agent: azure_devops
-          - platform: linux/arm64
-            agent: github
-          - platform: linux/arm64
-            agent: gitlab
-          - platform: linux/arm64
-            agent: azure_devops
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+        exclude: ${{ fromJson(needs.matrix-prep.outputs.exclude) }}
       fail-fast: false
-    continue-on-error: true
+    continue-on-error: false
     env:
       BUILDKIT_PROGRESS: plain
       BUILDKIT_COLORS: 1
@@ -491,20 +480,7 @@ jobs:
 
 
 
-          echo "Looking for SARIF file: $sarif_file"
-          pwd
-          find . -name "*.sarif" -type f
-          if [ -f "$sarif_file" ]; then
-            echo "Found SARIF file:"
-            echo "Checking SARIF file structure..."
-            jq -r '.runs[].tool.driver | {name, rules_count: (.rules | length)}' "$sarif_file" || true
-            echo "Checking artifact locations..."
-            jq -r '.runs[].artifacts[] | {location: .location.uri, description: .description.text}' "$sarif_file" || true
-            echo "Checking results..."
-            jq -r '.runs[].results[] | {ruleId, level, message: .message.text, locations: [.locations[].physicalLocation.artifactLocation.uri]}' "$sarif_file" || true
-          else
-            echo "SARIF file not found"
-          fi
+
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
