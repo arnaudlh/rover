@@ -241,7 +241,7 @@ jobs:
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
-            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           provenance: false
           sbom: false
           build-args: |
