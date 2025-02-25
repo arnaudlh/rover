@@ -7,11 +7,11 @@ tools:
   - checkov
 analysis_config:
   terrascan:
-    config: terrascan-linux.yaml
+    config: /home/runner/work/rover/rover/.gdn/terrascan-linux.yaml
   tfsec:
-    config: tfsec-linux.yaml
+    config: /home/runner/work/rover/rover/.gdn/tfsec-linux.yaml
   checkov:
-    config: checkov-linux.yaml
+    config: /home/runner/work/rover/rover/.gdn/checkov-linux.yaml
 analysis_type: IaC
 platform: linux
 sarif:
