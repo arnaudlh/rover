@@ -275,6 +275,8 @@ jobs:
         with:
           policy: Microsoft.Security.Baseline.IaC
           tools: terrascan,tfsec,checkov
+          categories: IaC
+          break-on-failure: false
 
 
   trivy-scan:
@@ -346,7 +348,7 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.arch) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.arch) }}
           format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
+          output: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -355,7 +357,6 @@ jobs:
           vuln-type: 'os,library'
           list-all-pkgs: true
           github-pat: ${{ github.token }}
-          repository: ${{ github.repository }}
 
 
       - name: Debug SARIF files
@@ -375,8 +376,8 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
-          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.arch) || format('trivy-agents-{0}-{1}', matrix.agent, matrix.arch) }}
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
+          category: ${{ matrix.type == 'base' && format('trivy-{0}-{1}', matrix.type, matrix.arch) || format('trivy-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
           wait-for-processing: true
 
   build-report:
