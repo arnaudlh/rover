@@ -496,10 +496,10 @@ jobs:
             // Parse agent build statuses
             for (const job of agentJobs.data.jobs) {
               if (job.name.startsWith('build-agents')) {
-                const match = job.name.match(/build-agents \((linux\/(amd64|arm64)), (amd64|arm64), ([^)]+)\)/);
+                const match = job.name.match(/build-agents \(platform: (linux\/(?:amd64|arm64)), agent: ([^)]+)\)/);
                 if (match) {
-                  const arch = match[2];
-                  const agent = match[4];
+                  const arch = match[1].includes('amd64') ? 'amd64' : 'arm64';
+                  const agent = match[2];
                   if (agentStatuses[agent]) {
                     agentStatuses[agent][arch] = job.conclusion || job.status;
                   }
