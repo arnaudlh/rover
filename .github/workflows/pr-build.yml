@@ -322,12 +322,33 @@ jobs:
           echo "Starting Grype scan for ${{ matrix.type }} (${{ matrix.arch }})"
           if [ "${{ matrix.type }}" = "base" ]; then
             grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.arch }} \
-              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.arch }}.sarif || true
+              -o sarif \
+              --file results/results-${{ matrix.type }}-${{ matrix.arch }}.sarif \
+              --add-cpes-if-none \
+              --by-cve \
+              --fail-on none \
+              --only-fixed || true
           else
             grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }} \
-              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ matrix.arch }}.sarif || true
+              -o sarif \
+              --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ matrix.arch }}.sarif \
+              --add-cpes-if-none \
+              --by-cve \
+              --fail-on none \
+              --only-fixed || true
           fi
           echo "Scan completed. Check SARIF output for any security findings."
+          
+          # Display summary of findings
+          if [ "${{ matrix.type }}" = "base" ]; then
+            echo "Summary for base image (${{ matrix.arch }}):"
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.arch }} \
+              -o table || true
+          else
+            echo "Summary for ${{ matrix.agent }} agent (${{ matrix.arch }}):"
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }} \
+              -o table || true
+          fi
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
