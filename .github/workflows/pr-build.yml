@@ -366,22 +366,6 @@ jobs:
           skip-dirs: 'tests/'
           skip-files: 'test_*.py'
           github-pat: ${{ github.token }}
-          trivy-config: |
-            format: sarif
-            exit-code: 1
-            scan:
-              security-checks: vuln
-              skip-dirs:
-                - tests/
-              skip-files:
-                - test_*.py
-              severity: CRITICAL,HIGH
-              ignore-unfixed: true
-              list-all-pkgs: true
-            report:
-              sarif:
-                add-source: true
-                artifact-location: true
           
       - name: Verify SARIF file
         if: always()

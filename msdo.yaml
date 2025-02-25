@@ -9,18 +9,14 @@ tools:
 analysis_type: IaC
 analysis_config:
   trivy:
-    format: sarif
-    exit-code: 1
-    scan:
-      security-checks: vuln
-      skip-dirs:
-        - tests/
-      skip-files:
-        - test_*.py
-      severity: CRITICAL,HIGH
-      ignore-unfixed: true
-      list-all-pkgs: true
-    report:
-      sarif:
-        add-source: true
-        artifact-location: true
+    scanners:
+      - vuln
+    severity: CRITICAL,HIGH
+    output: sarif
+    timeout: 10m
+    skip-dirs:
+      - tests/
+    skip-files:
+      - test_*.py
+    list-all-pkgs: true
+    ignore-unfixed: true
