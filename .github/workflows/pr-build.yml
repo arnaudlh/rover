@@ -272,14 +272,6 @@ jobs:
           tools: terrascan,tfsec,checkov
           categories: IaC
           config: msdo.yaml
-          break-on-failure: false
-          upload-results: true
-          output-format: sarif
-          output-name: msdo-results
-          workspace: ${{ github.workspace }}
-          working-directory: ${{ github.workspace }}
-          env:
-            GUARDIAN_SCAN_DIRECTORY: ${{ github.workspace }}
           
       - name: Report MSDO scan status
         if: always()
@@ -374,6 +366,7 @@ jobs:
           skip-dirs: 'tests/'
           skip-files: 'test_*.py'
           artifact-type: 'container_image'
+          github-pat: ${{ github.token }}
           
       - name: Verify SARIF file
         if: always()
