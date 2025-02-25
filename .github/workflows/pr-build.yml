@@ -43,7 +43,6 @@ jobs:
     outputs:
       platforms: ${{ steps.platforms.outputs.matrix }}
       agents: ${{ steps.agents.outputs.matrix }}
-      exclude: ${{ steps.exclude.outputs.matrix }}
     steps:
       - id: platforms
         run: |
@@ -51,9 +50,6 @@ jobs:
       - id: agents
         run: |
           echo "matrix=[\"github\", \"tfc\", \"gitlab\", \"azure_devops\"]" >> $GITHUB_OUTPUT
-      - id: exclude
-        run: |
-          echo "matrix=[{\"platform\":\"linux/arm64\",\"agent\":\"tfc\"}]" >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
@@ -169,9 +165,24 @@ jobs:
       result: success
     strategy:
       matrix:
-        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
-        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
-        exclude: ${{ fromJson(needs.matrix-prep.outputs.exclude) }}
+        include:
+          - platform: linux/amd64
+            agent: github
+          - platform: linux/amd64
+            agent: tfc
+          - platform: linux/amd64
+            agent: gitlab
+          - platform: linux/amd64
+            agent: azure_devops
+          - platform: linux/arm64
+            agent: github
+          - platform: linux/arm64
+            agent: gitlab
+          - platform: linux/arm64
+            agent: azure_devops
+        exclude:
+          - platform: linux/arm64
+            agent: tfc
       fail-fast: false
     continue-on-error: false
     env:
