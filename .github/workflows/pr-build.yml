@@ -352,6 +352,7 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
+          input: ${{ matrix.type == 'base' && './Dockerfile' || format('./agents/{0}/Dockerfile', matrix.agent) }}
 
 
       - name: Debug SARIF files
