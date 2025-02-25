@@ -7,7 +7,16 @@ tools:
   - checkov
 analysis_config:
   terrascan:
-    config: /home/runner/work/rover/rover/.gdn/terrascan-linux.yaml
+    tool:
+      name: "Terrascan"
+      version: "Latest"
+    arguments:
+      scan: "scan"
+      output-type: "sarif"
+      log-level: "error"
+      use-colors: "auto"
+      severity: "CRITICAL,HIGH"
+      output: "/home/runner/work/rover/rover/.gdn/sarif/terrascan.sarif"
   tfsec:
     config: /home/runner/work/rover/rover/.gdn/tfsec-linux.yaml
   checkov:
