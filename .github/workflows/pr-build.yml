@@ -334,6 +334,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create output directory
+        run: mkdir -p trivy-results
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
@@ -344,7 +347,7 @@ jobs:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('ghcr.io/{0}/rover:pr-{1}-{2}', github.repository, github.sha, matrix.arch) || format('ghcr.io/{0}/rover-agent:pr-{1}-{2}-{3}', github.repository, matrix.agent, github.sha, matrix.arch) }}
           format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
+          output: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -358,8 +361,8 @@ jobs:
 
       - name: Debug SARIF files
         run: |
-          ls -la
-          sarif_file="${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}"
+          ls -la trivy-results/
+          sarif_file="${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}"
           echo "Looking for SARIF file: $sarif_file"
           pwd
           find . -name "*.sarif" -type f
@@ -380,7 +383,7 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
           category: ${{ matrix.type == 'base' && format('trivy-{0}-{1}', matrix.type, matrix.arch) || format('trivy-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
           wait-for-processing: true
 
