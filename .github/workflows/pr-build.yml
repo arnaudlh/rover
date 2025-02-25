@@ -269,10 +269,8 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         with:
-          categories: IaC
+          policy: Microsoft.Security.Baseline.IaC
           tools: terrascan,tfsec,checkov
 
 
@@ -369,8 +367,8 @@ jobs:
         if: success() || failure()
         continue-on-error: true
         with:
-          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') }}
-          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') || format('trivy-agents-{0}-{1}', matrix.agent, contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') }}
+          sarif_file: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
+          category: ${{ matrix.type == 'base' && format('trivy-base-{0}', matrix.arch) || format('trivy-agents-{0}-{1}', matrix.agent, matrix.arch) }}
           wait-for-processing: true
 
   build-report:
