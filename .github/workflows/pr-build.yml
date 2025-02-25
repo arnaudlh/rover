@@ -353,6 +353,7 @@ jobs:
           vuln-type: 'os,library'
           list-all-pkgs: true
           input: ${{ matrix.type == 'base' && './Dockerfile' || format('./agents/{0}/Dockerfile', matrix.agent) }}
+          cache-dir: /tmp/trivy-cache
 
 
       - name: Debug SARIF files
@@ -360,6 +361,8 @@ jobs:
           ls -la
           sarif_file="${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}"
           echo "Looking for SARIF file: $sarif_file"
+          pwd
+          find . -name "*.sarif" -type f
           if [ -f "$sarif_file" ]; then
             echo "Found SARIF file:"
             echo "Checking SARIF file structure..."
