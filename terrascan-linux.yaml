@@ -1,0 +1,6 @@
+format: sarif
+severity: CRITICAL,HIGH
+skip-rules: []
+output-type: sarif
+use-colors: auto
+log-level: error
