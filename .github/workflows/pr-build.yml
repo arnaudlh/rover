@@ -271,11 +271,8 @@ jobs:
 
       - name: Setup MSDO configuration
         run: |
-          # Create .gdn directory in workspace
-          mkdir -p .gdn
-          
-          # Create MSDO working directory
-          mkdir -p /home/runner/work/rover/rover/.gdn
+          # Create MSDO working directory and SARIF output directory
+          mkdir -p /home/runner/work/rover/rover/.gdn/sarif
           
           # Copy configuration files
           cp -f .gdn/*.yaml /home/runner/work/rover/rover/.gdn/
@@ -283,9 +280,7 @@ jobs:
           # Verify files were copied
           echo "Verifying configuration files:"
           ls -la /home/runner/work/rover/rover/.gdn/
-          
-          # Create SARIF output directory
-          mkdir -p /home/runner/work/rover/rover/.gdn/sarif
+          cat /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
 
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
@@ -302,12 +297,16 @@ jobs:
           GDN_RUN_EXPORT_BREAKING_RESULTS_TO_FILE: sarif
           GDN_RUN_SUCCEED_ON_NO_TOOLS: true
           GDN_RUN_WORKING_DIRECTORY: /home/runner/work/rover/rover
+          GDN_RUN_INIT_FORCE: true
+          GDN_RUN_INIT_CLEAN: true
         with:
           policy: none
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
           config: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
           working-directory: /home/runner/work/rover/rover
+          init-force: true
+          init-clean: true
       
       - name: Report MSDO scan status
         if: always()
