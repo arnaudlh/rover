@@ -1,0 +1,6 @@
+format: sarif
+severity: CRITICAL,HIGH
+exclude: []
+out: tfsec.sarif
+no-color: true
+update: false
