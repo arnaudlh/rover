@@ -365,18 +365,8 @@ jobs:
           list-all-pkgs: true
           skip-dirs: 'tests/'
           skip-files: 'test_*.py'
-          trivy-config: |
-            format: sarif
-            exit-code: 1
-            scan:
-              security-checks: vuln
-              skip-dirs:
-                - tests/
-              skip-files:
-                - test_*.py
-              severity: CRITICAL,HIGH
-              ignore-unfixed: true
-              list-all-pkgs: true
+          github-pat: ${{ github.token }}
+          sarif-artifact-name: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
           
       - name: Verify SARIF file
         if: always()
