@@ -3,16 +3,14 @@ name: PR Build & Test
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    types: [opened, synchronize, reopened]
   push:
-    branches:
+    branches: 
       - main
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 env:
@@ -98,19 +96,21 @@ jobs:
       - name: Parse versions
         id: versions
         run: |
-          echo "vault=$(./scripts/parse_versions.sh tool vault)" >> $GITHUB_OUTPUT
-          echo "golang=$(./scripts/parse_versions.sh tool golang)" >> $GITHUB_OUTPUT
-          echo "kubectl=$(./scripts/parse_versions.sh tool kubectl)" >> $GITHUB_OUTPUT
-          echo "kubelogin=$(./scripts/parse_versions.sh tool kubelogin)" >> $GITHUB_OUTPUT
-          echo "docker_compose=$(./scripts/parse_versions.sh tool docker_compose)" >> $GITHUB_OUTPUT
-          echo "terraform_docs=$(./scripts/parse_versions.sh tool terraform_docs)" >> $GITHUB_OUTPUT
-          echo "packer=$(./scripts/parse_versions.sh tool packer)" >> $GITHUB_OUTPUT
-          echo "powershell=$(./scripts/parse_versions.sh tool powershell)" >> $GITHUB_OUTPUT
-          echo "ansible=$(./scripts/parse_versions.sh tool ansible)" >> $GITHUB_OUTPUT
-          echo "azure_cli=$(./scripts/parse_versions.sh tool azure_cli)" >> $GITHUB_OUTPUT
-          echo "terrascan=$(./scripts/parse_versions.sh tool terrascan)" >> $GITHUB_OUTPUT
-          echo "tfupdate=$(./scripts/parse_versions.sh tool tfupdate)" >> $GITHUB_OUTPUT
-          echo "terraform=$(./scripts/parse_versions.sh terraform | head -n1)" >> $GITHUB_OUTPUT
+          {
+            echo "vault=$(./scripts/parse_versions.sh tool vault)"
+            echo "golang=$(./scripts/parse_versions.sh tool golang)"
+            echo "kubectl=$(./scripts/parse_versions.sh tool kubectl)"
+            echo "kubelogin=$(./scripts/parse_versions.sh tool kubelogin)"
+            echo "docker_compose=$(./scripts/parse_versions.sh tool docker_compose)"
+            echo "terraform_docs=$(./scripts/parse_versions.sh tool terraform_docs)"
+            echo "packer=$(./scripts/parse_versions.sh tool packer)"
+            echo "powershell=$(./scripts/parse_versions.sh tool powershell)"
+            echo "ansible=$(./scripts/parse_versions.sh tool ansible)"
+            echo "azure_cli=$(./scripts/parse_versions.sh tool azure_cli)"
+            echo "terrascan=$(./scripts/parse_versions.sh tool terrascan)"
+            echo "tfupdate=$(./scripts/parse_versions.sh tool tfupdate)"
+            echo "terraform=$(./scripts/parse_versions.sh terraform | head -n1)"
+          } >> $GITHUB_OUTPUT
 
       - name: Build and push
         id: build
@@ -121,22 +121,27 @@ jobs:
           allow: network.host
           file: ./Dockerfile
           push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+          tags: >-
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{
+              contains(matrix.platform, 'amd64') && 'amd64' || 'arm64'
+            }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{
+              contains(matrix.platform, 'amd64') && 'amd64' || 'arm64'
+            }}
           target: base
           platforms: ${{ matrix.platform }}
-          cache-from: |
+          cache-from: >-
             type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{
               contains(matrix.platform, 'amd64') && 'amd64' || 'arm64'
             }}
             type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{
               github.sha
             }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-          cache-to: |
+          cache-to: >-
             type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{
               github.sha
-            }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
+            }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64'
+            }},mode=max
           cache-scope: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
@@ -175,11 +180,21 @@ jobs:
       result: success
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
-        agent: [github, tfc, gitlab, azure_devops]
-        exclude:
-          - platform: linux/arm64
+        include:
+          - platform: linux/amd64
+            agent: github
+          - platform: linux/amd64
             agent: tfc
+          - platform: linux/amd64
+            agent: gitlab
+          - platform: linux/amd64
+            agent: azure_devops
+          - platform: linux/arm64
+            agent: github
+          - platform: linux/arm64
+            agent: gitlab
+          - platform: linux/arm64
+            agent: azure_devops
       fail-fast: false
     continue-on-error: false
     env:
@@ -221,32 +236,20 @@ jobs:
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
-              matrix.agent
-            }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
-              matrix.agent
-            }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
-              matrix.agent
-            }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
-              matrix.agent
-            }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           cache-to: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
-              matrix.agent
-            }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
           cache-scope: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
-            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{
-              github.sha
-            }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           provenance: false
           sbom: false
           build-args: |
@@ -396,13 +399,8 @@ jobs:
 
       - name: Setup MSDO configuration
         run: |
-          # Create MSDO working directory and SARIF output directory
           mkdir -p /home/runner/work/rover/rover/.gdn/sarif
-          
-          # Copy configuration files
           cp -f .gdn/*.yaml /home/runner/work/rover/rover/.gdn/
-          
-          # Verify files were copied
           echo "Verifying configuration files:"
           ls -la /home/runner/work/rover/rover/.gdn/
           cat /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
@@ -438,50 +436,40 @@ jobs:
         id: msdo-status
         if: always()
         run: |
-          echo "Checking MSDO scan results..."
-          
-          # Check if MSDO scan completed
-          if [ "${{ steps.msdo.outcome }}" != "success" ]; then
-            echo "::error::MSDO scan failed with status ${{ steps.msdo.outcome }}"
-            echo "status=failure" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Verify SARIF directory exists
-          if [ ! -d "/home/runner/work/rover/rover/.gdn/sarif" ]; then
-            echo "::error::SARIF directory not found"
-            echo "status=failure" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Verify SARIF files exist and are valid
-          sarif_count=0
-          for file in /home/runner/work/rover/rover/.gdn/sarif/*.sarif; do
-            if [ ! -f "$file" ]; then
-              echo "::error::SARIF file not found: $file"
+          {
+            echo "Checking MSDO scan results..."
+            if [ "${{ steps.msdo.outcome }}" != "success" ]; then
+              echo "::error::MSDO scan failed with status ${{ steps.msdo.outcome }}"
               echo "status=failure" >> $GITHUB_OUTPUT
               exit 0
             fi
-            if ! jq empty "$file" 2>/dev/null; then
-              echo "::error::Invalid SARIF file format: $file"
+            if [ ! -d "/home/runner/work/rover/rover/.gdn/sarif" ]; then
+              echo "::error::SARIF directory not found"
               echo "status=failure" >> $GITHUB_OUTPUT
               exit 0
             fi
-            ((sarif_count++))
-          done
-          
-          if [ "$sarif_count" -eq 0 ]; then
-            echo "::error::No SARIF files were generated"
-            echo "status=failure" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          echo "status=success" >> $GITHUB_OUTPUT
-          echo "MSDO scan completed successfully with $sarif_count SARIF files"
-
-
-
-
+            sarif_count=0
+            for file in /home/runner/work/rover/rover/.gdn/sarif/*.sarif; do
+              if [ ! -f "$file" ]; then
+                echo "::error::SARIF file not found: $file"
+                echo "status=failure" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+              if ! jq empty "$file" 2>/dev/null; then
+                echo "::error::Invalid SARIF file format: $file"
+                echo "status=failure" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+              ((sarif_count++))
+            done
+            if [ "$sarif_count" -eq 0 ]; then
+              echo "::error::No SARIF files were generated"
+              echo "status=failure" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "MSDO scan completed successfully with $sarif_count SARIF files"
+          }
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -522,15 +510,11 @@ jobs:
             const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
             const grypeScanResult = process.env.GRYPE_SCAN_RESULT;
             const msdoScanResult = process.env.MSDO_SCAN_RESULT;
-
-            
-            // Get all agent build jobs
             const agentJobs = await github.rest.actions.listJobsForWorkflowRun({
               owner,
               repo,
               run_id: context.runId
             });
-            
             const agentStatuses = {
               github: { amd64: 'pending', arm64: 'pending' },
               tfc: { amd64: 'pending', arm64: 'n/a' },
@@ -538,10 +522,11 @@ jobs:
               azure_devops: { amd64: 'pending', arm64: 'pending' }
             };
             
-            // Parse agent build statuses
             for (const job of agentJobs.data.jobs) {
               if (job.name.startsWith('build-agents')) {
-                const match = job.name.match(/build-agents \(platform: (linux\/(?:amd64|arm64)), agent: ([^)]+)\)/);
+                const match = job.name.match(
+                  /build-agents \(platform: (linux\/(?:amd64|arm64)), agent: ([^)]+)\)/
+                );
                 if (match) {
                   const arch = match[1].includes('amd64') ? 'amd64' : 'arm64';
                   const agent = match[2];
@@ -551,16 +536,14 @@ jobs:
                 }
               }
             }
-            
-            // Helper function to get status emoji
             const getStatusEmoji = (agent) => {
               const amd64Status = agentStatuses[agent].amd64;
               const arm64Status = agentStatuses[agent].arm64;
-              
               if (arm64Status === 'n/a') {
                 return amd64Status === 'success' ? '✅' : '❌';
               }
-              return (amd64Status === 'success' && (arm64Status === 'success' || arm64Status === 'n/a')) ? '✅' : '❌';
+              return (amd64Status === 'success' && 
+                (arm64Status === 'success' || arm64Status === 'n/a')) ? '✅' : '❌';
             };
             
             const buildSummary = [
@@ -571,16 +554,26 @@ jobs:
               `- linux/arm64: ${buildBaseResult === 'success' ? '✅' : '❌'}`,
               '',
               '## Agent Builds',
-              `- github: ${getStatusEmoji('github')} (amd64: ${agentStatuses.github.amd64}, arm64: ${agentStatuses.github.arm64})`,
-              `- tfc: ${getStatusEmoji('tfc')} (amd64: ${agentStatuses.tfc.amd64}, arm64: ${agentStatuses.tfc.arm64})`,
-              `- gitlab: ${getStatusEmoji('gitlab')} (amd64: ${agentStatuses.gitlab.amd64}, arm64: ${agentStatuses.gitlab.arm64})`,
-              `- azure_devops: ${getStatusEmoji('azure_devops')} (amd64: ${agentStatuses.azure_devops.amd64}, arm64: ${agentStatuses.azure_devops.arm64})`,
+              `- github: ${getStatusEmoji('github')} (amd64: ${agentStatuses.github.amd64},` +
+                ` arm64: ${agentStatuses.github.arm64})`,
+              `- tfc: ${getStatusEmoji('tfc')} (amd64: ${agentStatuses.tfc.amd64},` +
+                ` arm64: ${agentStatuses.tfc.arm64})`,
+              `- gitlab: ${getStatusEmoji('gitlab')} (amd64: ${agentStatuses.gitlab.amd64},` +
+                ` arm64: ${agentStatuses.gitlab.arm64})`,
+              `- azure_devops: ${getStatusEmoji('azure_devops')} ` +
+                `(amd64: ${agentStatuses.azure_devops.amd64}, ` +
+                `arm64: ${agentStatuses.azure_devops.arm64})`,
               '',
               '## Security Scans',
               `- Container security scan: ${grypeScanResult === 'success' ? '✅' : '❌'}`,
               `- MSDO security analysis: ${msdoScanResult === 'success' ? '✅' : '❌'}`,
               '',
-              `Overall Status: ${buildBaseResult === 'success' && buildAgentsResult === 'success' && grypeScanResult === 'success' && msdoScanResult === 'success' ? '✅' : '❌'}`,
+              `Overall Status: ${
+                buildBaseResult === 'success' && 
+                buildAgentsResult === 'success' && 
+                grypeScanResult === 'success' && 
+                msdoScanResult === 'success' ? '✅' : '❌'
+              }`,
               '',
               '### Status Details',
               `- Base Build: ${buildBaseResult}`,
@@ -606,14 +599,11 @@ jobs:
               status: 'completed',
               conclusion: (() => {
                 const agentSuccess = Object.values(agentStatuses).every(agent => 
-                  Object.values(agent).every(status => 
-                    status === 'success' || status === 'n/a'
-                  )
+                  Object.values(agent).every(status => status === 'success' || status === 'n/a')
                 );
-                return buildBaseResult === 'success' && 
-                       agentSuccess && 
-                       grypeScanResult === 'success' && 
-                       msdoScanResult === 'success' ? 'success' : 'failure';
+                return buildBaseResult === 'success' && agentSuccess && 
+                  grypeScanResult === 'success' && msdoScanResult === 'success' ? 
+                  'success' : 'failure';
               })(),
               output: {
                 title: (() => {

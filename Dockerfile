@@ -550,6 +550,34 @@ RUN set -ex && \
         sleep 5; \
     done
 
+# Copy rover scripts with retries and verification
+COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh \
+     ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh \
+     ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh \
+     ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh \
+     ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh \
+     ./scripts/test_runner.sh ./scripts/
+COPY ./scripts/ci_tasks/* ./scripts/ci_tasks/
+COPY ./scripts/lib/* ./scripts/lib/
+COPY ./scripts/tfcloud/* ./scripts/tfcloud/
+
+RUN set -ex && \
+    for i in {1..3}; do \
+        echo "Attempt $i: Setting up rover scripts..." && \
+        if chmod +x /tf/rover/scripts/*.sh && \
+           chown -R ${USERNAME}:${USERNAME} /tf/rover/scripts && \
+           test -x /tf/rover/scripts/rover.sh; then \
+            echo "Rover scripts setup completed successfully" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to set up rover scripts after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done
+
 # Clean up with retries and improved verification
 RUN set -ex && \
     for i in {1..3}; do \
