@@ -181,7 +181,6 @@ jobs:
           - platform: linux/arm64
             agent: tfc
       fail-fast: false
-      fail-fast: false
     continue-on-error: false
     env:
       BUILDKIT_PROGRESS: plain
@@ -310,19 +309,19 @@ jobs:
         id: scan
         continue-on-error: true
         run: |
-          echo "Starting Grype scan for ${{ matrix.type }} (${{ matrix.arch }})"
+          echo "Starting Grype scan for ${{ matrix.type }} (${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }})"
           if [ "${{ matrix.type }}" = "base" ]; then
-            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.arch }} \
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }} \
               -o sarif \
-              --file results/results-${{ matrix.type }}-${{ matrix.arch }}.sarif \
+              --file results/results-${{ matrix.type }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}.sarif \
               --add-cpes-if-none \
               --by-cve \
               --fail-on none \
               --only-fixed || true
           else
-            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }} \
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }} \
               -o sarif \
-              --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ matrix.arch }}.sarif \
+              --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}.sarif \
               --add-cpes-if-none \
               --by-cve \
               --fail-on none \
@@ -332,12 +331,12 @@ jobs:
           
           # Display summary of findings
           if [ "${{ matrix.type }}" = "base" ]; then
-            echo "Summary for base image (${{ matrix.arch }}):"
-            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.arch }} \
+            echo "Summary for base image (${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}):"
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }} \
               -o table || true
           else
-            echo "Summary for ${{ matrix.agent }} agent (${{ matrix.arch }}):"
-            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }} \
+            echo "Summary for ${{ matrix.agent }} agent (${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}):"
+            grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }} \
               -o table || true
           fi
 
