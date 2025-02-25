@@ -316,6 +316,18 @@ jobs:
             echo "::error::MSDO scan failed with status ${{ steps.msdo.outcome }}"
             exit 1
           fi
+          
+          # Verify SARIF files exist and are valid
+          for file in /home/runner/work/rover/rover/.gdn/sarif/*.sarif; do
+            if [ ! -f "$file" ]; then
+              echo "::error::SARIF file not found: $file"
+              exit 1
+            fi
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "::error::Invalid SARIF file format: $file"
+              exit 1
+            fi
+          done
 
 
   trivy-scan:
@@ -397,6 +409,7 @@ jobs:
           list-all-pkgs: true
           hide-progress: true
           github-pat: ${{ github.token }}
+          cache: false # Disable caching as requested
           
       - name: Verify SARIF file
         if: always()
