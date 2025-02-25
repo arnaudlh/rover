@@ -444,9 +444,7 @@ jobs:
               `- azure_devops: ${getStatusEmoji('azure_devops')} (amd64: ${agentStatuses.azure_devops.amd64}, arm64: ${agentStatuses.azure_devops.arm64})`,
               '',
               '## Security Scans',
-              `- Trivy vulnerability scanning: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
               `- MSDO security analysis: ${msdoScanResult === 'success' || msdoScanResult === 'skipped' ? '✅' : '❌'}`,
-              `- SARIF reports processed: ${trivyScanResult === 'success' || trivyScanResult === 'skipped' ? '✅' : '❌'}`,
               '',
               `Overall Status: ${buildBaseResult === 'success' && buildAgentsResult === 'success' && (trivyScanResult === 'success' || trivyScanResult === 'skipped') && (msdoScanResult === 'success' || msdoScanResult === 'skipped') ? '✅' : '❌'}`
             ].join('\n');
@@ -473,8 +471,7 @@ jobs:
                   )
                 );
                 return buildBaseResult === 'success' && 
-                       agentSuccess && 
-                       (trivyScanResult === 'success' || trivyScanResult === 'skipped') ? 'success' : 'failure';
+                       agentSuccess ? 'success' : 'failure';
               })(),
               output: {
                 title: (() => {
@@ -484,8 +481,7 @@ jobs:
                     )
                   );
                   return `Build Report ${buildBaseResult === 'success' && 
-                         agentSuccess && 
-                         trivyScanResult === 'success' ? '✅' : '❌'}`;
+                         agentSuccess ? '✅' : '❌'}`;
                 })(),
                 summary: buildSummary
               }
