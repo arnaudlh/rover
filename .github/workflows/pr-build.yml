@@ -86,7 +86,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -127,9 +127,16 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest-${{
+              contains(matrix.platform, 'amd64') && 'amd64' || 'arm64'
+            }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{
+              github.sha
+            }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+          cache-to: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{
+              github.sha
+            }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
           cache-scope: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
@@ -227,19 +234,32 @@ jobs:
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
+              matrix.agent
+            }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
+              matrix.agent
+            }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
+              matrix.agent
+            }}-latest-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
+              matrix.agent
+            }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+          cache-to: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{
+              matrix.agent
+            }}-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }},mode=max
           cache-scope: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
-            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
+            base=docker-image://${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{
+              github.sha
+            }}-${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}
           provenance: false
           sbom: false
           build-args: |
