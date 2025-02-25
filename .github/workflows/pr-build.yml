@@ -296,17 +296,14 @@ jobs:
           GDN_RUN_LOGGER_SHOW_LEVEL: true
           GDN_RUN_EXPORT_BREAKING_RESULTS_TO_FILE: sarif
           GDN_RUN_SUCCEED_ON_NO_TOOLS: true
-          GDN_RUN_WORKING_DIRECTORY: /home/runner/work/rover/rover
           GDN_RUN_INIT_FORCE: true
           GDN_RUN_INIT_CLEAN: true
+          GDN_RUN_CONFIG: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
         with:
           policy: none
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
           config: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
-          working-directory: /home/runner/work/rover/rover
-          init-force: true
-          init-clean: true
       
       - name: Report MSDO scan status
         if: always()
