@@ -1,4 +1,4 @@
-FROM ubuntu:22.04.3@sha256:b492494d8e0113c4ad3fe4528a4b5ff89faa5331f7d52c5c138196f69ce176a6 AS base
+FROM ubuntu:24.04 AS base
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -122,12 +122,12 @@ RUN set -ex && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
            { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" > /etc/apt/sources.list.d/microsoft.list && \
            echo "Microsoft repository configured successfully"; } && \
            # Docker repository
            { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
            echo "Docker repository configured successfully"; } && \
            # Kubernetes repository
            { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
@@ -200,7 +200,10 @@ RUN set -ex && \
         if apt-get update && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             python3-pip \
-            python3-dev && \
+            python3-dev \
+            python3-venv \
+            python3-setuptools \
+            python3-wheel && \
             echo "Successfully installed Python packages" && \
             python3 --version; then \
             break; \
@@ -215,14 +218,16 @@ RUN set -ex && \
     # Install pip packages with retries and better error handling
     for i in {1..5}; do \
         echo "Attempt $i: Installing Python packages..." && \
-        if pip3 install --no-cache-dir --timeout 60 --retries 3 \
+        if python3 -m pip install --upgrade pip && \
+           python3 -m pip install --no-cache-dir --timeout 60 --retries 3 \
             pre-commit \
             yq \
             azure-cli \
             checkov \
             pywinrm \
-            ansible-core==${versionAnsible}; then \
+            ansible-core==${versionAnsible} && \
             echo "Successfully installed Python packages" && \
+            python3 -m pip check; then \
             break; \
         fi; \
         echo "Attempt $i failed with exit code $?, retrying in 10 seconds..." && \
