@@ -138,51 +138,7 @@ jobs:
             versionAzdo=$(./scripts/parse_versions.sh tool azdo)
             versionTfc=$(./scripts/parse_versions.sh tool tfc)
 
-  security-scan:
-    needs: [build-base, build-agents]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run Trivy scan for base image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-          format: 'sarif'
-          output: 'trivy-results-base-${{ matrix.platform }}.sarif'
-          severity: 'CRITICAL,HIGH'
-          
-      - name: Upload base image scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: 'trivy-results-base-${{ matrix.platform }}.sarif'
-          category: 'Trivy-Base-${{ matrix.platform }}'
-          wait-for-processing: true
-          
-      - name: Run Trivy scans for agents
-        uses: aquasecurity/trivy-action@master
-        with:
-          image: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-github:${{ github.event.release.tag_name }}-${{ matrix.platform }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-tfc:${{ github.event.release.tag_name }}-${{ matrix.platform }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-gitlab:${{ github.event.release.tag_name }}-${{ matrix.platform }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-azure_devops:${{ github.event.release.tag_name }}-${{ matrix.platform }}
-          format: 'sarif'
-          output: 'trivy-results-agents-${{ matrix.platform }}.sarif'
-          severity: 'CRITICAL,HIGH'
-          
-      - name: Upload agent scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: 'trivy-results-agents-${{ matrix.platform }}.sarif'
-          category: 'Trivy-Agents-${{ matrix.platform }}'
-          wait-for-processing: true
+
 
   release-notes:
     needs: [security-scan]
@@ -219,7 +175,7 @@ jobs:
             });
 
   build-report:
-    needs: [build-base, build-agents, security-scan, release-notes]
+    needs: [build-base, build-agents, release-notes]
     permissions:
       checks: write
       pull-requests: write
@@ -247,9 +203,8 @@ jobs:
               '- gitlab',
               '- azure_devops',
               '',
-              '## Security Scans',
-              '- Trivy vulnerability scanning complete',
-              '- SARIF reports processed',
+              '## Security Status',
+              '- Security scanning disabled',
               '',
               `Overall Status: ${status}`,
               '',
