@@ -351,21 +351,20 @@ jobs:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ github.token }}
           TRIVY_CACHE_DIR: /tmp/trivy-cache
+          TRIVY_FORMAT: sarif
+          TRIVY_OUTPUT: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
+          TRIVY_SEVERITY: CRITICAL,HIGH
+          TRIVY_SCANNERS: vuln
+          TRIVY_VULN_TYPE: os,library
+          TRIVY_TIMEOUT: 10m
+          TRIVY_SKIP_DIRS: tests/
+          TRIVY_SKIP_FILES: test_*.py
+          TRIVY_IGNORE_UNFIXED: true
+          TRIVY_LIST_ALL_PKGS: true
+          TRIVY_GITHUB_TOKEN: ${{ github.token }}
         with:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('ghcr.io/{0}/rover:pr-{1}-{2}', github.repository, github.sha, matrix.arch) || format('ghcr.io/{0}/rover-agent:pr-{1}-{2}-{3}', github.repository, matrix.agent, github.sha, matrix.arch) }}
-          format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
-          severity: 'CRITICAL,HIGH'
-          ignore-unfixed: true
-          exit-code: '1'
-          timeout: '10m'
-          scanners: 'vuln'
-          vuln-type: 'os,library'
-          list-all-pkgs: true
-          skip-dirs: 'tests/'
-          skip-files: 'test_*.py'
-          github-pat: ${{ github.token }}
           
       - name: Verify SARIF file
         if: always()

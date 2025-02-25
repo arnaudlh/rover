@@ -9,10 +9,10 @@ tools:
 analysis_type: IaC
 analysis_config:
   trivy:
+    format: sarif
     scanners:
       - vuln
     severity: CRITICAL,HIGH
-    output: sarif
     timeout: 10m
     skip-dirs:
       - tests/
@@ -20,3 +20,7 @@ analysis_config:
       - test_*.py
     list-all-pkgs: true
     ignore-unfixed: true
+    report:
+      sarif:
+        add-source: true
+        artifact-location: true
