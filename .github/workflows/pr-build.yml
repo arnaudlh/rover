@@ -274,10 +274,6 @@ jobs:
         with:
           categories: IaC
           tools: terrascan,tfsec,checkov
-          workspace: ${{ github.workspace }}
-          upload-results: true
-          break-on-failure: false
-          skip-publish: false
 
 
   trivy-scan:
@@ -354,7 +350,7 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
-          security-checks: 'vuln'
+
 
       - name: Debug SARIF files
         run: |
