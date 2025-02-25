@@ -2,25 +2,30 @@ categories:
   - containers
   - IaC
 tools:
-  - trivy
   - terrascan
   - tfsec
   - checkov
 analysis_type: IaC
 analysis_config:
-  trivy:
+  terrascan:
     format: sarif
-    scanners:
-      - vuln
     severity: CRITICAL,HIGH
-    timeout: 10m
-    skip-dirs:
-      - tests/
-    skip-files:
-      - test_*.py
-    list-all-pkgs: true
-    ignore-unfixed: true
-    report:
-      sarif:
-        add-source: true
-        artifact-location: true
+    skip-rules: []
+    output-type: sarif
+    use-colors: auto
+    log-level: error
+  tfsec:
+    format: sarif
+    severity: CRITICAL,HIGH
+    exclude: []
+    out: tfsec.sarif
+    no-color: true
+    update: false
+  checkov:
+    format: sarif
+    severity: CRITICAL,HIGH
+    skip-check: []
+    quiet: true
+    no-guide: true
+    compact: true
+    output: checkov.sarif

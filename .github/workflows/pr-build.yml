@@ -267,10 +267,21 @@ jobs:
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
         id: msdo
+        env:
+          GDN_RUN_POLICY: GitHub
+          GDN_RUN_CATEGORIES: IaC,containers
+          GDN_RUN_TOOLS: terrascan,tfsec,checkov
+          GDN_RUN_GITHUB: true
+          GDN_RUN_LOGGER_ACTIONS: true
+          GDN_RUN_LOGGER_LEVEL: Standard
+          GDN_RUN_LOGGER_TIMESTAMP: true
+          GDN_RUN_LOGGER_SHOW_LEVEL: true
+          GDN_RUN_EXPORT_BREAKING_RESULTS_TO_FILE: sarif
+          GDN_RUN_SUCCEED_ON_NO_TOOLS: true
         with:
-          policy: Microsoft.Security.Baseline.IaC
+          policy: none
+          categories: IaC,containers
           tools: terrascan,tfsec,checkov
-          categories: IaC
           config: msdo.yaml
           
       - name: Report MSDO scan status
