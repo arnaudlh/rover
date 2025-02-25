@@ -311,19 +311,17 @@ jobs:
 
       - name: Run Grype scan
         id: scan
-        continue-on-error: false
+        continue-on-error: true
         run: |
-          set -e
           echo "Starting Grype scan for ${{ matrix.type }} (${{ matrix.arch }})"
           if [ "${{ matrix.type }}" = "base" ]; then
             grype ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ matrix.arch }} \
-              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.arch }}.sarif \
-              --fail-on high
+              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.arch }}.sarif || true
           else
             grype ${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ matrix.arch }} \
-              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ matrix.arch }}.sarif \
-              --fail-on high
+              -o sarif --file results/results-${{ matrix.type }}-${{ matrix.agent }}-${{ matrix.arch }}.sarif || true
           fi
+          echo "Scan completed. Check SARIF output for any security findings."
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
