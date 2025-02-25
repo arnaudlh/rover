@@ -258,6 +258,7 @@ jobs:
       contents: read
       security-events: write
       packages: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -267,7 +268,13 @@ jobs:
       - name: Setup MSDO configuration
         run: |
           mkdir -p /home/runner/work/rover/rover/.gdn
-          cp .gdn/*.yaml /home/runner/work/rover/rover/.gdn/
+          # Only copy if source and destination are different
+          for file in .gdn/*.yaml; do
+            dest="/home/runner/work/rover/rover/${file}"
+            if [ ! -f "$dest" ] || ! cmp -s "$file" "$dest"; then
+              cp -f "$file" "$dest"
+            fi
+          done
 
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
@@ -305,6 +312,7 @@ jobs:
       contents: read
       security-events: write
       packages: read
+      id-token: write
     strategy:
       matrix:
         include:
