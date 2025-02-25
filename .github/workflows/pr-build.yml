@@ -264,6 +264,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup MSDO configuration
+        run: |
+          mkdir -p /home/runner/work/rover/rover/.gdn
+          cp .gdn/*.yaml /home/runner/work/rover/rover/.gdn/
+
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
         id: msdo
@@ -282,7 +287,7 @@ jobs:
           policy: none
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
-          config: .gdn/msdo-linux.yaml
+          config: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
       
       - name: Report MSDO scan status
         if: always()
