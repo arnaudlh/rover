@@ -283,9 +283,6 @@ jobs:
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
           config: msdo-linux.yaml
-      permissions:
-        id-token: write
-        security-events: write
       
       - name: Report MSDO scan status
         if: always()
