@@ -365,8 +365,18 @@ jobs:
           list-all-pkgs: true
           skip-dirs: 'tests/'
           skip-files: 'test_*.py'
-          artifact-type: 'container_image'
-          github-pat: ${{ github.token }}
+          trivy-config: |
+            format: sarif
+            exit-code: 1
+            scan:
+              security-checks: vuln
+              skip-dirs:
+                - tests/
+              skip-files:
+                - test_*.py
+              severity: CRITICAL,HIGH
+              ignore-unfixed: true
+              list-all-pkgs: true
           
       - name: Verify SARIF file
         if: always()
