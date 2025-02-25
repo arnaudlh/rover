@@ -282,6 +282,9 @@ jobs:
           ls -la /home/runner/work/rover/rover/.gdn/
           cat /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
 
+      - name: Create SARIF output directory
+        run: mkdir -p /home/runner/work/rover/rover/.gdn/sarif
+
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
         id: msdo
@@ -299,6 +302,7 @@ jobs:
           GDN_RUN_INIT_FORCE: true
           GDN_RUN_INIT_CLEAN: true
           GDN_RUN_CONFIG: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
+          GDN_RUN_SARIF_DIRECTORY: /home/runner/work/rover/rover/.gdn/sarif
         with:
           policy: none
           categories: IaC,containers
