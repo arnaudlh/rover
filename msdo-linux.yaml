@@ -6,6 +6,7 @@ tools:
   - tfsec
   - checkov
 analysis_type: IaC
+platform: linux
 analysis_config:
   terrascan:
     format: sarif
