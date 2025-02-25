@@ -357,6 +357,7 @@ jobs:
           vuln-type: 'os,library'
           list-all-pkgs: true
           github-pat: ${{ github.token }}
+          artifact-type: 'container_image'
 
 
       - name: Debug SARIF files
