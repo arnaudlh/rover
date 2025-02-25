@@ -5,3 +5,10 @@ output-type: sarif
 output: /home/runner/work/rover/rover/.gdn/sarif/terrascan.sarif
 use-colors: auto
 log-level: error
+show-passed: false
+categories: iac,containers
+iac-type: all
+log-type: json
+config-only: false
+find-vuln: true
+non-recursive: false
