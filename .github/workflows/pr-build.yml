@@ -259,6 +259,10 @@ jobs:
       security-events: write
       packages: read
       id-token: write
+      actions: read
+      checks: write
+      pull-requests: write
+      statuses: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -267,14 +271,21 @@ jobs:
 
       - name: Setup MSDO configuration
         run: |
+          # Create .gdn directory in workspace
+          mkdir -p .gdn
+          
+          # Create MSDO working directory
           mkdir -p /home/runner/work/rover/rover/.gdn
-          # Only copy if source and destination are different
-          for file in .gdn/*.yaml; do
-            dest="/home/runner/work/rover/rover/${file}"
-            if [ ! -f "$dest" ] || ! cmp -s "$file" "$dest"; then
-              cp -f "$file" "$dest"
-            fi
-          done
+          
+          # Copy configuration files
+          cp -f .gdn/*.yaml /home/runner/work/rover/rover/.gdn/
+          
+          # Verify files were copied
+          echo "Verifying configuration files:"
+          ls -la /home/runner/work/rover/rover/.gdn/
+          
+          # Create SARIF output directory
+          mkdir -p /home/runner/work/rover/rover/.gdn/sarif
 
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
@@ -285,16 +296,18 @@ jobs:
           GDN_RUN_TOOLS: terrascan,tfsec,checkov
           GDN_RUN_GITHUB: true
           GDN_RUN_LOGGER_ACTIONS: true
-          GDN_RUN_LOGGER_LEVEL: Standard
+          GDN_RUN_LOGGER_LEVEL: Debug
           GDN_RUN_LOGGER_TIMESTAMP: true
           GDN_RUN_LOGGER_SHOW_LEVEL: true
           GDN_RUN_EXPORT_BREAKING_RESULTS_TO_FILE: sarif
           GDN_RUN_SUCCEED_ON_NO_TOOLS: true
+          GDN_RUN_WORKING_DIRECTORY: /home/runner/work/rover/rover
         with:
           policy: none
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
           config: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
+          working-directory: /home/runner/work/rover/rover
       
       - name: Report MSDO scan status
         if: always()
