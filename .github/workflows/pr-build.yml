@@ -340,9 +340,6 @@ jobs:
         env:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ github.token }}
-          TRIVY_ARTIFACT_TYPE: 'container_image'
-          TRIVY_FORMAT: 'sarif'
-          TRIVY_OUTPUT: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
         with:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('ghcr.io/{0}/rover:pr-{1}-{2}', github.repository, github.sha, matrix.arch) || format('ghcr.io/{0}/rover-agent:pr-{1}-{2}-{3}', github.repository, matrix.agent, github.sha, matrix.arch) }}
@@ -355,8 +352,6 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
-          artifact-type: 'container_image'
-          debug: true
 
 
       - name: Debug SARIF files
