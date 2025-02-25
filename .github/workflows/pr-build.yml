@@ -267,16 +267,23 @@ jobs:
       - name: Run MSDO analysis
         uses: microsoft/security-devops-action@v1
         id: msdo
-        continue-on-error: true
         with:
           policy: Microsoft.Security.Baseline.IaC
           tools: terrascan,tfsec,checkov
           categories: IaC
           config: msdo.yaml
-          break-on-failure: false
+          break-on-failure: true
           upload-results: true
           output-format: sarif
           output-name: msdo-results
+          
+      - name: Report MSDO scan status
+        if: always()
+        run: |
+          if [ "${{ steps.msdo.outcome }}" != "success" ]; then
+            echo "::error::MSDO scan failed with status ${{ steps.msdo.outcome }}"
+            exit 1
+          fi
 
 
   trivy-scan:
@@ -342,8 +349,8 @@ jobs:
         run: mkdir -p trivy-results
 
       - name: Run Trivy vulnerability scanner
+        id: trivy
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
         env:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ github.token }}
@@ -355,7 +362,7 @@ jobs:
           output: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-          exit-code: '0'
+          exit-code: '1'
           timeout: '10m'
           scanners: 'vuln'
           vuln-type: 'os,library'
@@ -363,6 +370,19 @@ jobs:
           limit-severities-for-sarif: true
           skip-dirs: 'tests/'
           skip-files: 'test_*.py'
+          
+      - name: Verify SARIF file
+        if: always()
+        run: |
+          sarif_file="${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}"
+          if [ ! -f "$sarif_file" ]; then
+            echo "::error::SARIF file not found: $sarif_file"
+            exit 1
+          fi
+          if ! jq empty "$sarif_file" 2>/dev/null; then
+            echo "::error::Invalid SARIF file format: $sarif_file"
+            exit 1
+          fi
 
 
       - name: Debug SARIF files
