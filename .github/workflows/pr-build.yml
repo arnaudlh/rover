@@ -165,28 +165,11 @@ jobs:
       result: success
     strategy:
       matrix:
-        include:
-          - platform: linux/amd64
-            arch: amd64
-            agent: github
-          - platform: linux/amd64
-            arch: amd64
+        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
+        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+        exclude:
+          - platform: linux/arm64
             agent: tfc
-          - platform: linux/amd64
-            arch: amd64
-            agent: gitlab
-          - platform: linux/amd64
-            arch: amd64
-            agent: azure_devops
-          - platform: linux/arm64
-            arch: arm64
-            agent: github
-          - platform: linux/arm64
-            arch: arm64
-            agent: gitlab
-          - platform: linux/arm64
-            arch: arm64
-            agent: azure_devops
       fail-fast: false
     continue-on-error: true
     env:
