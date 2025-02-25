@@ -270,21 +270,32 @@ jobs:
       result: ${{ steps.set-result.outputs.result }}
     strategy:
       matrix:
-        type: [base, agent]
-        platform: [linux/amd64, linux/arm64]
-        agent: [github, tfc, gitlab, azure_devops]
-        exclude:
+        include:
           - type: base
+            platform: linux/amd64
+          - type: base
+            platform: linux/arm64
+          - type: agent
+            platform: linux/amd64
             agent: github
-          - type: base
+          - type: agent
+            platform: linux/amd64
             agent: tfc
-          - type: base
+          - type: agent
+            platform: linux/amd64
             agent: gitlab
-          - type: base
+          - type: agent
+            platform: linux/amd64
             agent: azure_devops
           - type: agent
             platform: linux/arm64
-            agent: tfc
+            agent: github
+          - type: agent
+            platform: linux/arm64
+            agent: gitlab
+          - type: agent
+            platform: linux/arm64
+            agent: azure_devops
       fail-fast: false
     permissions:
       contents: read
