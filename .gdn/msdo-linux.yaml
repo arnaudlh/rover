@@ -16,5 +16,5 @@ analysis_type: IaC
 platform: linux
 sarif:
   enabled: true
-  directory: /home/runner/work/rover/rover/.gdn/
+  directory: /home/runner/work/rover/rover/.gdn/sarif
   file: msdo.sarif

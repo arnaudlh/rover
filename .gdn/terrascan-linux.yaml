@@ -2,6 +2,6 @@ format: sarif
 severity: CRITICAL,HIGH
 skip-rules: []
 output-type: sarif
-output: /home/runner/work/rover/rover/.gdn/terrascan.sarif
+output: /home/runner/work/rover/rover/.gdn/sarif/terrascan.sarif
 use-colors: auto
 log-level: error
