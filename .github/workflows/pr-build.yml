@@ -282,9 +282,10 @@ jobs:
           policy: none
           categories: IaC,containers
           tools: terrascan,tfsec,checkov
-          sarif: true
-          directory: /home/runner/work/rover/rover/.gdn/
           config: msdo-linux.yaml
+    permissions:
+      id-token: write
+      security-events: write
           
       - name: Report MSDO scan status
         if: always()

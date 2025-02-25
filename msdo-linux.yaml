@@ -2,15 +2,32 @@ categories:
   - containers
   - IaC
 tools:
+  - terrascan
+  - tfsec
+  - checkov
+analysis_config:
   terrascan:
-    enabled: true
-    config: terrascan-linux.yaml
+    format: sarif
+    severity: CRITICAL,HIGH
+    skip-rules: []
+    output-type: sarif
+    use-colors: auto
+    log-level: error
   tfsec:
-    enabled: true
-    config: tfsec-linux.yaml
+    format: sarif
+    severity: CRITICAL,HIGH
+    exclude: []
+    out: tfsec.sarif
+    no-color: true
+    update: false
   checkov:
-    enabled: true
-    config: checkov-linux.yaml
+    format: sarif
+    severity: CRITICAL,HIGH
+    skip-check: []
+    quiet: true
+    no-guide: true
+    compact: true
+    output: checkov.sarif
 analysis_type: IaC
 platform: linux
 sarif:
