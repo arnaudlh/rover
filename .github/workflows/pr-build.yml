@@ -338,9 +338,9 @@ jobs:
           TRIVY_PASSWORD: ${{ github.token }}
         with:
           scan-type: 'image'
-          image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') }}
+          image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.arch) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.arch) }}
           format: 'sarif'
-          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, contains(matrix.platform, 'amd64') && 'amd64' || 'arm64') }}
+          output: ${{ matrix.type == 'base' && format('trivy-results-base-{0}.sarif', matrix.arch) || format('trivy-results-agent-{0}-{1}.sarif', matrix.agent, matrix.arch) }}
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '0'
@@ -348,6 +348,8 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
+          github-pat: ${{ github.token }}
+          repository: ${{ github.repository }}
 
 
       - name: Debug SARIF files
