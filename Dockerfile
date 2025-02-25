@@ -218,14 +218,14 @@ RUN set -ex && \
     # Install pip packages with retries and better error handling
     for i in {1..5}; do \
         echo "Attempt $i: Installing Python packages..." && \
-        if python3 -m pip install --upgrade pip && \
+        if python3 -m pip install --upgrade pip setuptools wheel && \
            python3 -m pip install --no-cache-dir --timeout 60 --retries 3 \
-            pre-commit \
-            yq \
-            azure-cli \
-            checkov \
-            pywinrm \
-            ansible-core==${versionAnsible} && \
+            'pre-commit' \
+            'yq' \
+            'azure-cli' \
+            'checkov' \
+            'pywinrm' \
+            'ansible-core==${versionAnsible}' && \
             echo "Successfully installed Python packages" && \
             python3 -m pip check; then \
             break; \
