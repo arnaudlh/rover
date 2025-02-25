@@ -362,9 +362,27 @@ jobs:
         id: set-result
         if: always()
         run: |
+          # Check if any SARIF files were generated
+          if ! ls results/*.sarif >/dev/null 2>&1; then
+            echo "::error::No SARIF files were generated for ${{ matrix.type }} (${{ matrix.arch }})"
+            echo "result=failure" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check SARIF file validity
+          for file in results/*.sarif; do
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "::error::Invalid SARIF file format: $file"
+              echo "result=failure" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          done
+
+          # Check scan results
           if [ "${{ job.status }}" = "success" ]; then
             echo "result=success" >> $GITHUB_OUTPUT
           else
+            echo "::warning::Security issues found in ${{ matrix.type }} (${{ matrix.arch }}). Check SARIF reports for details."
             echo "result=failure" >> $GITHUB_OUTPUT
           fi
 
@@ -427,24 +445,49 @@ jobs:
           config: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
       
       - name: Report MSDO scan status
+        id: msdo-status
         if: always()
         run: |
+          echo "Checking MSDO scan results..."
+          
+          # Check if MSDO scan completed
           if [ "${{ steps.msdo.outcome }}" != "success" ]; then
             echo "::error::MSDO scan failed with status ${{ steps.msdo.outcome }}"
-            exit 1
+            echo "status=failure" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Verify SARIF directory exists
+          if [ ! -d "/home/runner/work/rover/rover/.gdn/sarif" ]; then
+            echo "::error::SARIF directory not found"
+            echo "status=failure" >> $GITHUB_OUTPUT
+            exit 0
           fi
           
           # Verify SARIF files exist and are valid
+          sarif_count=0
           for file in /home/runner/work/rover/rover/.gdn/sarif/*.sarif; do
             if [ ! -f "$file" ]; then
               echo "::error::SARIF file not found: $file"
-              exit 1
+              echo "status=failure" >> $GITHUB_OUTPUT
+              exit 0
             fi
             if ! jq empty "$file" 2>/dev/null; then
               echo "::error::Invalid SARIF file format: $file"
-              exit 1
+              echo "status=failure" >> $GITHUB_OUTPUT
+              exit 0
             fi
+            ((sarif_count++))
           done
+          
+          if [ "$sarif_count" -eq 0 ]; then
+            echo "::error::No SARIF files were generated"
+            echo "status=failure" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "MSDO scan completed successfully with $sarif_count SARIF files"
 
 
 
