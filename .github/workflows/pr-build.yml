@@ -118,9 +118,7 @@ jobs:
         with:
           context: .
           network: host
-          allow: |
-            network.host
-            security.insecure
+          allow: network.host
           file: ./Dockerfile
           push: true
           tags: |
@@ -226,9 +224,7 @@ jobs:
         with:
           context: .
           network: host
-          allow: |
-            network.host
-            security.insecure
+          allow: network.host
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
