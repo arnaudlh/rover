@@ -277,6 +277,7 @@ jobs:
           tools: terrascan,tfsec,checkov
           categories: IaC
           break-on-failure: false
+          config-path: msdo.yaml
 
 
   trivy-scan:
@@ -347,7 +348,7 @@ jobs:
           TRIVY_ARTIFACT_TYPE: 'container_image'
         with:
           scan-type: 'image'
-          image-ref: ${{ matrix.type == 'base' && format('{0}/{1}/rover:pr-{2}-{3}', env.REGISTRY, github.repository, github.sha, matrix.arch) || format('{0}/{1}/rover-agent:pr-{2}-{3}-{4}', env.REGISTRY, github.repository, matrix.agent, github.sha, matrix.arch) }}
+          image-ref: ${{ matrix.type == 'base' && format('ghcr.io/{0}/rover:pr-{1}-{2}', github.repository, github.sha, matrix.arch) || format('ghcr.io/{0}/rover-agent:pr-{1}-{2}-{3}', github.repository, matrix.agent, github.sha, matrix.arch) }}
           format: 'sarif'
           output: ${{ matrix.type == 'base' && format('trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
           severity: 'CRITICAL,HIGH'
@@ -357,7 +358,6 @@ jobs:
           scanners: 'vuln'
           vuln-type: 'os,library'
           list-all-pkgs: true
-          github-pat: ${{ github.token }}
 
 
       - name: Debug SARIF files
