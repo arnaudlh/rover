@@ -384,24 +384,19 @@ jobs:
       - name: Run Trivy vulnerability scanner
         id: trivy
         uses: aquasecurity/trivy-action@master
-        env:
-          TRIVY_USERNAME: ${{ github.actor }}
-          TRIVY_PASSWORD: ${{ github.token }}
-          TRIVY_CACHE_DIR: /tmp/trivy-cache
-          TRIVY_FORMAT: sarif
-          TRIVY_OUTPUT: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
-          TRIVY_SEVERITY: CRITICAL,HIGH
-          TRIVY_SCANNERS: vuln
-          TRIVY_VULN_TYPE: os,library
-          TRIVY_TIMEOUT: 10m
-          TRIVY_SKIP_DIRS: tests/
-          TRIVY_SKIP_FILES: test_*.py
-          TRIVY_IGNORE_UNFIXED: true
-          TRIVY_LIST_ALL_PKGS: true
-          TRIVY_GITHUB_TOKEN: ${{ github.token }}
         with:
           scan-type: 'image'
           image-ref: ${{ matrix.type == 'base' && format('ghcr.io/{0}/rover:pr-{1}-{2}', github.repository, github.sha, matrix.arch) || format('ghcr.io/{0}/rover-agent:pr-{1}-{2}-{3}', github.repository, matrix.agent, github.sha, matrix.arch) }}
+          format: 'sarif'
+          output: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
+          severity: 'CRITICAL,HIGH'
+          scanners: 'vuln'
+          vuln-type: 'os,library'
+          timeout: '10m'
+          ignore-unfixed: true
+          list-all-pkgs: true
+          hide-progress: true
+          github-pat: ${{ github.token }}
           
       - name: Verify SARIF file
         if: always()
@@ -438,12 +433,13 @@ jobs:
 
       - name: Upload scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
+        if: always()
         continue-on-error: true
         with:
           sarif_file: ${{ matrix.type == 'base' && format('trivy-results/trivy-results-{0}-{1}.sarif', matrix.type, matrix.arch) || format('trivy-results/trivy-results-{0}-{1}-{2}.sarif', matrix.type, matrix.agent, matrix.arch) }}
           category: ${{ matrix.type == 'base' && format('trivy-{0}-{1}', matrix.type, matrix.arch) || format('trivy-{0}-{1}-{2}', matrix.type, matrix.agent, matrix.arch) }}
           wait-for-processing: true
+          checkout_path: ${{ github.workspace }}
 
   build-report:
     needs: [build-base, build-agents, trivy-scan, msdo-scan]
