@@ -132,7 +132,7 @@ RUN set -ex && \
     echo "use-agent" > ~/.gnupg/gpg.conf && \
     echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf && \
     echo "no-tty" >> ~/.gnupg/gpg.conf && \
-    # Configure package repositories with retries
+    # Configure package repositories with retries and consistent Jammy sources
     for i in $(seq 1 3); do \
         echo "Attempt $i: Configuring package repositories..." && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
