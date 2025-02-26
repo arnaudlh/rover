@@ -253,8 +253,7 @@ jobs:
           tags: |
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-\
               ${{ env.ARCH }}
-            ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-\
-              ${{ env.ARCH }}
+            ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: ${{ matrix.platform }}
           cache-from: |
             type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
