@@ -62,5 +62,5 @@ target "rover_agent" {
   }
   dockerfile = "./agents/${agent}/Dockerfile"
   platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${TAG}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${versionTerraform}-${platform}"]
 }

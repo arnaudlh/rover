@@ -53,6 +53,7 @@ target "rover_base" {
     TARGETOS = "linux"
     versionTerraform = "${versionTerraform}"
   }
+  tags = ["rover:${versionTerraform}-${platform}"]
 }
 
 target "rover_local" {
