@@ -344,13 +344,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "Scanning ${{ matrix.type }} (${{ env.ARCH }})..."
-          grype "${{ env.IMAGE }}" \
-            -o sarif \
-            --file "${{ env.SARIF_FILE }}" \
-            --add-cpes-if-none \
-            --by-cve \
-            --fail-on none \
-            --only-fixed || true
+          grype "${{ env.IMAGE }}" -o sarif --file "${{ env.SARIF_FILE }}" --add-cpes-if-none --by-cve --fail-on none --only-fixed || true
           echo "Scan complete";
 
           # Display summary of findings
@@ -376,8 +370,7 @@ jobs:
         run: |
           # Check if any SARIF files were generated
           if ! ls results/*.sarif >/dev/null 2>&1; then
-            echo "::error::No SARIF files for ${{ matrix.type }} \
-              (${{ matrix.arch }})"
+            echo "::error::No SARIF files for ${{ matrix.type }} (${{ matrix.arch }})"
             echo "result=failure" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -395,8 +388,7 @@ jobs:
           if [ "${{ job.status }}" = "success" ]; then
             echo "result=success" >> $GITHUB_OUTPUT
           else
-            echo "::warning::${{ matrix.type }} scan found issues \
-              (${{ matrix.arch }})"
+            echo "::warning::${{ matrix.type }} scan found issues (${{ matrix.arch }})"
             echo "result=failure" >> $GITHUB_OUTPUT
           fi
 
