@@ -42,7 +42,7 @@ target "common" {
   ]
 }
 
-target "base-${versionTerraform}" {
+target "base" {
   inherits = ["common"]
   matrix = {
     platform = ["linux/amd64", "linux/arm64"]
@@ -56,16 +56,16 @@ target "base-${versionTerraform}" {
   tags = ["rover:${versionTerraform}-${platform}"]
 }
 
-target "local-${versionTerraform}" {
-  inherits = ["base-${versionTerraform}"]
+target "local" {
+  inherits = ["base"]
   tags = ["rover:local"]
   output = ["type=docker"]
   platforms = ["linux/amd64"]
   no-cache = false
 }
 
-target "registry-${versionTerraform}" {
-  inherits = ["base-${versionTerraform}"]
+target "registry" {
+  inherits = ["base"]
   tags = ["${registry}rover:${versionRover}"]
   output = ["type=registry"]
 }

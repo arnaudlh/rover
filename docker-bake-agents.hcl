@@ -54,7 +54,7 @@ target "agent-common" {
   ]
 }
 
-target "agent-${versionTerraform}" {
+target "agent" {
   inherits = ["agent-common"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
