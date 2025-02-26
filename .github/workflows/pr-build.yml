@@ -508,6 +508,7 @@ jobs:
           MSDO_SCAN_RESULT: ${{ needs.msdo-scan.outputs.status || 'failure' }}
         with:
           script: |
+            const core = require('@actions/core');
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT || 'failure';
@@ -617,13 +618,7 @@ jobs:
               });
             }
 
-            await github.rest.checks.create({
-              owner,
-              repo,
-              name: 'Build & Security Check',
-              head_sha: context.sha,
-              status: 'completed',
-              conclusion: (() => {
+            const conclusion = (() => {
                 const agentSuccess = Object.values(agentStatuses)
                   .every(agent => Object.values(agent)
                     .every(s => s === 'success' || s === 'n/a'));
@@ -634,20 +629,19 @@ jobs:
                   msdoScanResult
                 ].every(r => r === 'success');
                 return allSuccess ? 'success' : 'failure';
-              })(),
+              })();
+
+            await github.rest.checks.create({
+              owner,
+              repo,
+              name: 'Build & Security Check',
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion,
               output: {
-                title: (() => {
-                  const agentSuccess = Object.values(agentStatuses)
-                    .every(agent => Object.values(agent)
-                      .every(s => s === 'success' || s === 'n/a'));
-                  const allSuccess = [
-                    buildBaseResult,
-                    agentSuccess,
-                    grypeScanResult,
-                    msdoScanResult
-                  ].every(r => r === 'success');
-                  return `Build Report ${allSuccess ? '✅' : '❌'}`;
-                })(),
+                title: `Build Report ${conclusion === 'success' ? '✅' : '❌'}`,
                 summary: buildSummary
               }
             });
+
+            core.setOutput('status', conclusion);
