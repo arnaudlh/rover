@@ -486,6 +486,8 @@ jobs:
     needs: [build-base, build-agents, grype-scan, msdo-scan]
     runs-on: ubuntu-latest
     if: always()
+    outputs:
+      status: ${{ steps.report.outputs.status }}
     permissions:
       checks: write
       pull-requests: write
@@ -497,25 +499,37 @@ jobs:
           fetch-depth: 0
 
       - name: Generate build report
+        id: report
         uses: actions/github-script@v7
         env:
-          BUILD_BASE_RESULT: ${{ needs.build-base.result }}
-          BUILD_AGENTS_RESULT: ${{ needs.build-agents.result }}
-          GRYPE_SCAN_RESULT: ${{ needs.grype-scan.result }}
-          MSDO_SCAN_RESULT: ${{ needs.msdo-scan.result }}
+          BUILD_BASE_RESULT: ${{ needs.build-base.result || 'failure' }}
+          BUILD_AGENTS_RESULT: ${{ needs.build-agents.result || 'failure' }}
+          GRYPE_SCAN_RESULT: ${{ needs.grype-scan.outputs.result || 'failure' }}
+          MSDO_SCAN_RESULT: ${{ needs.msdo-scan.outputs.status || 'failure' }}
         with:
           script: |
             const { owner, repo } = context.repo;
             const { number } = context.issue;
-            const buildBaseResult = process.env.BUILD_BASE_RESULT;
-            const buildAgentsResult = process.env.BUILD_AGENTS_RESULT;
-            const grypeScanResult = process.env.GRYPE_SCAN_RESULT;
-            const msdoScanResult = process.env.MSDO_SCAN_RESULT;
+            const buildBaseResult = process.env.BUILD_BASE_RESULT || 'failure';
+            const buildAgentsResult = process.env.BUILD_AGENTS_RESULT || 'failure';
+            const grypeScanResult = process.env.GRYPE_SCAN_RESULT || 'failure';
+            const msdoScanResult = process.env.MSDO_SCAN_RESULT || 'failure';
+            
+            console.log('Job Results:', {
+              buildBase: buildBaseResult,
+              buildAgents: buildAgentsResult,
+              grypeScan: grypeScanResult,
+              msdoScan: msdoScanResult
+            });
+
             const agentJobs = await github.rest.actions.listJobsForWorkflowRun({
               owner,
               repo,
               run_id: context.runId
             });
+
+            console.log('Found jobs:', agentJobs.data.jobs.map(j => j.name));
+
             const agentStatuses = {
               github: { amd64: 'pending', arm64: 'pending' },
               tfc: { amd64: 'pending', arm64: 'n/a' },
