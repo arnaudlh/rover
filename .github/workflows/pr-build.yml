@@ -52,8 +52,7 @@ jobs:
           echo 'matrix=["linux/amd64","linux/arm64"]' >> $GITHUB_OUTPUT
       - id: agents
         run: |
-          echo 'matrix=["github","tfc","gitlab","azure_devops"]' \
-            >> $GITHUB_OUTPUT
+          echo 'matrix=["github","tfc","gitlab","azure_devops"]' >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
@@ -142,8 +141,7 @@ jobs:
           cache-to: |
             type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }},mode=max
           cache-scope: |
-            ${{ github.workflow }}-\
-            ${{ github.event.pull_request.number || github.ref }}
+            ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
@@ -267,8 +265,7 @@ jobs:
             type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-\
               ${{ github.sha }}-${{ env.ARCH }},mode=max
           cache-scope: |
-            ${{ github.workflow }}-\
-            ${{ github.event.pull_request.number || github.ref }}
+            ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
           outputs: |
             type=registry,compression=zstd,compression-level=3,force-compression=true
             type=image,compression=zstd,compression-level=3,force-compression=true
@@ -327,9 +324,7 @@ jobs:
 
       - name: Install Grype
         run: |
-          curl -sSfL \
-            https://raw.githubusercontent.com/anchore/grype/main/install.sh |\
-            sh -s -- -b /usr/local/bin
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
 
       - name: Create results directory
         run: mkdir -p results
