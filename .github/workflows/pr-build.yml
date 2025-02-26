@@ -169,7 +169,6 @@ jobs:
   build-agents:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
-    continue-on-error: true  # Continue pipeline even if some agent builds fail
     outputs:
       result: success
     strategy:
@@ -192,7 +191,7 @@ jobs:
           - platform: linux/arm64
             agent: azure_devops
       fail-fast: false
-    continue-on-error: false
+    continue-on-error: ${{ matrix.platform == 'linux/arm64' }}  # Allow arm64 builds to fail
     env:
       BUILDKIT_PROGRESS: plain
       BUILDKIT_COLORS: 1
