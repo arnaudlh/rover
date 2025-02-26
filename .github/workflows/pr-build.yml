@@ -57,7 +57,6 @@ jobs:
   build-base:
     needs: matrix-prep
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Prevent indefinite pending states
     outputs:
       github_runner: ${{ steps.versions.outputs.github_runner }}
       azdo: ${{ steps.versions.outputs.azdo }}
@@ -170,7 +169,6 @@ jobs:
   build-agents:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Prevent indefinite pending states
     continue-on-error: true  # Continue pipeline even if some agent builds fail
     outputs:
       result: success
