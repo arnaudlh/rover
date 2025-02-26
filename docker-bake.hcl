@@ -7,16 +7,28 @@
 # make is calling the ./scripts/build_images.sh who calls docker buildx bake
 #
 
+variable "versionTerraform" {
+  default = ""
+}
+
+variable "registry" {
+  default = ""
+}
+
+variable "versionRover" {
+  default = ""
+}
+
 group "default" {
-  targets = ["local"]
+  targets = ["local-tf"]
 }
 
 group "pr" {
-  targets = ["local", "registry"]
+  targets = ["local-tf", "registry-tf"]
 }
 
 group "release" {
-  targets = ["registry"]
+  targets = ["registry-tf"]
 }
 
 # Common target configuration
@@ -42,7 +54,7 @@ target "common" {
   ]
 }
 
-target "base" {
+target "base-tf" {
   inherits = ["common"]
   matrix = {
     platform = ["linux/amd64", "linux/arm64"]
@@ -56,16 +68,16 @@ target "base" {
   tags = ["rover:${versionTerraform}-${platform}"]
 }
 
-target "local" {
-  inherits = ["base"]
+target "local-tf" {
+  inherits = ["base-tf"]
   tags = ["rover:local"]
   output = ["type=docker"]
   platforms = ["linux/amd64"]
   no-cache = false
 }
 
-target "registry" {
-  inherits = ["base"]
+target "registry-tf" {
+  inherits = ["base-tf"]
   tags = ["${registry}rover:${versionRover}"]
   output = ["type=registry"]
 }

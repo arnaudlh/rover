@@ -27,8 +27,12 @@ variable "extensionsAzureCli" {
   default = "aks-preview"
 }
 
+variable "VERSION" {
+  default = ""
+}
+
 group "agents" {
-  targets = ["agent-${versionTerraform}"]
+  targets = ["agent-tf"]
 }
 
 target "agent-common" {
@@ -54,7 +58,7 @@ target "agent-common" {
   ]
 }
 
-target "agent" {
+target "agent-tf" {
   inherits = ["agent-common"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
