@@ -259,8 +259,7 @@ jobs:
           cache-from: |
             type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-\
               latest-${{ env.ARCH }}
-            type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-\
-              ${{ github.sha }}-${{ env.ARCH }}
+            type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
           cache-to: |
             type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }},mode=max
           cache-scope: |
