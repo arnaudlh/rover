@@ -182,22 +182,6 @@ RUN set -ex && \
         echo "Attempt $i failed, retrying in 10 seconds..." && \
         if [ $i -eq 5 ]; then exit 1; fi; \
         sleep 10; \
-    done&& \
-    # Install repository-specific packages with retries
-    for i in {1..5}; do \
-        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            docker-ce-cli \
-            gh \
-            kubectl && \
-            docker --version && \
-            gh --version && \
-            kubectl version --client; then \
-            echo "Successfully installed repository packages" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 10 seconds..." && \
-        if [ $i -eq 5 ]; then exit 1; fi; \
-        sleep 10; \
     done && \
     # Install Docker Compose with retries
     for i in $(seq 1 3); do \
@@ -291,27 +275,24 @@ RUN set -ex && \
 
 # Install tools with retries and improved verification
 RUN set -ex && \
-    # Install Docker CLI and Docker Compose with retries
+    # Install Docker Compose with retries
     for i in $(seq 1 3); do \
-        echo "Attempt $i: Installing Docker CLI and Compose..." && \
-        if apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends docker-ce-cli && \
-           mkdir -p /usr/local/lib/docker/cli-plugins && \
+        echo "Attempt $i: Installing Docker Compose..." && \
+        if mkdir -p /usr/libexec/docker/cli-plugins && \
            ( if [ "${TARGETARCH}" = "amd64" ]; then \
-               curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose; \
+               curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-x86_64" -o /usr/libexec/docker/cli-plugins/docker-compose; \
              else \
-               curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-aarch64" -o /usr/local/lib/docker/cli-plugins/docker-compose; \
+               curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-aarch64" -o /usr/libexec/docker/cli-plugins/docker-compose; \
              fi ) && \
-           [ -s /usr/local/lib/docker/cli-plugins/docker-compose ] && \
-           chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
-           ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose && \
+           [ -s /usr/libexec/docker/cli-plugins/docker-compose ] && \
+           chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
            docker-compose version || true; then \
-            echo "Docker CLI and Compose installed successfully" && \
+            echo "Docker Compose installed successfully" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
-            echo "Failed to install Docker CLI and Compose after 3 attempts" && \
+            echo "Failed to install Docker Compose after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
