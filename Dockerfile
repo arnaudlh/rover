@@ -365,8 +365,9 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Install base packages first
+# Install base packages and configure repositories
 RUN set -ex && \
+    # Install base packages first
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing base packages..." && \
         if apt-get update && \
@@ -383,6 +384,37 @@ RUN set -ex && \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
             echo "Failed to install base packages after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done && \
+    # Configure package repositories
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Configuring package repositories..." && \
+        if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
+           # Microsoft repository
+           curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-noble-prod noble main" > /etc/apt/sources.list.d/microsoft.list && \
+           # Docker repository
+           curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
+           chmod a+r /etc/apt/keyrings/docker.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
+           # Kubernetes repository
+           curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
+           chmod a+r /etc/apt/keyrings/kubernetes.gpg && \
+           echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           # GitHub CLI repository
+           curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
+           chmod a+r /etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+           # Update package lists
+           apt-get update; then \
+            echo "Successfully configured all package repositories" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to configure package repositories after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
