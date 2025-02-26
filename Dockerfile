@@ -181,17 +181,23 @@ RUN set -ex && \
     done && \
     # Install Docker Compose with retries
     for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing Docker Compose..." && \
         if mkdir -p /usr/libexec/docker/cli-plugins/ && \
-           if [ "${TARGETARCH}" = "amd64" ]; then \
+           ( if [ "${TARGETARCH}" = "amd64" ]; then \
                curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64; \
-           else \
+             else \
                curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64; \
-           fi && \
+             fi ) && \
            chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
            docker-compose version || true; then \
+            echo "Docker Compose installed successfully" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Docker Compose after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
     done && \
     # Install Helm with retries
