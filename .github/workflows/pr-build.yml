@@ -251,8 +251,7 @@ jobs:
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
-            ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-\
-              ${{ env.ARCH }}
+            ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: ${{ matrix.platform }}
           cache-from: |
