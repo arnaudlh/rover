@@ -135,9 +135,8 @@ jobs:
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=${{ github.workflow }}-${{ matrix.platform }}-${{ github.sha }}
             type=gha,scope=${{ github.workflow }}-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.platform }}-${{ github.sha }},compression=zstd
+          cache-to: type=gha,mode=max,scope=temp-${{ github.sha }}
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
           provenance: false
           sbom: false
@@ -249,9 +248,8 @@ jobs:
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=gha,scope=${{ github.workflow }}-${{ matrix.agent }}-${{ matrix.platform }}-${{ github.sha }}
             type=gha,scope=${{ github.workflow }}-${{ matrix.agent }}-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.agent }}-${{ matrix.platform }}-${{ github.sha }},compression=zstd
+          cache-to: type=gha,mode=max,scope=temp-${{ github.sha }}
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
