@@ -8,15 +8,15 @@
 #
 
 group "default" {
-  targets = ["rover_local"]
+  targets = ["local"]
 }
 
 group "pr" {
-  targets = ["rover_local", "rover_registry"]
+  targets = ["local", "registry"]
 }
 
 group "release" {
-  targets = ["rover_registry"]
+  targets = ["registry"]
 }
 
 # Common target configuration
@@ -42,7 +42,7 @@ target "common" {
   ]
 }
 
-target "rover_base" {
+target "base" {
   inherits = ["common"]
   matrix = {
     platform = ["linux/amd64", "linux/arm64"]
@@ -56,16 +56,16 @@ target "rover_base" {
   tags = ["rover:${versionTerraform}-${platform}"]
 }
 
-target "rover_local" {
-  inherits = ["rover_base"]
+target "local" {
+  inherits = ["base"]
   tags = ["rover:local"]
   output = ["type=docker"]
   platforms = ["linux/amd64"]
   no-cache = false
 }
 
-target "rover_registry" {
-  inherits = ["rover_base"]
+target "registry" {
+  inherits = ["base"]
   tags = ["${registry}rover:${versionRover}"]
   output = ["type=registry"]
 }
