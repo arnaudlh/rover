@@ -166,6 +166,22 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
+    done && \
+    # Install repository-specific packages with retries
+    for i in {1..5}; do \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            docker-ce-cli \
+            gh \
+            kubectl && \
+            docker --version && \
+            gh --version && \
+            kubectl version --client; then \
+            echo "Successfully installed repository packages" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
     done&& \
     # Install repository-specific packages with retries
     for i in {1..5}; do \
