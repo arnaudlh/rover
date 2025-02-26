@@ -1,9 +1,12 @@
+---
 name: Release Build
 
 on:
   release:
     types: [published]
+    draft: false
   workflow_dispatch:
+    inputs: {}
 
 permissions:
   contents: read
@@ -15,7 +18,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/rover
   BUILDX_NO_DEFAULT_LOAD: true
-  DOCKER_BUILDKIT: 1
+  DOCKER_BUILDKIT: true
 
 jobs:
   matrix-prep:
@@ -26,10 +29,11 @@ jobs:
     steps:
       - id: platforms
         run: |
-          echo "matrix=[\"linux/amd64\", \"linux/arm64\"]" >> $GITHUB_OUTPUT
+          echo 'matrix=["linux/amd64","linux/arm64"]' >> $GITHUB_OUTPUT
       - id: agents
         run: |
-          echo "matrix=[\"github\", \"tfc\", \"gitlab\", \"azure_devops\"]" >> $GITHUB_OUTPUT
+          echo 'matrix=["github","tfc","gitlab","azure_devops"]' \
+            >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
@@ -40,20 +44,24 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        
+        with:
+          platforms: linux/amd64,linux/arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+        with:
+          buildkitd-flags: --debug
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -63,7 +71,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
-      
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -71,45 +79,78 @@ jobs:
           push: true
           platforms: ${{ matrix.platform }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:\
+              ${{ github.event.release.tag_name }}-\
+              ${{ matrix.platform == 'linux/amd64' && \
+                'amd64' || 'arm64' }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:\
+              latest-${{ matrix.platform == 'linux/amd64' && \
+                'amd64' || 'arm64' }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ github.ref_name }}-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-${{ matrix.platform }}
+          cache-from: >-
+            type=gha,scope=${{ github.ref_name }}-\
+              ${{ matrix.platform }}
+          cache-to: >-
+            type=gha,mode=max,scope=${{ github.ref_name }}-\
+              ${{ matrix.platform }}
           build-args: |
-            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && \
+              'amd64' || 'arm64' }}
             TARGETOS=linux
             USERNAME=vscode
             versionVault=$(./scripts/parse_versions.sh tool vault)
             versionGolang=$(./scripts/parse_versions.sh tool golang)
             versionKubectl=$(./scripts/parse_versions.sh tool kubectl)
             versionKubelogin=$(./scripts/parse_versions.sh tool kubelogin)
-            versionDockerCompose=$(./scripts/parse_versions.sh tool docker_compose)
-            versionTerraformDocs=$(./scripts/parse_versions.sh tool terraform_docs)
+            versionDockerCompose=$(./scripts/parse_versions.sh \
+              tool docker_compose)
+            versionTerraformDocs=$(./scripts/parse_versions.sh \
+              tool terraform_docs)
             versionPacker=$(./scripts/parse_versions.sh tool packer)
             versionPowershell=$(./scripts/parse_versions.sh tool powershell)
             versionAnsible=$(./scripts/parse_versions.sh tool ansible)
-            extensionsAzureCli=$(./scripts/parse_versions.sh tool azure_cli)
+            extensionsAzureCli=$(./scripts/parse_versions.sh \
+              tool azure_cli)
             versionTerrascan=$(./scripts/parse_versions.sh tool terrascan)
             versionTfupdate=$(./scripts/parse_versions.sh tool tfupdate)
-            versionTerraform=$(./scripts/parse_versions.sh terraform | head -n1)
+            versionTerraform=$(./scripts/parse_versions.sh terraform \
+              | head -n1)
 
   build-agents:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: ${{ fromJson(needs.matrix-prep.outputs.platforms) }}
-        agent: ${{ fromJson(needs.matrix-prep.outputs.agents) }}
+        include:
+          # AMD64 agents
+          - platform: linux/amd64
+            agent: github
+          - platform: linux/amd64
+            agent: tfc
+          - platform: linux/amd64
+            agent: gitlab
+          - platform: linux/amd64
+            agent: azure_devops
+          # ARM64 agents (excluding tfc)
+          - platform: linux/arm64
+            agent: github
+          - platform: linux/arm64
+            agent: gitlab
+          - platform: linux/arm64
+            agent: azure_devops
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      
+        with:
+          platforms: linux/amd64,linux/arm64
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -125,30 +166,37 @@ jobs:
           file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-${{ matrix.agent }}:${{ github.event.release.tag_name }}-${{ matrix.platform }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-${{ matrix.agent }}:latest-${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-\
+              ${{ matrix.agent }}:${{ github.event.release.tag_name }}-\
+              ${{ matrix.platform }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-agent-\
+              ${{ matrix.agent }}:latest-${{ matrix.platform }}
           platforms: ${{ matrix.platform }}
-          cache-from: type=gha,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
-          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}-agent-${{ matrix.platform }}-${{ matrix.agent }}
+          cache-from: >-
+            type=gha,scope=${{ github.ref_name }}-agent-\
+              ${{ matrix.platform }}-${{ matrix.agent }}
+          cache-to: >-
+            type=gha,mode=max,scope=${{ github.ref_name }}-agent-\
+              ${{ matrix.platform }}-${{ matrix.agent }}
           build-args: |
-            TARGETARCH=${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+            TARGETARCH=${{ matrix.platform == 'linux/amd64' && \
+              'amd64' || 'arm64' }}
             TARGETOS=linux
             USERNAME=vscode
-            versionGithubRunner=$(./scripts/parse_versions.sh tool github_runner)
+            versionGithubRunner=$(./scripts/parse_versions.sh \
+              tool github_runner)
             versionAzdo=$(./scripts/parse_versions.sh tool azdo)
             versionTfc=$(./scripts/parse_versions.sh tool tfc)
 
-
-
   release-notes:
-    needs: [security-scan]
+    needs: [build-base, build-agents]
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Generate release notes
         id: release-notes
         uses: release-drafter/release-drafter@v5
@@ -158,7 +206,7 @@ jobs:
           config-name: release-drafter.yml
           publish: false
           prerelease: false
-          
+
       - name: Update release
         uses: actions/github-script@v7
         with:
@@ -166,7 +214,7 @@ jobs:
             const { owner, repo } = context.repo;
             const release_id = context.payload.release.id;
             const notes = `${{ steps.release-notes.outputs.body }}`;
-            
+
             await github.rest.repos.updateRelease({
               owner,
               repo,
@@ -189,7 +237,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const status = '${{ job.status }}' === 'success' ? '✅' : '❌';
-            
+
             const buildSummary = [
               '# Release Build & Security Report',
               '',
@@ -212,14 +260,14 @@ jobs:
               `- Version: ${process.env.GITHUB_REF_NAME}`,
               `- Images: ${process.env.REGISTRY}/${process.env.IMAGE_NAME}`
             ].join('\n');
-            
             await github.rest.checks.create({
               owner,
               repo,
               name: 'Release Build & Security Check',
               head_sha: context.sha,
               status: 'completed',
-              conclusion: '${{ job.status }}' === 'success' ? 'success' : 'failure',
+              conclusion: '${{ job.status }}' === 'success' ? \
+                'success' : 'failure',
               output: {
                 title: `Release Build ${status}`,
                 summary: buildSummary

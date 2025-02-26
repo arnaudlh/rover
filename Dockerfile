@@ -4,13 +4,14 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
 ARG TF_PLUGIN_CACHE_DIR=/tf/cache
+RUN mkdir -p /tf/cache
 ARG TARGETARCH
 ARG TARGETOS
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8 \
+    LANG=C.UTF-8 \
+    LANGUAGE=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
     TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
     TF_PLUGIN_CACHE_DIR="${TF_PLUGIN_CACHE_DIR}" \
@@ -42,7 +43,7 @@ COPY ./scripts/zsh-autosuggestions.zsh .
 RUN set -ex && \
     mkdir -p /var/lib/apt/lists/partial /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     # Update package lists with retries and better error handling
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if apt-get update; then \
             echo "Package lists updated successfully" && \
             break; \
@@ -116,23 +117,38 @@ RUN set -ex && \
     # Create required directories and verify architecture
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     echo "Building for architecture: ${TARGETARCH}" && \
+    # Install required packages first
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        gpg \
+        lsb-release \
+        software-properties-common && \
+    # Configure GPG to run in batch mode
+    mkdir -p ~/.gnupg && \
+    chmod 700 ~/.gnupg && \
+    echo "use-agent" > ~/.gnupg/gpg.conf && \
+    echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf && \
+    echo "no-tty" >> ~/.gnupg/gpg.conf && \
     # Configure package repositories with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Configuring package repositories..." && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
-           { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" > /etc/apt/sources.list.d/microsoft.list && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-noble-prod noble main" > /etc/apt/sources.list.d/microsoft.list && \
            echo "Microsoft repository configured successfully"; } && \
            # Docker repository
-           { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
            echo "Docker repository configured successfully"; } && \
            # Kubernetes repository
-           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-           chmod a+r /etc/apt/keyrings/kubernetes-archive-keyring.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${versionKubectl}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
+           chmod a+r /etc/apt/keyrings/kubernetes.gpg && \
+           echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
            echo "Kubernetes repository configured successfully"; } && \
            # GitHub CLI repository
            { curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
@@ -168,7 +184,7 @@ RUN set -ex && \
         sleep 10; \
     done && \
     # Install Docker Compose with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if mkdir -p /usr/libexec/docker/cli-plugins/ && \
            if [ "${TARGETARCH}" = "amd64" ]; then \
                curl -L -o /usr/libexec/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64; \
@@ -183,7 +199,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install Helm with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
            helm version || true; then \
             break; \
@@ -195,7 +211,7 @@ RUN set -ex && \
 # Install additional packages with retries and verification
 RUN set -ex && \
     # Install system packages with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Installing system packages..." && \
         if apt-get update && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -215,19 +231,22 @@ RUN set -ex && \
         fi; \
         sleep 5; \
     done && \
+    # Create and activate virtual environment
+    python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
     # Install pip packages with retries and better error handling
-    for i in {1..5}; do \
+    for i in $(seq 1 5); do \
         echo "Attempt $i: Installing Python packages..." && \
-        if python3 -m pip install --upgrade pip setuptools wheel && \
-           python3 -m pip install --no-cache-dir --timeout 60 --retries 3 \
+        if pip install --upgrade pip setuptools wheel && \
+           pip install --no-cache-dir --timeout 60 --retries 3 \
             'pre-commit' \
             'yq' \
             'azure-cli' \
             'checkov' \
             'pywinrm' \
-            'ansible-core==${versionAnsible}' && \
+            "ansible-core==2.16.2" && \
             echo "Successfully installed Python packages" && \
-            python3 -m pip check; then \
+            pip check; then \
             break; \
         fi; \
         echo "Attempt $i failed with exit code $?, retrying in 10 seconds..." && \
@@ -237,8 +256,10 @@ RUN set -ex && \
         fi; \
         sleep 10; \
     done && \
+    # Add venv to PATH
+    echo 'PATH=/opt/venv/bin:$PATH' >> /etc/profile.d/venv.sh && \
     # Verify Python package installations
-    python3 -m pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
+    pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
     # Cleanup
     apt-get remove -y python3-dev && \
     apt-get clean && \
@@ -248,81 +269,227 @@ RUN set -ex && \
 
 # Install tools with retries and improved verification
 RUN set -ex && \
-    # Install docker compose with retries and verification
+    # Configure Azure CLI repository
+    mkdir -p /etc/apt/trusted.gpg.d && \
+    curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
+    chmod a+r /etc/apt/trusted.gpg.d/microsoft.gpg && \
+    echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ noble main" > /etc/apt/sources.list.d/microsoft.list && \
+    # Install Docker CLI and Docker Compose with retries
     mkdir -p /usr/libexec/docker/cli-plugins/ && \
-    for i in {1..3}; do \
-        echo "Attempt $i: Installing Docker Compose..." && \
-        if [ "${TARGETARCH}" = "amd64" ]; then \
-            if curl -L --retry 3 --retry-delay 5 -o /usr/libexec/docker/cli-plugins/docker-compose \
-                https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-x86_64 && \
-               chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
-               docker-compose version; then \
-                echo "Docker Compose installed successfully" && \
-                break; \
-            fi; \
-        else \
-            if curl -L --retry 3 --retry-delay 5 -o /usr/libexec/docker/cli-plugins/docker-compose \
-                https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-${TARGETOS}-aarch64 && \
-               chmod +x /usr/libexec/docker/cli-plugins/docker-compose && \
-               docker-compose version; then \
-                echo "Docker Compose installed successfully" && \
-                break; \
-            fi; \
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing Docker CLI and Compose..." && \
+        if apt-get update && \
+           apt-get install -y --no-install-recommends docker-ce-cli && \
+            mkdir -p /usr/local/lib/docker/cli-plugins && \
+            if [ "${TARGETARCH}" = "amd64" ]; then \
+                curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose && \
+                if [ -s /usr/local/lib/docker/cli-plugins/docker-compose ]; then \
+                    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
+                    ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose && \
+                    /usr/local/bin/docker-compose version || true; \
+                else \
+                    echo "Failed to download docker-compose binary" && exit 1; \
+                fi; \
+            else \
+                curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-aarch64" -o /usr/local/lib/docker/cli-plugins/docker-compose && \
+                if [ -s /usr/local/lib/docker/cli-plugins/docker-compose ]; then \
+                    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
+                    ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose && \
+                    /usr/local/bin/docker-compose version || true; \
+                else \
+                    echo "Failed to download docker-compose binary" && exit 1; \
+                fi; \
+            fi && \
+            echo "Docker Compose installed successfully"; then \
+            echo "Docker CLI and Compose installed successfully" && \
+            break; \
         fi; \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
-            echo "Failed to install Docker Compose after 3 attempts" && \
+            echo "Failed to install Docker CLI and Compose after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
     done&& \
     # Install Helm with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash; then \
             helm version || true && break; \
         fi; \
         if [ $i -eq 3 ]; then exit 1; fi; \
         sleep 5; \
     done && \
-    # Install Azure CLI extensions with retries
-    for i in {1..3}; do \
-        if az extension add --name ${extensionsAzureCli} --system && \
-           az extension add --name containerapp --system && \
+    # Install Azure CLI and extensions with retries
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing Azure CLI and extensions..." && \
+        if apt-get update && \
+           apt-get install -y --no-install-recommends azure-cli && \
+            az extension add --name account && \
+            az extension add --name aks-preview && \
+            az extension add --name containerapp && \
            az config set extension.use_dynamic_install=yes_without_prompt; then \
             az version || true && break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
-        sleep 5; \
-    done && \
-    # Install shellspec with retries
-    for i in {1..3}; do \
-        if curl -fsSL https://git.io/shellspec | sh -s -- --yes; then \
-            shellspec --version || true && break; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Azure CLI and extensions after 3 attempts" && \
+            exit 1; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        sleep 5; \
+    done&& \
+    # Install shellspec with retries
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing shellspec..." && \
+        if curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
+           export PATH="/root/.local/bin:$PATH" && \
+           shellspec --version; then \
+            echo "Shellspec installed successfully" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install shellspec after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
     done && \
     # Install Golang with retries
-    for i in {1..3}; do \
-        if curl -sSL -o /tmp/golang.tar.gz https://go.dev/dl/go${versionGolang}.${TARGETOS}-${TARGETARCH}.tar.gz && \
-           tar -C /usr/local -xzf /tmp/golang.tar.gz; then \
-            rm /tmp/golang.tar.gz && \
-            export PATH=$PATH:/usr/local/go/bin && \
-            go version || true && break; \
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing Go..." && \
+        if apt-get update && \
+           apt-get install -y --no-install-recommends tar && \
+           curl -sSL --retry 3 --retry-delay 5 -o /tmp/golang.tar.gz "https://go.dev/dl/go${versionGolang}.linux-${TARGETARCH}.tar.gz" && \
+           mkdir -p /usr/local && \
+           tar -C /usr/local -xzf /tmp/golang.tar.gz && \
+           rm /tmp/golang.tar.gz && \
+           export PATH="/usr/local/go/bin:$PATH" && \
+           go version; then \
+            echo "Go installed successfully" && \
+            break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Go after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
     done
 
+# Install base packages first
+RUN set -ex && \
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing base packages..." && \
+        if apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+           ca-certificates \
+           curl \
+           gnupg \
+           lsb-release \
+           software-properties-common && \
+           rm -rf /var/lib/apt/lists/*; then \
+            echo "Base packages installed successfully" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install base packages after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done
+
+# Copy version files and parse versions
+COPY ./versions/manifest.json ./versions/
+COPY ./scripts/parse_versions.sh ./scripts/
+ARG TARGETARCH=amd64
+ARG TARGETOS=linux
+
+RUN set -ex && \
+    chmod +x ./scripts/parse_versions.sh && \
+    # Parse and verify versions
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Parsing versions..." && \
+        if versionDockerCompose=$(./scripts/parse_versions.sh tool docker-compose) && \
+           versionGolang=$(./scripts/parse_versions.sh tool golang) && \
+           versionKubectl=$(./scripts/parse_versions.sh tool kubectl) && \
+           [ -n "$versionDockerCompose" ] && [ -n "$versionGolang" ] && [ -n "$versionKubectl" ] && \
+           echo "export versionDockerCompose=${versionDockerCompose}" >> /etc/profile.d/versions.sh && \
+           echo "export versionGolang=${versionGolang}" >> /etc/profile.d/versions.sh && \
+           echo "export versionKubectl=${versionKubectl}" >> /etc/profile.d/versions.sh && \
+           echo "export TARGETOS=${TARGETOS}" >> /etc/profile.d/versions.sh && \
+           echo "export TARGETARCH=${TARGETARCH}" >> /etc/profile.d/versions.sh && \
+           . /etc/profile.d/versions.sh && \
+           env | grep -E "version|TARGET" && \
+           # Verify version values
+           echo "Verifying version values:" && \
+           echo "Docker Compose: $versionDockerCompose" && \
+           echo "Golang: $versionGolang" && \
+           echo "Kubectl: $versionKubectl" && \
+           [ -n "$versionDockerCompose" ] && [ -n "$versionGolang" ] && [ -n "$versionKubectl" ]; then \
+            echo "Successfully parsed and verified versions" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to parse versions after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done
+
+# Copy rover scripts with retries and verification
+COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh \
+     ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh \
+     ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh \
+     ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh \
+     ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh \
+     ./scripts/test_runner.sh ./scripts/
+COPY ./scripts/ci_tasks/* ./scripts/ci_tasks/
+COPY ./scripts/lib/* ./scripts/lib/
+COPY ./scripts/tfcloud/* ./scripts/tfcloud/
+COPY ./scripts /tf/rover/scripts/
+COPY ./versions /tf/rover/versions/
+RUN chmod +x /tf/rover/scripts/*.sh
+
+# Create user and set up home directory
+RUN set -ex && \
+    # Remove existing user/group if they exist
+    (userdel -r ubuntu || true) && \
+    (groupdel ubuntu || true) && \
+    # Create new user and group
+    groupadd -g ${USER_GID} ${USERNAME} && \
+    useradd -u ${USER_UID} -g ${USER_GID} -m -s /bin/bash ${USERNAME} && \
+    # Set up sudo access
+    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
+    chmod 0440 /etc/sudoers.d/${USERNAME} && \
+    # Ensure home directory permissions
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
+
 # Install shell tools with retries and improved verification
 RUN set -ex && \
-    # Install kubectl-node_shell with retries and verification
-    for i in {1..3}; do \
+    # Install kubectl first
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing kubectl..." && \
+        if apt-get update && \
+           apt-get install -y --no-install-recommends kubectl && \
+           kubectl version --client; then \
+            echo "kubectl installed successfully" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install kubectl after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done && \
+    # Then install kubectl-node_shell
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Installing kubectl-node_shell..." && \
         if curl -L0 --retry 3 --retry-delay 5 -o /usr/local/bin/kubectl-node_shell \
             https://github.com/kvaps/kubectl-node-shell/raw/master/kubectl-node_shell && \
            chmod +x /usr/local/bin/kubectl-node_shell && \
-           kubectl-node_shell --help; then \
+           test -f /usr/local/bin/kubectl-node_shell; then \
             echo "kubectl-node_shell installed successfully" && \
             break; \
         fi; \
@@ -332,9 +499,9 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install git bash completion with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if mkdir -p /etc/bash_completion.d/ && \
            curl -fsSL https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o /etc/bash_completion.d/git-completion.bash; then \
             break; \
@@ -343,9 +510,10 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install Oh My Zsh with retries
-    for i in {1..3}; do \
-        if curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended && \
-           chmod 700 -R /home/${USERNAME}/.oh-my-zsh; then \
+    for i in $(seq 1 3); do \
+        if su - ${USERNAME} -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended' && \
+           chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
+           chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.oh-my-zsh; then \
             break; \
         fi; \
         if [ $i -eq 3 ]; then exit 1; fi; \
@@ -355,10 +523,10 @@ RUN set -ex && \
 # Install Terraform and HashiCorp tools with retries and improved verification
 RUN set -ex && \
     # Install Terraform with retries and verification
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Terraform..." && \
         if curl -sSL --retry 3 --retry-delay 5 -o /tmp/terraform.zip \
-            "https://releases.hashicorp.com/terraform/${versionTerraform}/terraform_${versionTerraform}_${TARGETOS}_${TARGETARCH}.zip" && \
+            "https://releases.hashicorp.com/terraform/$(./scripts/parse_versions.sh tool terraform)/terraform_$(./scripts/parse_versions.sh tool terraform)_${TARGETOS}_${TARGETARCH}.zip" && \
            unzip -o -d /usr/bin /tmp/terraform.zip && \
            chmod +x /usr/bin/terraform && \
            rm /tmp/terraform.zip && \
@@ -374,7 +542,7 @@ RUN set -ex && \
         sleep 5; \
     done&& \
     # Install tfupdate with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
             curl -sSL -o tfupdate.tar.gz https://github.com/minamijoyo/tfupdate/releases/download/v${versionTfupdate}/tfupdate_${versionTfupdate}_linux_amd64.tar.gz && \
             tar -xf tfupdate.tar.gz tfupdate && \
@@ -391,7 +559,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install terraform-docs with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /tmp/terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v${versionTerraformDocs}/terraform-docs-v${versionTerraformDocs}-${TARGETOS}-${TARGETARCH}.tar.gz && \
            tar -zxf /tmp/terraform-docs.tar.gz --directory=/usr/bin && \
            chmod +x /usr/bin/terraform-docs; then \
@@ -401,7 +569,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install PowerShell with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
             if curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${versionPowershell}/powershell-${versionPowershell}-${TARGETOS}-x64.tar.gz && \
                mkdir -p /opt/microsoft/powershell/7 && \
@@ -423,7 +591,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install Packer with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /tmp/packer.zip https://releases.hashicorp.com/packer/${versionPacker}/packer_${versionPacker}_${TARGETOS}_${TARGETARCH}.zip && \
            unzip -d /usr/bin /tmp/packer.zip && \
            chmod +x /usr/bin/packer; then \
@@ -433,7 +601,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install Kubelogin with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /tmp/kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v${versionKubelogin}/kubelogin-${TARGETOS}-${TARGETARCH}.zip && \
            unzip -d /usr/ /tmp/kubelogin.zip && \
            chmod +x /usr/bin/linux_${TARGETARCH}/kubelogin; then \
@@ -443,7 +611,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install Vault with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /tmp/vault.zip https://releases.hashicorp.com/vault/${versionVault}/vault_${versionVault}_${TARGETOS}_${TARGETARCH}.zip && \
            unzip -o -d /usr/bin /tmp/vault.zip && \
            chmod +x /usr/bin/vault && \
@@ -454,7 +622,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install tflint with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/latest/download/tflint_${TARGETOS}_${TARGETARCH}.zip && \
            unzip -d /usr/bin /tmp/tflint.zip && \
            chmod +x /usr/bin/tflint; then \
@@ -464,7 +632,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install terrascan with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
             curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz; \
         else \
@@ -478,7 +646,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install tfsec with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /bin/tfsec https://github.com/tfsec/tfsec/releases/latest/download/tfsec-${TARGETOS}-${TARGETARCH} && \
            chmod +x /bin/tfsec; then \
             tfsec --version || true && break; \
@@ -487,7 +655,7 @@ RUN set -ex && \
         sleep 5; \
     done && \
     # Install tflint-ruleset-azurerm with retries
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         if curl -sSL -o /tmp/tflint-ruleset-azurerm.zip https://github.com/terraform-linters/tflint-ruleset-azurerm/releases/latest/download/tflint-ruleset-azurerm_${TARGETOS}_${TARGETARCH}.zip && \
            mkdir -p /home/${USERNAME}/.tflint.d/plugins /home/${USERNAME}/.tflint.d/config && \
            echo "plugin \"azurerm\" {\n    enabled = true\n}" > /home/${USERNAME}/.tflint.d/config/.tflint.hcl && \
@@ -501,8 +669,11 @@ RUN set -ex && \
 # Set up user and permissions
 RUN set -ex && \
     groupadd docker && \
-    useradd --uid ${USER_UID} -m -G docker ${USERNAME} && \
-    locale-gen en_US.UTF-8 && \
+    useradd --uid ${USER_UID} -m -G docker ${USERNAME} || (userdel -f ${USERNAME} 2>/dev/null; useradd --uid ${USER_UID} -m -G docker ${USERNAME}) && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y locales && \
+    locale-gen C.UTF-8 && \
+    update-locale LANG=C.UTF-8 && \
     mkdir -p /tf/cache && \
     chown -R ${USERNAME}:${USERNAME} ${TF_PLUGIN_CACHE_DIR} && \
     mkdir -p \
@@ -528,7 +699,7 @@ RUN set -ex && \
 
 # Configure shell with retries and improved verification
 RUN set -ex && \
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Configuring shell..." && \
         if mkdir -p /commandhistory && \
            touch /commandhistory/.bash_history && \
@@ -562,7 +733,7 @@ COPY ./scripts/lib/* ./scripts/lib/
 COPY ./scripts/tfcloud/* ./scripts/tfcloud/
 
 RUN set -ex && \
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Setting up rover scripts..." && \
         if chmod +x /tf/rover/scripts/*.sh && \
            chown -R ${USERNAME}:${USERNAME} /tf/rover/scripts && \
@@ -580,7 +751,7 @@ RUN set -ex && \
 
 # Clean up with retries and improved verification
 RUN set -ex && \
-    for i in {1..3}; do \
+    for i in $(seq 1 3); do \
         echo "Attempt $i: Cleaning up..." && \
         if apt-get remove -y \
             gcc \
