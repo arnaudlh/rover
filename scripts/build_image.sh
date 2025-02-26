@@ -171,7 +171,7 @@ function build_base_rover_image {
                 --set "*.platform=linux/amd64" \
                 --set "*.args.versionRover=localhost:5000/rover:local" \
                 --load \
-                agent
+                "agent-${versionTerraform}"
             # Local build complete
             echo "Local build completed successfully"
             ;;
@@ -188,7 +188,7 @@ function build_base_rover_image {
                 -f docker-bake.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${architecture} \
-                --push rover_registry
+                --push "registry-${versionTerraform}"
             ;;
         *)
             echo "Building rover image and pushing to GHCR"
@@ -202,7 +202,7 @@ function build_base_rover_image {
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
-                --push rover_registry
+                --push "registry-${versionTerraform}"
             ;;
     esac
 
@@ -253,7 +253,7 @@ function build_agent {
                 -f docker-bake-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${platform} \
-                --load ${agent}
+                --load "agent-${versionTerraform}"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
@@ -272,7 +272,7 @@ function build_agent {
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
-                --push agent
+                --push "agent-${versionTerraform}"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
             ;;
@@ -286,7 +286,7 @@ function build_agent {
             docker buildx bake \
                 -f docker-bake-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
-                --push gitlab
+                --push "agent-${versionTerraform}"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
             ;;
@@ -300,7 +300,7 @@ function build_agent {
             docker buildx bake \
                 -f docker-bake-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
-                --push agent
+                --push "agent-${versionTerraform}"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
             ;;
