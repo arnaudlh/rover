@@ -117,8 +117,7 @@ jobs:
 
       - name: Set build variables
         run: |
-          arch="${{ contains(matrix.platform, 'amd64') && 'amd64' ||\
-            'arm64' }}"
+          arch="${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}"
           echo "ARCH=$arch" >> $GITHUB_ENV
           prefix="${{ env.REGISTRY }}/${{ github.repository }}/rover"
           echo "IMAGE_PREFIX=$prefix" >> $GITHUB_ENV
@@ -133,28 +132,21 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            type=raw,value=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-\
-              ${{ env.ARCH }}
-            type=raw,value=${{ env.IMAGE_PREFIX }}:pr-latest-\
-              ${{ env.ARCH }}
+            type=raw,value=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
+            type=raw,value=${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
           target: base
           platforms: ${{ matrix.platform }}
           cache-from: |
-            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-latest-\
-              ${{ env.ARCH }}
-            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-\
-              ${{ env.ARCH }}
+            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
+            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
           cache-to: |
-            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-\
-              ${{ env.ARCH }},mode=max
+            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }},mode=max
           cache-scope: |
             ${{ github.workflow }}-\
             ${{ github.event.pull_request.number || github.ref }}
           outputs: |
-            type=registry,compression=zstd,compression-level=3,\
-              force-compression=true
-            type=image,compression=zstd,compression-level=3,\
-              force-compression=true
+            type=registry,compression=zstd,compression-level=3,force-compression=true
+            type=image,compression=zstd,compression-level=3,force-compression=true
           provenance: false
           sbom: false
           build-args: |
@@ -246,8 +238,7 @@ jobs:
 
       - name: Set build variables
         run: |
-          arch="${{ contains(matrix.platform, 'amd64') && 'amd64' ||\
-            'arm64' }}"
+          arch="${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}"
           echo "ARCH=$arch" >> $GITHUB_ENV
           prefix="${{ env.REGISTRY }}/${{ github.repository }}/rover-agent"
           echo "AGENT_PREFIX=$prefix" >> $GITHUB_ENV
@@ -279,13 +270,10 @@ jobs:
             ${{ github.workflow }}-\
             ${{ github.event.pull_request.number || github.ref }}
           outputs: |
-            type=registry,compression=zstd,compression-level=3,\
-              force-compression=true
-            type=image,compression=zstd,compression-level=3,\
-              force-compression=true
+            type=registry,compression=zstd,compression-level=3,force-compression=true
+            type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
-            base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-\
-              ${{ env.ARCH }}
+            base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
           provenance: false
           sbom: false
           build-args: |
@@ -349,17 +337,14 @@ jobs:
       - name: Set scan variables
         run: |
           # Set architecture and paths
-          arch="${{ contains(matrix.platform, 'amd64') && 'amd64' ||\
-            'arm64' }}"
+          arch="${{ contains(matrix.platform, 'amd64') && 'amd64' || 'arm64' }}"
           echo "ARCH=$arch" >> $GITHUB_ENV
           if [ "${{ matrix.type }}" = "base" ]; then
             img="${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-$arch"
             sarif="results/results-${{ matrix.type }}-$arch.sarif"
           else
-            img="${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-\
-              ${{ github.sha }}-$arch"
-            sarif="results/results-${{ matrix.type }}-\
-              ${{ matrix.agent }}-$arch.sarif"
+            img="${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-$arch"
+            sarif="results/results-${{ matrix.type }}-${{ matrix.agent }}-$arch.sarif"
           fi
           echo "IMAGE=$img" >> $GITHUB_ENV
           echo "SARIF_FILE=$sarif" >> $GITHUB_ENV
