@@ -271,11 +271,6 @@ RUN set -ex && \
 
 # Install tools with retries and improved verification
 RUN set -ex && \
-    # Configure Azure CLI repository
-    mkdir -p /etc/apt/trusted.gpg.d && \
-    curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-    chmod a+r /etc/apt/trusted.gpg.d/microsoft.gpg && \
-    echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ jammy main" > /etc/apt/sources.list.d/microsoft.list && \
     # Install Docker CLI and Docker Compose with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Docker CLI and Compose..." && \
@@ -300,7 +295,7 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done && \
+    done&& \
     # Install Helm with retries
     for i in $(seq 1 3); do \
         if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash; then \
