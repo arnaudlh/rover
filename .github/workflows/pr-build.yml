@@ -254,7 +254,6 @@ jobs:
             type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
           cache-to: type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }},mode=max
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
-            type=image,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
           provenance: false
