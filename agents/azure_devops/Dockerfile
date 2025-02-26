@@ -51,6 +51,10 @@ RUN set -ex && \
 USER ${USERNAME}
 
 COPY ./agents/azure_devops/azdo.sh /home/${USERNAME}/agent/
-RUN chmod +x /home/${USERNAME}/agent/azdo.sh
+USER root
+RUN chmod +x /home/${USERNAME}/agent/azdo.sh && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
+
+USER ${USERNAME}
 
 ENTRYPOINT ["/home/vscode/agent/azdo.sh"]
