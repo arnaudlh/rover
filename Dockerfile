@@ -137,22 +137,26 @@ RUN set -ex && \
         echo "Attempt $i: Configuring package repositories..." && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
-           curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-jammy-prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "Microsoft repository configured successfully"; } && \
            # Docker repository
-           curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "Docker repository configured successfully"; } && \
            # Kubernetes repository
-           curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
            chmod a+r /etc/apt/keyrings/kubernetes.gpg && \
            echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           echo "Kubernetes repository configured successfully"; } && \
            # GitHub CLI repository
-           curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
            chmod a+r /etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
-           # Update package lists after adding repositories
-           apt-get update; then \
+           echo "GitHub CLI repository configured successfully"; } && \
+           # Update package lists
+           { apt-get update && echo "Package lists updated successfully"; }; then \
             echo "Successfully configured all package repositories" && \
             break; \
         fi; \
@@ -162,7 +166,7 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done && \
+    done&& \
     # Install repository-specific packages with retries
     for i in {1..5}; do \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
