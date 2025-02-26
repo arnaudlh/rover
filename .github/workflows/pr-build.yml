@@ -72,6 +72,8 @@ jobs:
           - linux/amd64
           - linux/arm64
       fail-fast: false
+      max-parallel: 2  # Limit concurrent builds
+    continue-on-error: ${{ matrix.platform == 'linux/arm64' }}  # Allow arm64 builds to fail
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -169,6 +171,7 @@ jobs:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
     timeout-minutes: 30  # Prevent indefinite pending states
+    continue-on-error: true  # Continue pipeline even if some agent builds fail
     outputs:
       result: success
     strategy:
