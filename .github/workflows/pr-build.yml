@@ -510,7 +510,6 @@ jobs:
           MSDO_SCAN_RESULT: ${{ needs.msdo-scan.outputs.status || 'failure' }}
         with:
           script: |
-            const core = require('@actions/core');
             const { owner, repo } = context.repo;
             const { number } = context.issue;
             const buildBaseResult = process.env.BUILD_BASE_RESULT || 'failure';
