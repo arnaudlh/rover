@@ -96,11 +96,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/rover
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest
+            type=ref,event=pr,prefix=pr-
+            type=sha,prefix=pr-
 
       - name: Parse versions
         id: versions
@@ -131,14 +130,12 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            type=raw,value=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
-            type=raw,value=${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
+            ${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
+            ${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
           target: base
           platforms: ${{ matrix.platform }}
-          cache-from: |
-            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
-            type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
-          cache-to: type=registry,ref=${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }},mode=max
+          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.platform }}
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
           provenance: false
           sbom: false
@@ -249,10 +246,8 @@ jobs:
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: ${{ matrix.platform }}
-          cache-from: |
-            type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
-            type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
-          cache-to: type=registry,ref=${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }},mode=max
+          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.agent }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.agent }}-${{ matrix.platform }}
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
