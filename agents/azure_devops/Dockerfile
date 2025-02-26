@@ -20,6 +20,8 @@ ENV AGENT_NAME="" \
     VSTS_AGENT_INPUT_TOKEN="" \
     VSTS_AGENT_INPUT_POOL=""
 
+USER root
+
 RUN set -ex && \
     for i in {1..3}; do \
         echo "Attempt $i: Installing Azure DevOps agent..." && \
@@ -32,8 +34,9 @@ RUN set -ex && \
            fi && \
            tar xzf /tmp/agent_package.tar.gz && \
            rm /tmp/agent_package.tar.gz && \
-           sudo DEBIAN_FRONTEND=noninteractive ./bin/installdependencies.sh && \
-           sudo chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent; then \
+           DEBIAN_FRONTEND=noninteractive ./bin/installdependencies.sh && \
+           chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent && \
+           chmod -R 755 /home/${USERNAME}/agent; then \
             echo "Azure DevOps agent installed successfully" && \
             break; \
         fi; \
@@ -44,6 +47,8 @@ RUN set -ex && \
         fi; \
         sleep 5; \
     done
+
+USER ${USERNAME}
 
 COPY ./agents/azure_devops/azdo.sh /home/${USERNAME}/agent/
 RUN chmod +x /home/${USERNAME}/agent/azdo.sh

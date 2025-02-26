@@ -20,6 +20,8 @@ ENV TFC_AGENT_TOKEN="" \
     TFC_AGENT_LOG_LEVEL="info" \
     ROVER_RUNNER=true
 
+USER root
+
 RUN set -ex && \
     for i in {1..3}; do \
         echo "Attempt $i: Installing TFC agent..." && \
@@ -38,6 +40,7 @@ RUN set -ex && \
            chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
            mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
            chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent && \
+           chmod -R 755 /home/${USERNAME}/agent && \
            apt-get clean && \
            rm -rf /var/lib/apt/lists/*; then \
             echo "TFC agent installed successfully" && \
@@ -50,6 +53,8 @@ RUN set -ex && \
         fi; \
         sleep 5; \
     done
+
+USER ${USERNAME}
 
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-plan
 COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-apply
