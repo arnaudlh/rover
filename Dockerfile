@@ -152,6 +152,33 @@ RUN set -ex && \
            chmod a+r /etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
            # Update package lists after adding repositories
+           apt-get update; then \
+            echo "Successfully configured all package repositories" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to configure package repositories after 3 attempts" && \
+            exit 1; \
+        fi; \
+        sleep 5; \
+    done && \
+    # Install repository-specific packages with retries
+    for i in {1..5}; do \
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            docker-ce-cli \
+            gh \
+            kubectl && \
+            docker --version && \
+            gh --version && \
+            kubectl version --client; then \
+            echo "Successfully installed repository packages" && \
+            break; \
+        fi; \
+        echo "Attempt $i failed, retrying in 10 seconds..." && \
+        if [ $i -eq 5 ]; then exit 1; fi; \
+        sleep 10; \
+    done
            { apt-get update && echo "Package lists updated successfully"; }; then \
             echo "Successfully configured all package repositories" && \
             break; \
