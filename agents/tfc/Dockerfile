@@ -61,7 +61,8 @@ COPY agents/tfc/login.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-pre-apply
 COPY agents/tfc/logout.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-post-plan
 COPY agents/tfc/logout.sh ${TFC_AGENT_DATA_DIR}/hooks/terraform-post-apply
 
-RUN chmod +x ${TFC_AGENT_DATA_DIR}/hooks/* && \
+RUN mkdir -p ${TFC_AGENT_DATA_DIR}/hooks && \
+    chmod -R 755 ${TFC_AGENT_DATA_DIR} && \
     chown -R ${USERNAME}:${USERNAME} ${TFC_AGENT_DATA_DIR}
 
 ENTRYPOINT ["/usr/bin/tfc-agent"]
