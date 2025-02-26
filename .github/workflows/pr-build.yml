@@ -454,8 +454,7 @@ jobs:
           {
             echo "Checking MSDO scan results..."
             if [ "${{ steps.msdo.outcome }}" != "success" ]; then
-              echo "::error::MSDO scan failed: ${{ steps.msdo.outcome }}" \
-                && echo "status=failure" >> $GITHUB_OUTPUT
+              echo "::error::MSDO scan failed: ${{ steps.msdo.outcome }}" && echo "status=failure" >> $GITHUB_OUTPUT
               echo "status=failure" >> $GITHUB_OUTPUT
               exit 0
             fi
