@@ -1,79 +1,70 @@
-#-------------------------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
-#-------------------------------------------------------------------------------------------------------------
+# Version variables
+variable "versionGithubRunner" {
+  default = "2.314.1"
+}
 
-#
-# make is calling the ./scripts/build_images.sh who calls docker buildx bake
-#
+variable "versionAzdo" {
+  default = "3.234.0"
+}
 
-variable "registry" {
+variable "versionTfc" {
+  default = "1.7.4"
+}
+
+variable "versionDockerCompose" {
+  default = "2.24.1"
+}
+
+variable "versionGolang" {
+  default = "1.21.6"
+}
+
+variable "versionAnsible" {
+  default = "2.16.2"
+}
+
+variable "extensionsAzureCli" {
+  default = "aks-preview"
+}
+
+variable "VERSION" {
   default = ""
 }
 
-variable "tag" {
-  default = ""
+group "agents" {
+  targets = ["agent-tf"]
 }
 
-variable "tag_strategy" {
-  default = ""
-}
-
-variable "versionRover" {
-  default = ""
-}
-
-group "rover_agents" {
-  targets = ["github", "tfc", "azdo", "gitlab"]
-}
-
-target "github" {
-  dockerfile = "./agents/github/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}github"]
+target "agent-common" {
+  context = "."
   args = {
-    versionGithubRunner = versionGithubRunner
-    versionRover        = versionRover
-    USERNAME            = USERNAME
+    TARGETARCH = "${TARGETARCH}"
+    TARGETOS = "${TARGETOS}"
+    USERNAME = "vscode"
+    versionGithubRunner = "${versionGithubRunner}"
+    versionAzdo = "${versionAzdo}"
+    versionTfc = "${versionTfc}"
+    versionDockerCompose = "${versionDockerCompose}"
+    versionGolang = "${versionGolang}"
+    versionAnsible = "${versionAnsible}"
+    extensionsAzureCli = "${extensionsAzureCli}"
   }
-  platforms = ["linux/amd64","linux/arm64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
+  network = ["host"]
+  allow = [
+    "network.host",
+    "security.insecure"
+  ]
 }
 
-target "azdo" {
-  dockerfile = "./agents/azure_devops/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}azdo"]
-  args = {
-    versionAzdo  = versionAzdo
-    versionRover = versionRover
-    USERNAME     = USERNAME
+target "agent-tf" {
+  inherits = ["agent-common"]
+  matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
+    platform = ["linux/amd64", "linux/arm64"]
   }
-  platforms = ["linux/amd64","linux/arm64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-}
-
-target "tfc" {
-  dockerfile = "./agents/tfc/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}tfc"]
-  args = {
-    versionTfc   = versionTfc
-    versionRover = versionRover
-    USERNAME     = USERNAME
-  }
-  platforms = ["linux/amd64" ]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-}
-
-target "gitlab" {
-  dockerfile = "./agents/gitlab/Dockerfile"
-  tags = ["${registry}rover-agent:${tag}-${tag_strategy}gitlab"]
-  args = {
-    versionRover = versionRover
-    USERNAME     = USERNAME
-  }
-  platforms = ["linux/amd64","linux/arm64"]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
+  dockerfile = "./agents/${agent}/Dockerfile"
+  platforms = ["${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform}"]
 }

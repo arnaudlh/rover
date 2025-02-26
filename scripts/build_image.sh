@@ -70,22 +70,29 @@ function build_base_rover_image {
     echo "Terraform version - ${versionTerraform}"
 
     case "${strategy}" in
+        "ghcr")
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
+            tag=${versionTerraform}-${tag_date_release}
+            rover_base="${registry}rover"
+            rover="${rover_base}:${tag}"
+            export tag_strategy=""
+            ;;
         "github")
-            registry="aztfmod/"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
             tag=${versionTerraform}-${tag_date_release}
             rover_base="${registry}rover"
             rover="${rover_base}:${tag}"
             export tag_strategy=""
             ;;
         "alpha")
-            registry="aztfmod/"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
             tag=${versionTerraform}-${tag_date_preview}
             rover_base="${registry}rover-alpha"
             rover="${rover_base}:${tag}"
             export tag_strategy="alpha-"
             ;;
         "dev")
-            registry="aztfmod/"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/"
             tag=${versionTerraform}-${tag_date_preview}
             rover_base="${registry}rover-preview"
             export rover="${rover_base}:${tag}"
@@ -117,36 +124,88 @@ function build_base_rover_image {
             versionRover="${rover_base}:${tag}" \
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
+            TARGETARCH=${architecture} \
+            TARGETOS=${os} \
+            USER_UID=1000 \
+            USER_GID=1000 \
+            USERNAME=vscode \
+            versionVault=$(./scripts/parse_versions.sh tool vault) \
+            versionGolang=$(./scripts/parse_versions.sh tool golang) \
+            versionKubectl=$(./scripts/parse_versions.sh tool kubectl) \
+            versionKubelogin=$(./scripts/parse_versions.sh tool kubelogin) \
+            versionDockerCompose=$(./scripts/parse_versions.sh tool docker_compose) \
+            versionTerraformDocs=$(./scripts/parse_versions.sh tool terraform_docs) \
+            versionPacker=$(./scripts/parse_versions.sh tool packer) \
+            versionPowershell=$(./scripts/parse_versions.sh tool powershell) \
+            versionAnsible=$(./scripts/parse_versions.sh tool ansible) \
+            extensionsAzureCli=$(./scripts/parse_versions.sh tool azure_cli) \
+            versionTerrascan=$(./scripts/parse_versions.sh tool terrascan) \
+            versionTfupdate=$(./scripts/parse_versions.sh tool tfupdate) \
+            mkdir -p /home/ubuntu/docker-tmp && \
+            export DOCKER_TMPDIR=/home/ubuntu/docker-tmp && \
+            export TMPDIR=/home/ubuntu/docker-tmp && \
+            docker buildx rm rover || true && \
+            docker buildx create --name rover --driver docker-container --use && \
+            docker buildx inspect --bootstrap && \
             docker buildx bake \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                -f docker-bake.override.hcl \
-                --set *.platform=${os}/${architecture} \
-                --push rover_local
-            # Pull from in-memory local registry to local docker images
-            docker pull --platform ${os}/${architecture} ${rover}
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.args.TARGETARCH=${architecture}" \
+                --set "*.args.TARGETOS=${os}" \
+                --set "*.args.versionRover=localhost:5000/rover:local" \
+                --set "*.args.versionTerraform=${versionTerraform}" \
+                --set "*.args.buildVersion=${versionTerraform}" \
+                --set "*.tags=rover:local" \
+                --set "*.args.VERSION=${versionTerraform}" \
+                --load \
+                local-tf && \
+            # Ensure the local image is available
+            # Build agents using local image
+            DOCKER_BUILDKIT=1 docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
+                -f docker-bake-agents.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.platform=linux/amd64" \
+                --set "*.args.versionRover=localhost:5000/rover:local" \
+                --load \
+                "agent-${versionTerraform}"
+            # Local build complete
+            echo "Local build completed successfully"
             ;;
         "dev")
-            echo "Building rover developer image and pushing to Docker Hub"
-            registry="${registry}" \
+            echo "Building rover developer image and pushing to GHCR"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/" \
             versionRover="${rover_base}:${tag}" \
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                -f docker-bake.override.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${architecture} \
-                --push rover_registry
+                --set "*.args.VERSION=${versionTerraform}" \
+                --push registry-tf
             ;;
         *)
-            echo "Building rover image and pushing to Docker Hub"
-            registry="${registry}" \
+            echo "Building rover image and pushing to GHCR"
+            registry="ghcr.io/${GITHUB_REPOSITORY:-arnaudlh/rover}/" \
             versionRover="${rover_base}:${tag}" \
             versionTerraform=${versionTerraform} \
-            tag="${rover}" \
+            tag="${tag}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                -f docker-bake.override.hcl \
-                --push rover_registry
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.args.VERSION=${versionTerraform}" \
+                --push registry-tf
             ;;
     esac
 
@@ -155,14 +214,14 @@ function build_base_rover_image {
 
 }
 
-function build_rover_agents {
+function build_agent {
     # Build the rover agents and runners
     rover=${1}
     tag=${2}
     registry=${3}
 
 
-    echo "@build_rover_agents"
+    echo "@build_agent"
     echo "Building agents with:"
     echo " - registry      - ${registry}"
     echo " - version Rover - ${rover_base}:${tag}"
@@ -176,14 +235,14 @@ function build_rover_agents {
         "local"|"dev")
 
             if [[ ! -z $agent ]]; then
-                rover_agents=$agent
+                agent=$agent
             else
-                rover_agents="rover_agents"
+                agent="agent"
             fi
 
             echo " - tag           - ${tag}"
             platform="${architecture}"
-            rover_agents="${rover_agents}"
+            agent="${rover_agents}"
 
             registry="" \
             tag_strategy=${tag_strategy} \
@@ -191,14 +250,17 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-agents.hcl \
-                -f docker-bake.override.hcl \
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${platform} \
-                --load ${rover_agents}
+                --load "agent-${versionTerraform}"
 
-            echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${rover_agents} for registry '${registry}'"
+            echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
-        "github")
+        "github"|"ghcr")
             tag=${versionTerraform}-${tag_date_release}
             echo " - tag           - ${tag}"
 
@@ -208,9 +270,13 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=network.host \
+                --allow=fs.read=/var/lib/buildkit/cache \
+                --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-agents.hcl \
-                -f docker-bake.override.hcl \
-                --push rover_agents
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.args.VERSION=${versionTerraform}" \
+                --push agent-tf
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
             ;;
@@ -223,8 +289,9 @@ function build_rover_agents {
             tag="${tag}" \
             docker buildx bake \
                 -f docker-bake-agents.hcl \
-                -f docker-bake.override.hcl \
-                --push gitlab
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.args.VERSION=${versionTerraform}" \
+                --push agent-tf
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
             ;;
@@ -237,8 +304,9 @@ function build_rover_agents {
             tag="${tag}" \
             docker buildx bake \
                 -f docker-bake-agents.hcl \
-                -f docker-bake.override.hcl \
-                --push rover_agents
+                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
+                --set "*.args.VERSION=${versionTerraform}" \
+                --push agent-tf
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}* for registry '${registry}'"
             ;;
@@ -266,7 +334,7 @@ else
 
     if [ "${agent}" != "0" ]; then
         while read versionTerraform; do
-            build_rover_agents "${rover}" "${tag}" "${registry}"
+            build_agent "${rover}" "${tag}" "${registry}"
         done <./.env.terraform
     fi
 fi
