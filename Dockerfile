@@ -166,7 +166,7 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install repository-specific packages with retries
     for i in {1..5}; do \
         if DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
