@@ -42,11 +42,7 @@ target "common" {
   ]
 }
 
-group "rover_base_${versionTerraform}" {
-  targets = ["rover_base_platform"]
-}
-
-target "rover_base_platform" {
+target "rover_base" {
   inherits = ["common"]
   matrix = {
     platform = ["linux/amd64", "linux/arm64"]
@@ -60,7 +56,7 @@ target "rover_base_platform" {
 }
 
 target "rover_local" {
-  inherits = ["rover_base_platform"]
+  inherits = ["rover_base"]
   tags = ["rover:local"]
   output = ["type=docker"]
   platforms = ["linux/amd64"]
@@ -68,7 +64,7 @@ target "rover_local" {
 }
 
 target "rover_registry" {
-  inherits = ["rover_base_platform"]
+  inherits = ["rover_base"]
   tags = ["${registry}rover:${versionRover}"]
   output = ["type=registry"]
 }
