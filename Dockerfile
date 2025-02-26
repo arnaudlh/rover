@@ -277,32 +277,20 @@ RUN set -ex && \
     chmod a+r /etc/apt/trusted.gpg.d/microsoft.gpg && \
     echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ noble main" > /etc/apt/sources.list.d/microsoft.list && \
     # Install Docker CLI and Docker Compose with retries
-    mkdir -p /usr/libexec/docker/cli-plugins/ && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Docker CLI and Compose..." && \
         if apt-get update && \
            apt-get install -y --no-install-recommends docker-ce-cli && \
-            mkdir -p /usr/local/lib/docker/cli-plugins && \
-            if [ "${TARGETARCH}" = "amd64" ]; then \
-                curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose && \
-                if [ -s /usr/local/lib/docker/cli-plugins/docker-compose ]; then \
-                    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
-                    ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose && \
-                    /usr/local/bin/docker-compose version || true; \
-                else \
-                    echo "Failed to download docker-compose binary" && exit 1; \
-                fi; \
-            else \
-                curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-aarch64" -o /usr/local/lib/docker/cli-plugins/docker-compose && \
-                if [ -s /usr/local/lib/docker/cli-plugins/docker-compose ]; then \
-                    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
-                    ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose && \
-                    /usr/local/bin/docker-compose version || true; \
-                else \
-                    echo "Failed to download docker-compose binary" && exit 1; \
-                fi; \
-            fi && \
-            echo "Docker Compose installed successfully"; then \
+           mkdir -p /usr/local/lib/docker/cli-plugins && \
+           ( if [ "${TARGETARCH}" = "amd64" ]; then \
+               curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose; \
+             else \
+               curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-aarch64" -o /usr/local/lib/docker/cli-plugins/docker-compose; \
+             fi ) && \
+           [ -s /usr/local/lib/docker/cli-plugins/docker-compose ] && \
+           chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
+           ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose && \
+           docker-compose version || true; then \
             echo "Docker CLI and Compose installed successfully" && \
             break; \
         fi; \
@@ -312,7 +300,7 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install Helm with retries
     for i in $(seq 1 3); do \
         if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash; then \
