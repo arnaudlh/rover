@@ -295,7 +295,7 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Docker CLI and Compose..." && \
         if apt-get update && \
-           apt-get install -y --no-install-recommends docker-ce-cli && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends docker-ce-cli && \
            mkdir -p /usr/local/lib/docker/cli-plugins && \
            ( if [ "${TARGETARCH}" = "amd64" ]; then \
                curl -SL --retry 3 --retry-delay 5 "https://github.com/docker/compose/releases/download/v${versionDockerCompose}/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose; \
@@ -315,7 +315,9 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
+    # Clean up
+    rm -rf /var/lib/apt/lists/*&& \
     # Install Helm with retries
     for i in $(seq 1 3); do \
         if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash; then \
