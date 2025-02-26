@@ -99,8 +99,8 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ github.repository }}/rover
           tags: |
-            type=sha,prefix=pr-
-            type=ref,event=pr
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-latest
 
       - name: Parse versions
         id: versions
