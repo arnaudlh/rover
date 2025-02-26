@@ -159,7 +159,7 @@ function build_base_rover_image {
                 --set "*.args.buildVersion=${versionTerraform}" \
                 --set "*.tags=rover:local" \
                 --load \
-                local && \
+                rover_base && \
             # Ensure the local image is available
             # Build agents using local image
             DOCKER_BUILDKIT=1 docker buildx bake \

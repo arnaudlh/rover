@@ -28,7 +28,7 @@ variable "extensionsAzureCli" {
 }
 
 group "agents" {
-  targets = ["agent"]
+  targets = ["rover_agent"]
 }
 
 target "agent-common" {
@@ -54,7 +54,7 @@ target "agent-common" {
   ]
 }
 
-target "agent" {
+target "rover_agent" {
   inherits = ["agent-common"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]

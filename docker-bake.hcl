@@ -42,7 +42,7 @@ target "common" {
   ]
 }
 
-target "base" {
+target "rover_base" {
   inherits = ["common"]
   matrix = {
     platform = ["linux/amd64", "linux/arm64"]
@@ -57,7 +57,7 @@ target "base" {
 }
 
 target "local" {
-  inherits = ["base"]
+  inherits = ["rover_base"]
   tags = ["rover:local"]
   output = ["type=docker"]
   platforms = ["linux/amd64"]
@@ -65,7 +65,7 @@ target "local" {
 }
 
 target "registry" {
-  inherits = ["base"]
+  inherits = ["rover_base"]
   tags = ["${registry}rover:${versionRover}"]
   output = ["type=registry"]
 }
