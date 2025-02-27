@@ -295,9 +295,10 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Helm..." && \
         if curl -fsSL --retry 3 --retry-delay 5 https://get.helm.sh/helm-v3.13.3-linux-${TARGETARCH}.tar.gz -o /tmp/helm.tar.gz && \
-           tar -zxvf /tmp/helm.tar.gz -C /tmp && \
-           mv /tmp/linux-${TARGETARCH}/helm /usr/local/bin/helm && \
-           rm -rf /tmp/helm.tar.gz /tmp/linux-${TARGETARCH} && \
+           mkdir -p /tmp/helm && \
+           tar -zxf /tmp/helm.tar.gz -C /tmp/helm && \
+           mv /tmp/helm/linux-${TARGETARCH}/helm /usr/local/bin/helm && \
+           rm -rf /tmp/helm.tar.gz /tmp/helm && \
            chmod +x /usr/local/bin/helm && \
            helm version --client || true; then \
             echo "Helm installed successfully" && \
