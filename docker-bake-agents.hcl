@@ -31,11 +31,8 @@ variable "VERSION" {
   default = ""
 }
 
-group "default" {
-  targets = ["rover-agents"]
-}
-
-target "agent-base" {
+# Common target configuration
+target "common" {
   context = "."
   args = {
     TARGETARCH = "${TARGETARCH}"
@@ -58,8 +55,9 @@ target "agent-base" {
   ]
 }
 
-target "rover-agents" {
-  inherits = ["agent-base"]
+# Matrix build configuration
+target "matrix" {
+  inherits = ["common"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
@@ -67,4 +65,9 @@ target "rover-agents" {
   dockerfile = "./agents/${agent}/Dockerfile"
   platforms = ["${platform}"]
   tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+}
+
+# Default group
+group "default" {
+  targets = ["matrix"]
 }
