@@ -82,28 +82,46 @@ target "base" {
 # Build configuration for rover agents - local build
 target "agent-1_9_8" {
   inherits = ["base"]
-  matrix = {
-    agent = ["github"]
-    platform = ["linux/amd64"]
-  }
-  dockerfile = "./agents/${agent}/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+  dockerfile = "./agents/github/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-amd64"]
 }
 
 # Build configuration for rover agents - registry build
-target "rover-agents" {
+target "github" {
   inherits = ["base"]
-  matrix = {
-    agent = ["github", "tfc", "azdo", "gitlab"]
-    platform = ["linux/amd64", "linux/arm64"]
-  }
-  dockerfile = "./agents/${agent}/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+  dockerfile = "./agents/github/Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-${TARGETARCH}"]
+}
+
+target "tfc" {
+  inherits = ["base"]
+  dockerfile = "./agents/tfc/Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-tfc:${VERSION}-${TARGETARCH}"]
+}
+
+target "azdo" {
+  inherits = ["base"]
+  dockerfile = "./agents/azure_devops/Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-azdo:${VERSION}-${TARGETARCH}"]
+}
+
+target "gitlab" {
+  inherits = ["base"]
+  dockerfile = "./agents/gitlab/Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-gitlab:${VERSION}-${TARGETARCH}"]
 }
 
 # Default group
 group "default" {
   targets = ["agent-1_9_8"]
+}
+
+# Registry build group
+group "rover-agents" {
+  targets = ["github", "tfc", "azdo", "gitlab"]
 }
