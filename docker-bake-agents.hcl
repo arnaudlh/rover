@@ -32,7 +32,7 @@ variable "VERSION" {
 }
 
 group "default" {
-  targets = ["build-agents"]
+  targets = ["rover-agents"]
 }
 
 target "agent-base" {
@@ -58,7 +58,7 @@ target "agent-base" {
   ]
 }
 
-target "build-agents" {
+target "rover-agents" {
   inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
