@@ -297,20 +297,24 @@ RUN set -ex && \
 # Install tools with retries and improved verification
 RUN set -ex && \
 
-    # Install Azure CLI extensions with retries
+    # Initialize and configure Azure CLI with retries
     for i in $(seq 1 3); do \
-        echo "Attempt $i: Installing Azure CLI extensions..." && \
-        if az extension add --name account --yes && \
-           az extension add --name aks-preview --yes && \
-           az extension add --name containerapp --yes && \
-           az config set extension.use_dynamic_install=yes_without_prompt; then \
-            az version || true && \
-            echo "Azure CLI extensions installed successfully" && \
+        echo "Attempt $i: Initializing Azure CLI..." && \
+        if . /opt/venv/bin/activate && \
+           az --version && \
+           az config set extension.use_dynamic_install=yes_without_prompt && \
+           az config set core.only_show_errors=true && \
+           az config set core.output=json && \
+           for ext in account aks-preview containerapp; do \
+               az extension add --name $ext --yes || true; \
+           done && \
+           az version; then \
+            echo "Azure CLI initialized and configured successfully" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
-            echo "Failed to install Azure CLI extensions after 3 attempts" && \
+            echo "Failed to initialize Azure CLI after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
