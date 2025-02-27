@@ -400,7 +400,7 @@ COPY ./scripts /tf/rover/scripts/
 COPY ./versions /tf/rover/versions/
 RUN chmod +x /tf/rover/scripts/*.sh
 
-# Create user and set up home directory
+# Create user and set up home directory early
 RUN set -ex && \
     # Remove existing user/group if they exist
     (userdel -r ubuntu || true) && \
@@ -411,8 +411,27 @@ RUN set -ex && \
     # Set up sudo access
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
-    # Ensure home directory permissions
-    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
+    # Create required directories
+    mkdir -p \
+        /home/${USERNAME}/.local \
+        /home/${USERNAME}/.local/bin \
+        /home/${USERNAME}/.gnupg \
+        /home/${USERNAME}/.ssh \
+        /home/${USERNAME}/.azure \
+        /home/${USERNAME}/.tflint.d \
+        /tf/cache \
+        /tf/rover \
+        /tf/caf \
+        /tf/logs && \
+    # Set proper permissions
+    chown -R ${USERNAME}:${USERNAME} \
+        /home/${USERNAME} \
+        /tf/cache \
+        /tf/rover \
+        /tf/caf \
+        /tf/logs && \
+    chmod -R 755 /home/${USERNAME}/.local && \
+    chmod 700 /home/${USERNAME}/.ssh /home/${USERNAME}/.gnupg
 
 # Install shell tools with retries and improved verification
 RUN set -ex && \
