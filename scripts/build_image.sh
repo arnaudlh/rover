@@ -259,7 +259,9 @@ function build_agent {
                 --set *.args.TARGETOS=${os} \
                 --set *.args.USERNAME=${USERNAME} \
                 --set *.args.VERSION=${versionTerraform} \
-                --load "rover_agent_matrix_build"
+                --set *.args.GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
+                --set *.args.versionRover=${versionRover} \
+                --load "rover_agent_matrix_build_v1"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
