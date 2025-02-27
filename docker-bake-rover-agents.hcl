@@ -46,7 +46,7 @@ target "base" {
 }
 
 # Build matrix target for each version
-target "agent-1.11.0-alpha20241106" {
+target "agent_1_11_0_alpha" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -57,7 +57,7 @@ target "agent-1.11.0-alpha20241106" {
   tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
 }
 
-target "agent-1.10.0-beta1" {
+target "agent_1_10_0_beta" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -68,7 +68,7 @@ target "agent-1.10.0-beta1" {
   tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
 }
 
-target "agent-1.9.8" {
+target "agent_1_9_8" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -79,7 +79,7 @@ target "agent-1.9.8" {
   tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
 }
 
-target "agent-1.8.5" {
+target "agent_1_8_5" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -92,5 +92,5 @@ target "agent-1.8.5" {
 
 # Default group
 group "default" {
-  targets = ["agent-1.11.0-alpha20241106", "agent-1.10.0-beta1", "agent-1.9.8", "agent-1.8.5"]
+  targets = ["agent_1_11_0_alpha", "agent_1_10_0_beta", "agent_1_9_8", "agent_1_8_5"]
 }
