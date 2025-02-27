@@ -167,7 +167,7 @@ function build_base_rover_image {
                 --allow=network.host \
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
-                -f docker-bake-agents.hcl \
+                -f docker-bake-rover-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.platform=linux/amd64" \
                 --set "*.args.versionRover=localhost:5000/rover:local" \
@@ -253,7 +253,7 @@ function build_agent {
                 --allow=network.host \
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
-                -f docker-bake-agents.hcl \
+                -f docker-bake-rover-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${platform} \
                 --load "agent-${versionTerraform}"
@@ -273,7 +273,7 @@ function build_agent {
                 --allow=network.host \
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
-                -f docker-bake-agents.hcl \
+                -f docker-bake-rover-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push rover-agents
@@ -288,7 +288,7 @@ function build_agent {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
-                -f docker-bake-agents.hcl \
+                -f docker-bake-rover-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push rover-agents
@@ -303,7 +303,7 @@ function build_agent {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
-                -f docker-bake-agents.hcl \
+                -f docker-bake-rover-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push rover-agents
