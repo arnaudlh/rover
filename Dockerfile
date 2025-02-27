@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS base
+FROM ubuntu:24.04 AS base
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -138,13 +138,13 @@ RUN set -ex && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
            { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-jammy-prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-noble-prod noble main" > /etc/apt/sources.list.d/microsoft.list && \
            echo "Microsoft repository configured successfully"; } && \
            # Docker repository
            { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
-           echo "Docker repository configured successfully"; } && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "Docker repository configured successfully"; }&& \
            # Install required packages for repository setup
            { apt-get update && \
            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -294,12 +294,7 @@ RUN set -ex && \
     # Install Helm with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Helm..." && \
-        if curl -fsSL --retry 3 --retry-delay 5 https://get.helm.sh/helm-v3.13.3-linux-${TARGETARCH}.tar.gz -o /tmp/helm.tar.gz && \
-           mkdir -p /tmp/helm && \
-           tar -zxf /tmp/helm.tar.gz -C /tmp/helm && \
-           mv /tmp/helm/linux-${TARGETARCH}/helm /usr/local/bin/helm && \
-           rm -rf /tmp/helm.tar.gz /tmp/helm && \
-           chmod +x /usr/local/bin/helm && \
+        if curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false USE_SUDO=false HELM_INSTALL_DIR=/usr/local/bin bash && \
            helm version --client || true; then \
             echo "Helm installed successfully" && \
             break; \
