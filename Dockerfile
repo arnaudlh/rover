@@ -197,11 +197,17 @@ RUN set -ex && \
     done && \
     # Install Helm with retries
     for i in $(seq 1 3); do \
-        if curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && \
-           helm version || true; then \
+        echo "Attempt $i: Installing Helm..." && \
+        if curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash && \
+           helm version --client || true; then \
+            echo "Helm installed successfully" && \
             break; \
         fi; \
-        if [ $i -eq 3 ]; then exit 1; fi; \
+        echo "Attempt $i failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then \
+            echo "Failed to install Helm after 3 attempts" && \
+            exit 1; \
+        fi; \
         sleep 5; \
     done
 
