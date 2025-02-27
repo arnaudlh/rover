@@ -256,7 +256,7 @@ function build_agent {
                 -f docker-bake-rover-agents.hcl \
                 $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${platform} \
-                --load "agent"
+                --load "rover_agent_matrix"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
