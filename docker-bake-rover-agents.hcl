@@ -45,8 +45,41 @@ target "base" {
   allow = "network.host,security.insecure"
 }
 
-# Build matrix target
-target "agent" {
+# Build matrix target for each version
+target "agent_1_11_0_alpha20241106" {
+  inherits = ["base"]
+  matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
+    platform = ["linux/amd64"]
+  }
+  dockerfile = "./agents/${agent}/Dockerfile"
+  platforms = ["${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+}
+
+target "agent_1_10_0_beta1" {
+  inherits = ["base"]
+  matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
+    platform = ["linux/amd64"]
+  }
+  dockerfile = "./agents/${agent}/Dockerfile"
+  platforms = ["${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+}
+
+target "agent_1_9_8" {
+  inherits = ["base"]
+  matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
+    platform = ["linux/amd64"]
+  }
+  dockerfile = "./agents/${agent}/Dockerfile"
+  platforms = ["${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+}
+
+target "agent_1_8_5" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -59,5 +92,5 @@ target "agent" {
 
 # Default group
 group "default" {
-  targets = ["agent"]
+  targets = ["agent_1_11_0_alpha20241106", "agent_1_10_0_beta1", "agent_1_9_8", "agent_1_8_5"]
 }
