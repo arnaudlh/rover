@@ -56,11 +56,8 @@ target "base" {
   }
   cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
   cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]
-  network = ["host"]
-  allow = [
-    "network.host",
-    "security.insecure"
-  ]
+  network = "host"
+  allow = "network.host,security.insecure"
 }
 
 # Build configuration for rover agents
