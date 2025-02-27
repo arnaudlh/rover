@@ -220,7 +220,7 @@ RUN set -ex && \
         if curl -fsSL --retry 3 --retry-delay 5 https://get.helm.sh/helm-v$(./scripts/parse_versions.sh tool helm)-linux-${TARGETARCH}.tar.gz -o /tmp/helm.tar.gz && \
            mkdir -p /tmp/helm && \
            tar -zxf /tmp/helm.tar.gz -C /tmp/helm && \
-           mv /tmp/helm/helm /usr/local/bin/helm && \
+           mv /tmp/helm/linux-${TARGETARCH}/helm /usr/local/bin/helm && \
            rm -rf /tmp/helm.tar.gz /tmp/helm && \
            chmod +x /usr/local/bin/helm && \
            helm version --client || true; then \
