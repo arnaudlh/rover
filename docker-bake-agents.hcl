@@ -31,8 +31,8 @@ variable "VERSION" {
   default = ""
 }
 
-# Base configuration for rover agents
-target "agent-base" {
+# Base configuration
+target "base" {
   context = "."
   args = {
     TARGETARCH = "${TARGETARCH}"
@@ -45,7 +45,6 @@ target "agent-base" {
     versionGolang = "${versionGolang}"
     versionAnsible = "${versionAnsible}"
     extensionsAzureCli = "${extensionsAzureCli}"
-    VERSION = "${VERSION}"
   }
   cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
   cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
@@ -56,9 +55,9 @@ target "agent-base" {
   ]
 }
 
-# Build configuration for rover agents
-target "agents" {
-  inherits = ["agent-base"]
+# Build matrix
+target "matrix" {
+  inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
@@ -70,5 +69,5 @@ target "agents" {
 
 # Default group
 group "default" {
-  targets = ["agents"]
+  targets = ["matrix"]
 }
