@@ -136,6 +136,16 @@ RUN set -ex && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
            echo "Docker repository configured successfully"; } && \
+           # Install required packages for repository setup
+           { apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+             ca-certificates \
+             curl \
+             gnupg \
+             gpg \
+             lsb-release \
+             software-properties-common && \
+           echo "Repository setup packages installed successfully"; } && \
            # Kubernetes repository
            { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
            chmod a+r /etc/apt/keyrings/kubernetes.gpg && \
