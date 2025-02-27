@@ -66,5 +66,5 @@ target "agent-tf" {
   }
   dockerfile = "./agents/${agent}/Dockerfile"
   platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
 }
