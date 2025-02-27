@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS base
+FROM ubuntu:24.04 AS base
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -138,12 +138,12 @@ RUN set -ex && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
            { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" > /etc/apt/sources.list.d/microsoft.list && \
            echo "Microsoft repository configured successfully"; } && \
            # Docker repository
            { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
            echo "Docker repository configured successfully"; }&& \
            # Install required packages for repository setup
            { apt-get update && \
@@ -410,8 +410,7 @@ RUN set -ex && \
 COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh \
      ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh \
      ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh \
-     ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh \
-     ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh \
+     ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf \
      ./scripts/test_runner.sh ./scripts/
 COPY ./scripts/ci_tasks/* ./scripts/ci_tasks/
 COPY ./scripts/lib/* ./scripts/lib/
@@ -715,8 +714,7 @@ RUN set -ex && \
 COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh \
      ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh \
      ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh \
-     ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh \
-     ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh \
+     ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf \
      ./scripts/test_runner.sh ./scripts/
 COPY ./scripts/ci_tasks/* ./scripts/ci_tasks/
 COPY ./scripts/lib/* ./scripts/lib/
