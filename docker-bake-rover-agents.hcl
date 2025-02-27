@@ -51,6 +51,10 @@ variable "REGISTRY" {
   default = "ghcr.io"
 }
 
+variable "versionTerraform" {
+  default = ""
+}
+
 # Base configuration
 target "base" {
   context = "."
@@ -76,7 +80,7 @@ target "base" {
 }
 
 # Build configuration for rover agents - local build
-target "agent-1_9_8" {
+target "agent" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -101,5 +105,5 @@ target "rover-agents" {
 
 # Default group
 group "default" {
-  targets = ["agent-1_9_8"]
+  targets = ["agent"]
 }
