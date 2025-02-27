@@ -254,9 +254,8 @@ function build_agent {
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-rover-agents.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${platform} \
-                --load "rover_agent_matrix"
+                --load "rover_agent_build"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
