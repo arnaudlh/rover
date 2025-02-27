@@ -290,21 +290,20 @@ RUN set -ex && \
         fi; \
         sleep 5; \
     done && \
-    # Install Azure CLI and extensions with retries
+    # Install Azure CLI extensions with retries
     for i in $(seq 1 3); do \
-        echo "Attempt $i: Installing Azure CLI and extensions..." && \
-        if curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
-           az extension add --name account --yes && \
+        echo "Attempt $i: Installing Azure CLI extensions..." && \
+        if az extension add --name account --yes && \
            az extension add --name aks-preview --yes && \
            az extension add --name containerapp --yes && \
            az config set extension.use_dynamic_install=yes_without_prompt; then \
             az version || true && \
-            echo "Azure CLI installed successfully" && \
+            echo "Azure CLI extensions installed successfully" && \
             break; \
         fi; \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
-            echo "Failed to install Azure CLI and extensions after 3 attempts" && \
+            echo "Failed to install Azure CLI extensions after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
@@ -313,9 +312,11 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing shellspec..." && \
         if mkdir -p /home/${USERNAME}/.local/bin && \
-           curl -fsSL https://git.io/shellspec | SHELLSPEC_PREFIX=/home/${USERNAME}/.local sh -s -- --yes && \
+           curl -fsSL --retry 3 --retry-delay 5 https://git.io/shellspec | \
+           SHELLSPEC_PREFIX=/home/${USERNAME}/.local sh -s -- --yes && \
            chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.local && \
-           export PATH="/home/${USERNAME}/.local/bin:$PATH" && \
+           chmod -R 755 /home/${USERNAME}/.local && \
+           ln -sf /home/${USERNAME}/.local/bin/shellspec /usr/local/bin/shellspec && \
            shellspec --version; then \
             echo "Shellspec installed successfully" && \
             break; \
