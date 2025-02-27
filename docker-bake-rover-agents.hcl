@@ -45,8 +45,8 @@ target "base" {
   allow = "network.host,security.insecure"
 }
 
-# Build matrix target
-target "rover_agent_build" {
+# Build matrix target for rover agents
+target "rover_agent_matrix_build" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -59,5 +59,5 @@ target "rover_agent_build" {
 
 # Default group
 group "default" {
-  targets = ["rover_agent_build"]
+  targets = ["rover_agent_matrix_build"]
 }

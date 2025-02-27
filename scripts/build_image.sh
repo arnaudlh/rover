@@ -255,7 +255,11 @@ function build_agent {
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-rover-agents.hcl \
                 --set *.platform=${os}/${platform} \
-                --load "rover_agent_build"
+                --set *.args.TARGETARCH=${architecture} \
+                --set *.args.TARGETOS=${os} \
+                --set *.args.USERNAME=${USERNAME} \
+                --set *.args.VERSION=${versionTerraform} \
+                --load "rover_agent_matrix_build"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
