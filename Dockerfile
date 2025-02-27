@@ -117,6 +117,15 @@ RUN set -ex && \
     # Create required directories and verify architecture
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     echo "Building for architecture: ${TARGETARCH}" && \
+    # Install required packages first
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gnupg \
+        gpg \
+        lsb-release \
+        software-properties-common && \
     # Configure GPG to run in batch mode
     mkdir -p ~/.gnupg && \
     chmod 700 ~/.gnupg && \
@@ -127,6 +136,16 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Configuring package repositories..." && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
+           # Install required packages first
+           { apt-get update && \
+           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+             ca-certificates \
+             curl \
+             gnupg \
+             gpg \
+             lsb-release \
+             software-properties-common && \
+           echo "Repository setup packages installed successfully"; } && \
            # Microsoft repository
            { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
            echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-jammy-prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
