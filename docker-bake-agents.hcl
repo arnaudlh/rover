@@ -64,8 +64,16 @@ target "base" {
   allow = "network.host,security.insecure"
 }
 
-# Build configuration for rover agents
-target "agent-1.9.8" {
+# Build configuration for rover agents - local build
+target "agent-1_9_8" {
+  inherits = ["base"]
+  dockerfile = "./agents/github/Dockerfile"
+  platforms = ["${TARGETOS}/${TARGETARCH}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-${TARGETARCH}"]
+}
+
+# Build configuration for rover agents - registry build
+target "rover-agents" {
   inherits = ["base"]
   dockerfile = "./agents/github/Dockerfile"
   platforms = ["${TARGETOS}/${TARGETARCH}"]
@@ -74,5 +82,5 @@ target "agent-1.9.8" {
 
 # Default group
 group "default" {
-  targets = ["agent-1.9.8"]
+  targets = ["agent-1_9_8"]
 }
