@@ -32,7 +32,7 @@ variable "VERSION" {
 }
 
 # Base configuration for rover agents
-target "agent-base" {
+target "rover-base" {
   context = "."
   args = {
     TARGETARCH = "${TARGETARCH}"
@@ -56,8 +56,8 @@ target "agent-base" {
 }
 
 # Build configuration for rover agents
-target "agent_198" {
-  inherits = ["agent-base"]
+target "rover-build" {
+  inherits = ["rover-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
@@ -69,5 +69,5 @@ target "agent_198" {
 
 # Default group
 group "default" {
-  targets = ["agent_198"]
+  targets = ["rover-build"]
 }
