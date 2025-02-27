@@ -56,47 +56,18 @@ target "agent-base" {
 }
 
 # Build configuration for rover agents
-target "github-agent" {
+target "agent-1.9.8" {
   inherits = ["agent-base"]
   matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
   }
-  dockerfile = "./agents/github/Dockerfile"
+  dockerfile = "./agents/${agent}/Dockerfile"
   platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
-}
-
-target "tfc-agent" {
-  inherits = ["agent-base"]
-  matrix = {
-    platform = ["linux/amd64", "linux/arm64"]
-  }
-  dockerfile = "./agents/tfc/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-tfc:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
-}
-
-target "azdo-agent" {
-  inherits = ["agent-base"]
-  matrix = {
-    platform = ["linux/amd64", "linux/arm64"]
-  }
-  dockerfile = "./agents/azure_devops/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-azdo:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
-}
-
-target "gitlab-agent" {
-  inherits = ["agent-base"]
-  matrix = {
-    platform = ["linux/amd64", "linux/arm64"]
-  }
-  dockerfile = "./agents/gitlab/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-gitlab:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
 }
 
 # Default group
 group "default" {
-  targets = ["github-agent", "tfc-agent", "azdo-agent", "gitlab-agent"]
+  targets = ["agent-1.9.8"]
 }
