@@ -1,4 +1,4 @@
-FROM ubuntu:23.10 AS base
+FROM ubuntu:22.04 AS base
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -143,7 +143,7 @@ RUN set -ex && \
            # Docker repository
            { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
            chmod a+r /etc/apt/keyrings/docker.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu mantic stable" > /etc/apt/sources.list.d/docker.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list && \
            echo "Docker repository configured successfully"; }&& \
            # Install required packages for repository setup
            { apt-get update && \
@@ -156,9 +156,9 @@ RUN set -ex && \
              software-properties-common && \
            echo "Repository setup packages installed successfully"; } && \
            # Kubernetes repository
-           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
            chmod a+r /etc/apt/keyrings/kubernetes.gpg && \
-           echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list && \
            echo "Kubernetes repository configured successfully"; } && \
            # GitHub CLI repository
            { curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
