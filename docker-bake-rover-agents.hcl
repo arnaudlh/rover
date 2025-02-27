@@ -56,7 +56,7 @@ target "agent-base" {
 }
 
 # Build configuration for rover agents
-target "rover-agent-build" {
+target "devin-agent" {
   inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -69,5 +69,5 @@ target "rover-agent-build" {
 
 # Default group
 group "default" {
-  targets = ["rover-agent-build"]
+  targets = ["devin-agent"]
 }
