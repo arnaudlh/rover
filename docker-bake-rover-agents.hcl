@@ -31,10 +31,33 @@ variable "VERSION" {
   default = ""
 }
 
+variable "TARGETARCH" {
+  default = "amd64"
+}
+
+variable "TARGETOS" {
+  default = "linux"
+}
+
+variable "GITHUB_REPOSITORY" {
+  default = ""
+}
+
+variable "GITHUB_SHA" {
+  default = ""
+}
+
+variable "REGISTRY" {
+  default = "ghcr.io"
+}
+
 # Base configuration
-target "rover-base" {
+target "base" {
   context = "."
   args = {
+    REGISTRY = "${REGISTRY}"
+    GITHUB_REPOSITORY = "${GITHUB_REPOSITORY}"
+    GITHUB_SHA = "${GITHUB_SHA}"
     TARGETARCH = "${TARGETARCH}"
     TARGETOS = "${TARGETOS}"
     USERNAME = "vscode"
@@ -46,18 +69,27 @@ target "rover-base" {
     versionAnsible = "${versionAnsible}"
     extensionsAzureCli = "${extensionsAzureCli}"
   }
-  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
-  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
-  network = ["host"]
-  allow = [
-    "network.host",
-    "security.insecure"
-  ]
+  cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]
+  network = "host"
+  allow = "network.host,security.insecure"
 }
 
-# Build configuration for rover agents
-target "rover-agent" {
-  inherits = ["rover-base"]
+# Build configuration for rover agents - local build
+target "agent-1_9_8" {
+  inherits = ["base"]
+  matrix = {
+    agent = ["github", "tfc", "azdo", "gitlab"]
+    platform = ["linux/amd64", "linux/arm64"]
+  }
+  dockerfile = "./agents/${agent}/Dockerfile"
+  platforms = ["${platform}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+}
+
+# Build configuration for rover agents - registry build
+target "rover-agents" {
+  inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
@@ -69,5 +101,5 @@ target "rover-agent" {
 
 # Default group
 group "default" {
-  targets = ["rover-agent"]
+  targets = ["agent-1_9_8"]
 }
