@@ -51,8 +51,8 @@ variable "REGISTRY" {
   default = "ghcr.io"
 }
 
-variable "versionTerraform" {
-  default = ""
+variable "versionRover" {
+  default = "localhost:5000/rover:local"
 }
 
 # Base configuration
@@ -72,6 +72,7 @@ target "base" {
     versionGolang = "${versionGolang}"
     versionAnsible = "${versionAnsible}"
     extensionsAzureCli = "${extensionsAzureCli}"
+    versionRover = "${versionRover}"
   }
   cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
   cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]

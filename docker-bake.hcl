@@ -1,12 +1,4 @@
-#-------------------------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
-#-------------------------------------------------------------------------------------------------------------
-
-#
-# make is calling the ./scripts/build_images.sh who calls docker buildx bake
-#
-
+# Version variables
 variable "versionTerraform" {
   default = ""
 }
@@ -47,37 +39,21 @@ target "common" {
     "type=gha,scope=main-${TARGETARCH}"
   ]
   cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}-${GITHUB_SHA}"]
-  network = ["host"]
-  allow = [
-    "network.host",
-    "security.insecure"
-  ]
-}
-
-target "base-tf" {
-  inherits = ["common"]
-  matrix = {
-    platform = ["linux/amd64", "linux/arm64"]
-  }
-  platforms = ["${platform}"]
-  args = {
-    TARGETARCH = "${platform == "linux/amd64" ? "amd64" : "arm64"}"
-    TARGETOS = "linux"
-    versionTerraform = "${versionTerraform}"
-  }
-  tags = ["rover:${versionTerraform}-${platform}"]
+  network = "host"
+  allow = "network.host,security.insecure"
 }
 
 target "local-tf" {
-  inherits = ["base-tf"]
+  inherits = ["common"]
+  platforms = ["linux/amd64"]
   tags = ["rover:local"]
   output = ["type=docker"]
-  platforms = ["linux/amd64"]
   no-cache = false
 }
 
 target "registry-tf" {
-  inherits = ["base-tf"]
+  inherits = ["common"]
+  platforms = ["linux/amd64", "linux/arm64"]
   tags = ["${registry}rover:${versionRover}"]
   output = ["type=registry"]
 }
@@ -105,16 +81,4 @@ variable "USERNAME" {
 
 variable "tag" {
   default = "latest"
-}
-
-variable "versionRover" {
-  default = ""
-}
-
-variable "versionTerraform" {
-  default = ""
-}
-
-variable "registry" {
-  default = ""
 }
