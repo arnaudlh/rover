@@ -261,7 +261,8 @@ function build_agent {
                 --set *.args.VERSION=${versionTerraform} \
                 --set *.args.GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
                 --set *.args.versionRover=${versionRover} \
-                --load "rover_agent_matrix_build_v1"
+                --set *.args.GITHUB_SHA=$(git rev-parse --short HEAD) \
+                --load "rover_agent_matrix_build_$(git rev-parse --short HEAD)"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
