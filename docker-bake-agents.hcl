@@ -56,8 +56,8 @@ target "common" {
 }
 
 # Matrix build configuration
-target "matrix" {
-  inherits = ["common"]
+target "agent-build" {
+  inherits = ["agent-base-config"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
@@ -69,5 +69,5 @@ target "matrix" {
 
 # Default group
 group "default" {
-  targets = ["matrix"]
+  targets = ["agent-build"]
 }
