@@ -117,15 +117,6 @@ RUN set -ex && \
     # Create required directories and verify architecture
     mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     echo "Building for architecture: ${TARGETARCH}" && \
-    # Install required packages first
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        gnupg \
-        gpg \
-        lsb-release \
-        software-properties-common && \
     # Configure GPG to run in batch mode
     mkdir -p ~/.gnupg && \
     chmod 700 ~/.gnupg && \
@@ -138,7 +129,7 @@ RUN set -ex && \
         if mkdir -p /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
            # Microsoft repository
            { curl -fsSL --retry 3 --retry-delay 5 https://packages.microsoft.com/keys/microsoft.asc | gpg --batch --yes --dearmor -o /etc/apt/trusted.gpg.d/microsoft.gpg && \
-           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
+           echo "deb [arch=${TARGETARCH} signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/microsoft-ubuntu-jammy-prod jammy main" > /etc/apt/sources.list.d/microsoft.list && \
            echo "Microsoft repository configured successfully"; } && \
            # Docker repository
            { curl -fsSL --retry 3 --retry-delay 5 https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg && \
@@ -350,29 +341,11 @@ RUN set -ex && \
         sleep 5; \
     done
 
-# Install base packages
+# Verify base packages are installed
 RUN set -ex && \
-    # Install base packages first
-    for i in $(seq 1 3); do \
-        echo "Attempt $i: Installing base packages..." && \
-        if apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-           ca-certificates \
-           curl \
-           gnupg \
-           lsb-release \
-           software-properties-common && \
-           rm -rf /var/lib/apt/lists/*; then \
-            echo "Base packages installed successfully" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 5 seconds..." && \
-        if [ $i -eq 3 ]; then \
-            echo "Failed to install base packages after 3 attempts" && \
-            exit 1; \
-        fi; \
-        sleep 5; \
-    done
+    command -v curl >/dev/null 2>&1 && \
+    command -v gpg >/dev/null 2>&1 || \
+    (echo "Required base packages not found" && exit 1)
 
 # Copy version files and parse versions
 COPY ./versions/manifest.json ./versions/
