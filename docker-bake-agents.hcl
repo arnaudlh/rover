@@ -32,7 +32,7 @@ variable "VERSION" {
 }
 
 group "default" {
-  targets = ["build-matrix"]
+  targets = ["build-agents"]
 }
 
 target "agent-base" {
@@ -49,8 +49,8 @@ target "agent-base" {
     versionAnsible = "${versionAnsible}"
     extensionsAzureCli = "${extensionsAzureCli}"
   }
-  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-matrix-${TARGETARCH}"]
-  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-matrix-${TARGETARCH}"]
+  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
   network = ["host"]
   allow = [
     "network.host",
@@ -58,7 +58,7 @@ target "agent-base" {
   ]
 }
 
-target "build-matrix" {
+target "build-agents" {
   inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
