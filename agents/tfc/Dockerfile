@@ -22,37 +22,48 @@ ENV TFC_AGENT_TOKEN="" \
 
 USER root
 
+USER root
+
 RUN set -ex && \
+    # Install required dependencies first
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        curl \
+        unzip \
+        ca-certificates \
+        sudo && \
+    # Create agent directory with proper permissions
+    mkdir -p /home/${USERNAME}/agent && \
+    cd /home/${USERNAME}/agent && \
+    # Download and install agent with retries
     for i in {1..3}; do \
         echo "Attempt $i: Installing TFC agent..." && \
-        if mkdir -p /home/${USERNAME}/agent && \
-           cd /home/${USERNAME}/agent && \
-           DEBIAN_FRONTEND=noninteractive apt-get update && \
-           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends unzip && \
-           if [ "${TARGETARCH}" = "amd64" ]; then \
-               curl -L --retry 3 --retry-delay 5 -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_amd64.zip; \
-           else \
-               curl -L --retry 3 --retry-delay 5 -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_arm64.zip; \
-           fi && \
-           mkdir -p /usr/local/bin && \
-           unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
-           rm /tmp/tfc-agent.zip && \
-           chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
-           mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
-           chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent && \
-           chmod -R 755 /home/${USERNAME}/agent && \
-           apt-get clean && \
-           rm -rf /var/lib/apt/lists/*; then \
-            echo "TFC agent installed successfully" && \
-            break; \
-        fi; \
+        if [ "${TARGETARCH}" = "amd64" ]; then \
+            curl -L --retry 3 --retry-delay 5 -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_amd64.zip; \
+        else \
+            curl -L --retry 3 --retry-delay 5 -o /tmp/tfc-agent.zip https://releases.hashicorp.com/tfc-agent/${versionTfc}/tfc-agent_${versionTfc}_linux_arm64.zip; \
+        fi && \
+        mkdir -p /usr/local/bin && \
+        unzip -o -d /usr/local/bin /tmp/tfc-agent.zip && \
+        rm /tmp/tfc-agent.zip && \
+        chmod +x /usr/local/bin/tfc-agent /usr/local/bin/tfc-agent-core && \
+        mkdir -p ${TFC_AGENT_DATA_DIR:-/home/${USERNAME}/agent/data} && \
+        chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent && \
+        chmod -R 755 /home/${USERNAME}/agent && \
+        echo "TFC agent installed successfully" && \
+        break; \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
             echo "Failed to install TFC agent after 3 attempts" && \
             exit 1; \
         fi; \
         sleep 5; \
-    done
+    done && \
+    # Cleanup
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+USER ${USERNAME}
 
 USER ${USERNAME}
 
