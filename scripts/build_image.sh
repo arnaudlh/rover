@@ -151,7 +151,6 @@ function build_base_rover_image {
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.TARGETARCH=${architecture}" \
                 --set "*.args.TARGETOS=${os}" \
                 --set "*.args.versionRover=localhost:5000/rover:local" \
@@ -187,7 +186,6 @@ function build_base_rover_image {
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set *.platform=${os}/${architecture} \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push registry-tf
@@ -203,7 +201,6 @@ function build_base_rover_image {
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push registry-tf
             ;;
@@ -262,7 +259,7 @@ function build_agent {
                 --set *.args.GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
                 --set *.args.versionRover=${versionRover} \
                 --set *.args.GITHUB_SHA=$(git rev-parse --short HEAD) \
-                --load "rover_agent_matrix_build"
+                --load "rover_agent_matrix_build_v2"
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;
@@ -280,7 +277,6 @@ function build_agent {
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-rover-agents.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push rover-agents
 
@@ -295,7 +291,6 @@ function build_agent {
             tag="${tag}" \
             docker buildx bake \
                 -f docker-bake-rover-agents.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push rover-agents
 
@@ -310,7 +305,6 @@ function build_agent {
             tag="${tag}" \
             docker buildx bake \
                 -f docker-bake-rover-agents.hcl \
-                $([ -f docker-bake.override.hcl ] && echo "-f docker-bake.override.hcl") \
                 --set "*.args.VERSION=${versionTerraform}" \
                 --push rover-agents
 
