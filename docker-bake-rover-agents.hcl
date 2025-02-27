@@ -56,7 +56,7 @@ target "agent-base" {
 }
 
 # Target for local builds
-target "agent-1.9.8" {
+target "agent_1_9_8" {
   inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
