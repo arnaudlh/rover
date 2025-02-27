@@ -1,6 +1,6 @@
 # Version variables
 variable "VERSION" {
-  default = ""
+  default = "latest"
 }
 
 variable "TARGETARCH" {
@@ -12,11 +12,11 @@ variable "TARGETOS" {
 }
 
 variable "GITHUB_REPOSITORY" {
-  default = ""
+  default = "arnaudlh/rover"
 }
 
 variable "GITHUB_SHA" {
-  default = ""
+  default = "latest"
 }
 
 variable "REGISTRY" {
@@ -45,19 +45,36 @@ target "base" {
   allow = "network.host,security.insecure"
 }
 
-# Build matrix target for rover agents
-target "rover_agent_matrix_build_local" {
+# Individual agent targets
+target "github-agent" {
   inherits = ["base"]
-  matrix = {
-    agent = ["github", "tfc", "azdo", "gitlab"]
-    platform = ["linux/amd64"]
-  }
-  dockerfile = "./agents/${agent}/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+  dockerfile = "./agents/github/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["${REGISTRY}/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-amd64"]
+}
+
+target "tfc-agent" {
+  inherits = ["base"]
+  dockerfile = "./agents/tfc/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["${REGISTRY}/${GITHUB_REPOSITORY}/rover-agent-tfc:${VERSION}-amd64"]
+}
+
+target "azdo-agent" {
+  inherits = ["base"]
+  dockerfile = "./agents/azure_devops/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["${REGISTRY}/${GITHUB_REPOSITORY}/rover-agent-azdo:${VERSION}-amd64"]
+}
+
+target "gitlab-agent" {
+  inherits = ["base"]
+  dockerfile = "./agents/gitlab/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["${REGISTRY}/${GITHUB_REPOSITORY}/rover-agent-gitlab:${VERSION}-amd64"]
 }
 
 # Default group
 group "default" {
-  targets = ["rover_agent_matrix_build_local"]
+  targets = ["github-agent", "tfc-agent", "azdo-agent", "gitlab-agent"]
 }

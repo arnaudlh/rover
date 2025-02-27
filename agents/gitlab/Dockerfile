@@ -3,7 +3,7 @@ ARG GITHUB_REPOSITORY
 ARG GITHUB_SHA
 ARG TARGETARCH
 
-FROM ${REGISTRY}/${GITHUB_REPOSITORY}/rover:pr-${GITHUB_SHA}-${TARGETARCH}
+FROM ${REGISTRY}/${GITHUB_REPOSITORY}/rover:pr-latest-${TARGETARCH}
 
 ARG TARGETARCH
 ARG TARGETOS
@@ -24,7 +24,7 @@ RUN mkdir /home/${USERNAME}/agent && \
     chmod +x /usr/local/bin/gitlab-runner && \
     gitlab-runner install --user=${USERNAME} --working-directory=/home/${USERNAME}/agent
 
-COPY ./agents/gitlab/gitlab.sh /home/${USERNAME}/agent/
+COPY --chown=${USERNAME}:${USERNAME} ./agents/gitlab/gitlab.sh /home/${USERNAME}/agent/
 RUN chmod +x /home/${USERNAME}/agent/gitlab.sh
 
 ENTRYPOINT ["/home/vscode/agent/gitlab.sh"]

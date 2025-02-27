@@ -251,7 +251,7 @@ function build_agent {
                 --allow=fs.read=/var/lib/buildkit/cache \
                 --allow=fs.write=/var/lib/buildkit/cache-new \
                 -f docker-bake-rover-agents.hcl \
-                --set *.platform=${os}/${platform} \
+                --set "*.platform=${os}/${platform}" \
                 --set *.args.TARGETARCH=${architecture} \
                 --set *.args.TARGETOS=${os} \
                 --set *.args.USERNAME=${USERNAME} \
@@ -259,7 +259,7 @@ function build_agent {
                 --set *.args.GITHUB_REPOSITORY=${GITHUB_REPOSITORY} \
                 --set *.args.versionRover=${versionRover} \
                 --set *.args.GITHUB_SHA=$(git rev-parse --short HEAD) \
-                --load "rover_agent_matrix_build_local"
+                --load
 
             echo "Agents created under tag ${registry}rover-agent:${tag}-${tag_strategy}${agent} for registry '${registry}'"
             ;;

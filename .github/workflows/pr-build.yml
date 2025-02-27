@@ -136,8 +136,10 @@ jobs:
             ${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
           target: base
           platforms: ${{ matrix.platform }}
-          cache-from: type=gha,scope=pr-${{ github.event.pull_request.number }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}
+          cache-from: |
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
           provenance: false
           sbom: false
@@ -248,8 +250,10 @@ jobs:
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: ${{ matrix.platform }}
-          cache-from: type=gha,scope=pr-${{ github.event.pull_request.number }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}
+          cache-from: |
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
           outputs: type=registry,compression=zstd,compression-level=3,force-compression=true
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
