@@ -156,9 +156,9 @@ RUN set -ex && \
              software-properties-common && \
            echo "Repository setup packages installed successfully"; } && \
            # Kubernetes repository
-           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
+           { curl -fsSL --retry 3 --retry-delay 5 https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes.gpg && \
            chmod a+r /etc/apt/keyrings/kubernetes.gpg && \
-           echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
+           echo "deb [signed-by=/etc/apt/keyrings/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" > /etc/apt/sources.list.d/kubernetes.list && \
            echo "Kubernetes repository configured successfully"; } && \
            # GitHub CLI repository
            { curl -fsSL --retry 3 --retry-delay 5 https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/etc/apt/trusted.gpg.d/githubcli-archive-keyring.gpg && \
