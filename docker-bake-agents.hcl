@@ -32,7 +32,7 @@ variable "VERSION" {
 }
 
 # Base configuration
-target "agent-base" {
+target "base" {
   context = "."
   args = {
     TARGETARCH = "${TARGETARCH}"
@@ -56,12 +56,8 @@ target "agent-base" {
 }
 
 # Build configuration for rover agents
-target "agent_1_9_8" {
-  inherits = ["agent-base"]
-  matrix = {
-    agent = ["github", "tfc", "azdo", "gitlab"]
-    platform = ["linux/amd64", "linux/arm64"]
-  }
+target "agent" {
+  inherits = ["base"]
   dockerfile = "./agents/${agent}/Dockerfile"
   platforms = ["${platform}"]
   tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
@@ -69,5 +65,5 @@ target "agent_1_9_8" {
 
 # Default group
 group "default" {
-  targets = ["agent_1_9_8"]
+  targets = ["agent"]
 }
