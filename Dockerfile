@@ -293,13 +293,14 @@ RUN set -ex && \
     # Install Azure CLI and extensions with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Azure CLI and extensions..." && \
-        if apt-get update && \
-           apt-get install -y --no-install-recommends azure-cli && \
-            az extension add --name account && \
-            az extension add --name aks-preview && \
-            az extension add --name containerapp && \
+        if curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+           az extension add --name account --yes && \
+           az extension add --name aks-preview --yes && \
+           az extension add --name containerapp --yes && \
            az config set extension.use_dynamic_install=yes_without_prompt; then \
-            az version || true && break; \
+            az version || true && \
+            echo "Azure CLI installed successfully" && \
+            break; \
         fi; \
         echo "Attempt $i failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then \
@@ -307,12 +308,14 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install shellspec with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing shellspec..." && \
-        if curl -fsSL https://git.io/shellspec | sh -s -- --yes && \
-           export PATH="/root/.local/bin:$PATH" && \
+        if mkdir -p /home/${USERNAME}/.local/bin && \
+           curl -fsSL https://git.io/shellspec | SHELLSPEC_PREFIX=/home/${USERNAME}/.local sh -s -- --yes && \
+           chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.local && \
+           export PATH="/home/${USERNAME}/.local/bin:$PATH" && \
            shellspec --version; then \
             echo "Shellspec installed successfully" && \
             break; \
