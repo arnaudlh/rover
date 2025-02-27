@@ -546,9 +546,9 @@ jobs:
             for (const job of agentJobs.data.jobs) {
               if (job.name.startsWith('rover-agents')) {
                 const pattern = [
-                  'rover-agents \\(platform: ',
-                  '(linux\\/(?:amd64|arm64)), ',
-                  'agent: ([^)]+)\\)'
+                  'rover-agents \\(',
+                  '(?:platform: )?(linux\\/(?:amd64|arm64))',
+                  '(?:, )?(?:agent: )?([^)]+)\\)'
                 ].join('');
                 const match = job.name.match(pattern);
                 if (match) {
