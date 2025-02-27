@@ -46,7 +46,7 @@ target "base" {
 }
 
 # Build matrix target
-target "agent-matrix" {
+target "rover-agent-matrix" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -58,12 +58,11 @@ target "agent-matrix" {
 }
 
 # Target for each version
-target "agent-1.11.0-alpha20241106" { inherits = ["agent-matrix"] }
-target "agent-1.10.0-beta1" { inherits = ["agent-matrix"] }
-target "agent-1.9.8" { inherits = ["agent-matrix"] }
-target "agent-1.8.5" { inherits = ["agent-matrix"] }
+target "agent" {
+  inherits = ["rover-agent-matrix"]
+}
 
 # Default group
 group "default" {
-  targets = ["agent-matrix"]
+  targets = ["agent"]
 }
