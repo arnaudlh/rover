@@ -32,7 +32,7 @@ variable "VERSION" {
 }
 
 # Base configuration for rover agents
-target "devin-base" {
+target "agent-base" {
   context = "."
   args = {
     TARGETARCH = "${TARGETARCH}"
@@ -56,8 +56,8 @@ target "devin-base" {
 }
 
 # Build configuration for rover agents
-target "devin-build" {
-  inherits = ["devin-base"]
+target "rover-agents" {
+  inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
@@ -69,5 +69,5 @@ target "devin-build" {
 
 # Default group
 group "default" {
-  targets = ["devin-build"]
+  targets = ["rover-agents"]
 }
