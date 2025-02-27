@@ -32,10 +32,10 @@ variable "VERSION" {
 }
 
 group "default" {
-  targets = ["agent-matrix"]
+  targets = ["build-matrix"]
 }
 
-target "agent-common" {
+target "agent-base" {
   context = "."
   args = {
     TARGETARCH = "${TARGETARCH}"
@@ -58,8 +58,8 @@ target "agent-common" {
   ]
 }
 
-target "agent-matrix" {
-  inherits = ["agent-common"]
+target "build-matrix" {
+  inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
     platform = ["linux/amd64", "linux/arm64"]
