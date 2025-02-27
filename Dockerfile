@@ -296,21 +296,7 @@ RUN set -ex && \
 
 # Install tools with retries and improved verification
 RUN set -ex && \
-    # Install Helm with retries
-    for i in $(seq 1 3); do \
-        echo "Attempt $i: Installing Helm..." && \
-        if curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false USE_SUDO=false HELM_INSTALL_DIR=/usr/local/bin bash && \
-           helm version --client || true; then \
-            echo "Helm installed successfully" && \
-            break; \
-        fi; \
-        echo "Attempt $i failed, retrying in 5 seconds..." && \
-        if [ $i -eq 3 ]; then \
-            echo "Failed to install Helm after 3 attempts" && \
-            exit 1; \
-        fi; \
-        sleep 5; \
-    done && \
+
     # Install Azure CLI extensions with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Azure CLI extensions..." && \

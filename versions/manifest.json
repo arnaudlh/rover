@@ -1,6 +1,7 @@
 {
   "base": {
     "tools": {
+      "helm": "3.13.3",
       "vault": "1.15.0",
       "golang": "1.21.6",
       "kubectl": "1.28.4",
