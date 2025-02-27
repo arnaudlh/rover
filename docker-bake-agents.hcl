@@ -31,8 +31,8 @@ variable "VERSION" {
   default = ""
 }
 
-group "agents" {
-  targets = ["agent-tf"]
+group "default" {
+  targets = ["agent-matrix"]
 }
 
 target "agent-common" {
@@ -58,7 +58,7 @@ target "agent-common" {
   ]
 }
 
-target "agent-tf" {
+target "agent-matrix" {
   inherits = ["agent-common"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
