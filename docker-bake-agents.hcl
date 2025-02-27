@@ -43,10 +43,21 @@ variable "GITHUB_REPOSITORY" {
   default = ""
 }
 
+variable "GITHUB_SHA" {
+  default = ""
+}
+
+variable "REGISTRY" {
+  default = "ghcr.io"
+}
+
 # Base configuration
 target "base" {
   context = "."
   args = {
+    REGISTRY = "${REGISTRY}"
+    GITHUB_REPOSITORY = "${GITHUB_REPOSITORY}"
+    GITHUB_SHA = "${GITHUB_SHA}"
     TARGETARCH = "${TARGETARCH}"
     TARGETOS = "${TARGETOS}"
     USERNAME = "vscode"
