@@ -46,7 +46,7 @@ target "base" {
 }
 
 # Build matrix target for rover agents
-target "rover_agent_matrix_build_${GITHUB_SHA}" {
+target "rover_agent_matrix_build" {
   inherits = ["base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -59,5 +59,5 @@ target "rover_agent_matrix_build_${GITHUB_SHA}" {
 
 # Default group
 group "default" {
-  targets = ["rover_agent_matrix_build_${GITHUB_SHA}"]
+  targets = ["rover_agent_matrix_build"]
 }
