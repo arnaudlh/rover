@@ -34,11 +34,8 @@ target "common" {
     USER_GID = "${USER_GID}"
     USERNAME = "${USERNAME}"
   }
-  cache-from = [
-    "type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}",
-    "type=gha,scope=main-${TARGETARCH}"
-  ]
-  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}-${GITHUB_SHA}"]
+  cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]
   network = "host"
   allow = "network.host,security.insecure"
 }
