@@ -39,6 +39,14 @@ variable "TARGETOS" {
   default = "linux"
 }
 
+variable "agent" {
+  default = "github"
+}
+
+variable "GITHUB_REPOSITORY" {
+  default = ""
+}
+
 # Base configuration
 target "base" {
   context = "."
