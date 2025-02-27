@@ -39,10 +39,6 @@ variable "TARGETOS" {
   default = "linux"
 }
 
-variable "agent" {
-  default = "github"
-}
-
 variable "GITHUB_REPOSITORY" {
   default = ""
 }
@@ -69,14 +65,14 @@ target "base" {
 }
 
 # Build configuration for rover agents
-target "agent" {
+target "agent-1.9.8" {
   inherits = ["base"]
-  dockerfile = "./agents/${agent}/Dockerfile"
+  dockerfile = "./agents/github/Dockerfile"
   platforms = ["${TARGETOS}/${TARGETARCH}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${TARGETARCH}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-${TARGETARCH}"]
 }
 
 # Default group
 group "default" {
-  targets = ["agent"]
+  targets = ["agent-1.9.8"]
 }
