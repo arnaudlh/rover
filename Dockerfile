@@ -418,7 +418,9 @@ COPY ./scripts/lib/* ./scripts/lib/
 COPY ./scripts/tfcloud/* ./scripts/tfcloud/
 COPY ./scripts /tf/rover/scripts/
 COPY ./versions /tf/rover/versions/
-RUN chmod +x /tf/rover/scripts/*.sh
+RUN chmod +x /tf/rover/scripts/*.sh && \
+    cp /tf/rover/scripts/rover.sh /usr/local/bin/ && \
+    chmod +x /usr/local/bin/rover.sh
 
 # Create user and set up home directory early
 RUN set -ex && \
