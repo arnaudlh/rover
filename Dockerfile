@@ -285,7 +285,7 @@ RUN set -ex && \
     # Install Helm with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Helm..." && \
-        if curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false bash && \
+        if curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | VERIFY_CHECKSUM=false USE_SUDO=false bash && \
            helm version --client || true; then \
             echo "Helm installed successfully" && \
             break; \
