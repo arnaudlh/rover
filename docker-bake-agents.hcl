@@ -31,6 +31,14 @@ variable "VERSION" {
   default = ""
 }
 
+variable "TARGETARCH" {
+  default = "amd64"
+}
+
+variable "TARGETOS" {
+  default = "linux"
+}
+
 # Base configuration
 target "base" {
   context = "."
@@ -46,8 +54,8 @@ target "base" {
     versionAnsible = "${versionAnsible}"
     extensionsAzureCli = "${extensionsAzureCli}"
   }
-  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
-  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-${TARGETARCH}"]
+  cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]
   network = ["host"]
   allow = [
     "network.host",
@@ -59,8 +67,8 @@ target "base" {
 target "agent" {
   inherits = ["base"]
   dockerfile = "./agents/${agent}/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
+  platforms = ["${TARGETOS}/${TARGETARCH}"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${TARGETARCH}"]
 }
 
 # Default group
