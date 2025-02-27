@@ -116,7 +116,7 @@ jobs:
             versionTerraform=$(./scripts/parse_versions.sh terraform \
               | head -n1)
 
-  build-agents:
+  rover-agents:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
     strategy:
@@ -189,7 +189,7 @@ jobs:
             versionTfc=$(./scripts/parse_versions.sh tool tfc)
 
   release-notes:
-    needs: [build-base, build-agents]
+    needs: [build-base, rover-agents]
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
     steps:
@@ -223,7 +223,7 @@ jobs:
             });
 
   build-report:
-    needs: [build-base, build-agents, release-notes]
+    needs: [build-base, rover-agents, release-notes]
     permissions:
       checks: write
       pull-requests: write

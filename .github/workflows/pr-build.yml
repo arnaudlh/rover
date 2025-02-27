@@ -166,7 +166,7 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
-  build-agents:
+  rover-agents:
     needs: [build-base, matrix-prep]
     runs-on: ubuntu-latest
     outputs:
@@ -267,7 +267,7 @@ jobs:
             versionTfc=${{ steps.versions.outputs.tfc }}
 
   grype-scan:
-    needs: [build-base, build-agents]
+    needs: [build-base, rover-agents]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.set-result.outputs.result }}
@@ -380,7 +380,7 @@ jobs:
           fi
 
   msdo-scan:
-    needs: [build-base, build-agents, grype-scan]
+    needs: [build-base, rover-agents, grype-scan]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -485,7 +485,7 @@ jobs:
             ${{ github.workspace }}
 
   build-report:
-    needs: [build-base, build-agents, grype-scan, msdo-scan]
+    needs: [build-base, rover-agents, grype-scan, msdo-scan]
     runs-on: ubuntu-latest
     if: always()
     outputs:
@@ -505,7 +505,7 @@ jobs:
         uses: actions/github-script@v7
         env:
           BUILD_BASE_RESULT: ${{ needs.build-base.result || 'failure' }}
-          BUILD_AGENTS_RESULT: ${{ needs.build-agents.result || 'failure' }}
+          BUILD_AGENTS_RESULT: ${{ needs.rover-agents.result || 'failure' }}
           GRYPE_SCAN_RESULT: ${{ needs.grype-scan.outputs.result || 'failure' }}
           MSDO_SCAN_RESULT: ${{ needs.msdo-scan.outputs.status || 'failure' }}
         with:
@@ -540,9 +540,9 @@ jobs:
             };
 
             for (const job of agentJobs.data.jobs) {
-              if (job.name.startsWith('build-agents')) {
+              if (job.name.startsWith('rover-agents')) {
                 const pattern = [
-                  'build-agents \\(platform: ',
+                  'rover-agents \\(platform: ',
                   '(linux\\/(?:amd64|arm64)), ',
                   'agent: ([^)]+)\\)'
                 ].join('');
