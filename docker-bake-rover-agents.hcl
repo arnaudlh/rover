@@ -55,20 +55,8 @@ target "agent-base" {
   ]
 }
 
-# Target for local builds
+# Build configuration for rover agents
 target "agent" {
-  inherits = ["agent-base"]
-  matrix = {
-    agent = ["github", "tfc", "azdo", "gitlab"]
-    platform = ["linux/amd64", "linux/arm64"]
-  }
-  dockerfile = "./agents/${agent}/Dockerfile"
-  platforms = ["${platform}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-${agent}:${VERSION}-${platform == "linux/amd64" ? "amd64" : "arm64"}"]
-}
-
-# Target for registry builds
-target "rover-agents" {
   inherits = ["agent-base"]
   matrix = {
     agent = ["github", "tfc", "azdo", "gitlab"]
@@ -81,5 +69,5 @@ target "rover-agents" {
 
 # Default group
 group "default" {
-  targets = ["rover-agents"]
+  targets = ["agent"]
 }
