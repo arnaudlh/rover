@@ -1,32 +1,4 @@
 # Version variables
-variable "versionGithubRunner" {
-  default = "2.314.1"
-}
-
-variable "versionAzdo" {
-  default = "3.234.0"
-}
-
-variable "versionTfc" {
-  default = "1.7.4"
-}
-
-variable "versionDockerCompose" {
-  default = "2.24.1"
-}
-
-variable "versionGolang" {
-  default = "1.21.6"
-}
-
-variable "versionAnsible" {
-  default = "2.16.2"
-}
-
-variable "extensionsAzureCli" {
-  default = "aks-preview"
-}
-
 variable "VERSION" {
   default = ""
 }
@@ -51,6 +23,10 @@ variable "REGISTRY" {
   default = "ghcr.io"
 }
 
+variable "versionRover" {
+  default = "localhost:5000/rover:local"
+}
+
 # Base configuration
 target "base" {
   context = "."
@@ -61,13 +37,7 @@ target "base" {
     TARGETARCH = "${TARGETARCH}"
     TARGETOS = "${TARGETOS}"
     USERNAME = "vscode"
-    versionGithubRunner = "${versionGithubRunner}"
-    versionAzdo = "${versionAzdo}"
-    versionTfc = "${versionTfc}"
-    versionDockerCompose = "${versionDockerCompose}"
-    versionGolang = "${versionGolang}"
-    versionAnsible = "${versionAnsible}"
-    extensionsAzureCli = "${extensionsAzureCli}"
+    versionRover = "${versionRover}"
   }
   cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
   cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]
@@ -75,23 +45,36 @@ target "base" {
   allow = "network.host,security.insecure"
 }
 
-# Build configuration for rover agents - local build
-target "agent-1_9_8" {
+# Build targets for each agent type
+target "github" {
   inherits = ["base"]
   dockerfile = "./agents/github/Dockerfile"
-  platforms = ["${TARGETOS}/${TARGETARCH}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-${TARGETARCH}"]
+  platforms = ["linux/amd64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-amd64"]
 }
 
-# Build configuration for rover agents - registry build
-target "rover-agents" {
+target "tfc" {
   inherits = ["base"]
-  dockerfile = "./agents/github/Dockerfile"
-  platforms = ["${TARGETOS}/${TARGETARCH}"]
-  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-github:${VERSION}-${TARGETARCH}"]
+  dockerfile = "./agents/tfc/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-tfc:${VERSION}-amd64"]
+}
+
+target "azdo" {
+  inherits = ["base"]
+  dockerfile = "./agents/azure_devops/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-azdo:${VERSION}-amd64"]
+}
+
+target "gitlab" {
+  inherits = ["base"]
+  dockerfile = "./agents/gitlab/Dockerfile"
+  platforms = ["linux/amd64"]
+  tags = ["ghcr.io/${GITHUB_REPOSITORY}/rover-agent-gitlab:${VERSION}-amd64"]
 }
 
 # Default group
 group "default" {
-  targets = ["agent-1_9_8"]
+  targets = ["github", "tfc", "azdo", "gitlab"]
 }
