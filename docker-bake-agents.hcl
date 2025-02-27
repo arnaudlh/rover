@@ -49,8 +49,8 @@ target "agent-common" {
     versionAnsible = "${versionAnsible}"
     extensionsAzureCli = "${extensionsAzureCli}"
   }
-  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
-  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-agent-${TARGETARCH}"]
+  cache-from = ["type=gha,scope=${GITHUB_REF_NAME}-matrix-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=${GITHUB_REF_NAME}-matrix-${TARGETARCH}"]
   network = ["host"]
   allow = [
     "network.host",
