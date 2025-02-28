@@ -625,15 +625,34 @@ jobs:
         if: always()
         run: echo "result=success" >> $GITHUB_OUTPUT
 
-  msdo-scan:
-    needs: [build-base-amd64, rover-agents-amd64]
+  msdo-scan-base-amd64:
+    needs: [build-base-amd64]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.set-result.outputs.result }}
+    env:
+      ARCH: amd64
+      PLATFORM: linux/amd64
     continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image variables
+        id: vars
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
 
       - name: Run Microsoft Security DevOps Analysis
         uses: microsoft/security-devops-action@v1
@@ -644,13 +663,178 @@ jobs:
           policy: microsoft
           disable-telemetry: true
           disable-template-analyzer: true
+          image: ${{ steps.vars.outputs.image }}
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
-          category: msdo-scan
+          category: msdo-base-${{ env.ARCH }}
+
+      - name: Set result
+        id: set-result
+        if: always()
+        run: echo "result=success" >> $GITHUB_OUTPUT
+
+  msdo-scan-base-arm64:
+    needs: [build-base-arm64]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    env:
+      ARCH: arm64
+      PLATFORM: linux/arm64
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image variables
+        id: vars
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
+
+      - name: Run Microsoft Security DevOps Analysis
+        uses: microsoft/security-devops-action@v1
+        id: msdo
+        with:
+          tools: bandit, terrascan, trivy
+          categories: code
+          policy: microsoft
+          disable-telemetry: true
+          disable-template-analyzer: true
+          image: ${{ steps.vars.outputs.image }}
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
+          category: msdo-base-${{ env.ARCH }}
+
+      - name: Set result
+        id: set-result
+        if: always()
+        run: echo "result=success" >> $GITHUB_OUTPUT
+
+  msdo-scan-agents-amd64:
+    needs: [rover-agents-amd64]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    env:
+      ARCH: amd64
+      PLATFORM: linux/amd64
+    strategy:
+      matrix:
+        agent: [github, tfc, gitlab, azure_devops]
+      fail-fast: false
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image variables
+        id: vars
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
+
+      - name: Run Microsoft Security DevOps Analysis
+        uses: microsoft/security-devops-action@v1
+        id: msdo
+        with:
+          tools: bandit, terrascan, trivy
+          categories: code
+          policy: microsoft
+          disable-telemetry: true
+          disable-template-analyzer: true
+          image: ${{ steps.vars.outputs.image }}
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
+          category: msdo-agent-${{ matrix.agent }}-${{ env.ARCH }}
+
+      - name: Set result
+        id: set-result
+        if: always()
+        run: echo "result=success" >> $GITHUB_OUTPUT
+
+  msdo-scan-agents-arm64:
+    needs: [rover-agents-arm64]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    env:
+      ARCH: arm64
+      PLATFORM: linux/arm64
+    strategy:
+      matrix:
+        agent: [github, gitlab, azure_devops]
+      fail-fast: false
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image variables
+        id: vars
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
+
+      - name: Run Microsoft Security DevOps Analysis
+        uses: microsoft/security-devops-action@v1
+        id: msdo
+        with:
+          tools: bandit, terrascan, trivy
+          categories: code
+          policy: microsoft
+          disable-telemetry: true
+          disable-template-analyzer: true
+          image: ${{ steps.vars.outputs.image }}
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
+          category: msdo-agent-${{ matrix.agent }}-${{ env.ARCH }}
 
       - name: Set result
         id: set-result
@@ -658,7 +842,7 @@ jobs:
         run: echo "result=success" >> $GITHUB_OUTPUT
 
   summary:
-    needs: [grype-scan-base-amd64, grype-scan-base-arm64, grype-scan-agents-amd64, grype-scan-agents-arm64, msdo-scan]
+    needs: [grype-scan-base-amd64, grype-scan-base-arm64, grype-scan-agents-amd64, grype-scan-agents-arm64, msdo-scan-base-amd64, msdo-scan-base-arm64, msdo-scan-agents-amd64, msdo-scan-agents-arm64]
     runs-on: ubuntu-latest
     if: always()
     steps:
