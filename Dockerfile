@@ -399,8 +399,14 @@ COPY ./scripts/tfcloud/* ./scripts/tfcloud/
 COPY ./scripts /tf/rover/scripts/
 COPY ./versions /tf/rover/versions/
 RUN chmod +x /tf/rover/scripts/*.sh && \
-    cp /tf/rover/scripts/rover.sh /usr/local/bin/ && \
-    chmod +x /usr/local/bin/rover.sh
+    # Create a modified version of rover.sh that uses absolute paths
+    cp /tf/rover/scripts/rover.sh /usr/local/bin/rover.sh && \
+    sed -i 's|export script_path=.*|export script_path="/tf/rover/scripts"|g' /usr/local/bin/rover.sh && \
+    chmod +x /usr/local/bin/rover.sh && \
+    ln -sf /usr/local/bin/rover.sh /usr/local/bin/rover && \
+    mkdir -p /etc/profile.d && \
+    echo "export ROVER_RUNNER=true" >> /etc/profile.d/rover.sh && \
+    chmod +x /etc/profile.d/rover.sh
 
 # Create user and set up home directory early
 RUN set -ex && \
@@ -492,6 +498,16 @@ RUN set -ex && \
 
 # Install Terraform and HashiCorp tools with retries and improved verification
 RUN set -ex && \
+    # Set version variables explicitly
+    export versionTfupdate="0.7.2" && \
+    export versionTerraformDocs="0.17.0" && \
+    export versionPowershell="7.4.1" && \
+    export versionPacker="1.10.0" && \
+    export versionKubelogin="0.1.0" && \
+    export versionVault="1.15.0" && \
+    export versionTerrascan="1.18.3" && \
+    export versionGolang="1.22.0" && \
+    
     # Install Terraform with retries and verification
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Terraform..." && \
@@ -511,6 +527,8 @@ RUN set -ex && \
         fi; \
         sleep 5; \
     done && \
+
+    
     # Install tfupdate with retries
     for i in $(seq 1 3); do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
@@ -604,14 +622,20 @@ RUN set -ex && \
     # Install terrascan with retries
     for i in $(seq 1 3); do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
-            curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz; \
+            curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_x86_64.tar.gz && \
+            tar -xf terrascan.tar.gz terrascan && \
+            install terrascan /usr/local/bin && \
+            rm terrascan.tar.gz terrascan && \
+            terrascan version || true && \
+            break; \
         else \
-            curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_${TARGETARCH}.tar.gz; \
-        fi && \
-        tar -xf terrascan.tar.gz terrascan && \
-        install terrascan /usr/local/bin && \
-        rm terrascan.tar.gz terrascan && \
-        terrascan version || true && break; \
+            curl -sSL -o terrascan.tar.gz https://github.com/tenable/terrascan/releases/download/v${versionTerrascan}/terrascan_${versionTerrascan}_Linux_${TARGETARCH}.tar.gz && \
+            tar -xf terrascan.tar.gz terrascan && \
+            install terrascan /usr/local/bin && \
+            rm terrascan.tar.gz terrascan && \
+            terrascan version || true && \
+            break; \
+        fi; \
         if [ $i -eq 3 ]; then exit 1; fi; \
         sleep 5; \
     done && \
@@ -706,7 +730,9 @@ RUN set -ex && \
         echo "Attempt $i: Setting up rover scripts..." && \
         if chmod +x /tf/rover/scripts/*.sh && \
            chown -R ${USERNAME}:${USERNAME} /tf/rover/scripts && \
-           test -x /tf/rover/scripts/rover.sh; then \
+           test -x /tf/rover/scripts/rover.sh && \
+           test -x /usr/local/bin/rover.sh && \
+           test -L /usr/local/bin/rover; then \
             echo "Rover scripts setup completed successfully" && \
             break; \
         fi; \
