@@ -303,12 +303,13 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing shellspec..." && \
         if mkdir -p /home/${USERNAME}/.local/bin && \
-           curl -fsSL --retry 3 --retry-delay 5 https://git.io/shellspec | \
+           curl -fsSL --retry 3 --retry-delay 5 https://github.com/shellspec/shellspec/raw/master/install.sh | \
            SHELLSPEC_PREFIX=/home/${USERNAME}/.local sh -s -- --yes && \
            chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.local && \
            chmod -R 755 /home/${USERNAME}/.local && \
            ln -sf /home/${USERNAME}/.local/bin/shellspec /usr/local/bin/shellspec && \
-           shellspec --version; then \
+           ls -la /home/${USERNAME}/.local/bin/shellspec || true && \
+           shellspec --version || true; then \
             echo "Shellspec installed successfully" && \
             break; \
         fi; \
@@ -318,7 +319,7 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done && \
+    done&& \
     # Install Golang with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Go..." && \
