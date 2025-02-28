@@ -144,7 +144,7 @@ jobs:
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
           cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
-          outputs: type=registry
+          outputs: type=registry,compression=gzip,compression-level=9
           provenance: false
           sbom: false
           build-args: |
@@ -256,7 +256,7 @@ jobs:
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
           cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
-          outputs: type=registry
+          outputs: type=registry,compression=gzip,compression-level=9
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
           provenance: false
@@ -652,4 +652,3 @@ jobs:
             });
 
             core.setOutput('status', conclusion);
-
