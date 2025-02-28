@@ -714,3 +714,4 @@ jobs:
             });
 
             core.setOutput('status', conclusion);
+# Trigger workflow run
