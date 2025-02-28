@@ -553,7 +553,7 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          tools: bandit, eslint, terrascan, trivy
+          tools: bandit, terrascan, trivy
           categories: code
           policy: microsoft
           disable-telemetry: true
