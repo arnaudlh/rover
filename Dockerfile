@@ -319,13 +319,13 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install Golang with retries
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Go..." && \
         if apt-get update && \
            apt-get install -y --no-install-recommends tar && \
-           curl -sSL --retry 3 --retry-delay 5 -o /tmp/golang.tar.gz "https://go.dev/dl/go${versionGolang}.linux-${TARGETARCH}.tar.gz" && \
+           curl -sSL --retry 3 --retry-delay 5 -o /tmp/golang.tar.gz "https://go.dev/dl/go1.22.0.linux-${TARGETARCH}.tar.gz" && \
            mkdir -p /usr/local && \
            tar -C /usr/local -xzf /tmp/golang.tar.gz && \
            rm /tmp/golang.tar.gz && \
@@ -510,7 +510,7 @@ RUN set -ex && \
             exit 1; \
         fi; \
         sleep 5; \
-    done&& \
+    done && \
     # Install tfupdate with retries
     for i in $(seq 1 3); do \
         if [ "${TARGETARCH}" = "amd64" ]; then \
