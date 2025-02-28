@@ -301,6 +301,7 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Initializing Azure CLI..." && \
         if . /opt/venv/bin/activate && \
+           pip install --upgrade azure-cli && \
            az --version && \
            az config set extension.use_dynamic_install=yes_without_prompt && \
            az config set core.only_show_errors=true && \
