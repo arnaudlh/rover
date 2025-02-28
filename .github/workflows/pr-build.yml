@@ -151,9 +151,9 @@ jobs:
           # When using native runners, we build for the current architecture only
           platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
           outputs: type=registry,compression=gzip,compression-level=9
           provenance: false
           sbom: false
@@ -260,9 +260,9 @@ jobs:
           # When using native runners, we build for the current architecture only
           platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
+            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
           outputs: type=registry,compression=gzip,compression-level=9
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
