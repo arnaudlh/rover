@@ -1,7 +1,7 @@
 default: github
 
 github:
-	@bash "$(CURDIR)/scripts/build_image.sh" "github"
+	@bash "$(CURDIR)/scripts/build_image.sh" "ghcr"
 
 #
 # To build local images in a different platform architecture (from a macos m1 processor). (used to generate the azdo agent on macos)
@@ -11,7 +11,7 @@ github:
 # make local
 local:
 	echo ${arch}
-	@bash "$(CURDIR)/scripts/build_image.sh" "local" ${arch} ${agent}
+	DOCKER_BUILDX_BAKE_FLAGS="--allow=network.host" bash "$(CURDIR)/scripts/build_image.sh" "local" ${arch} ${agent}
 
 dev:
 	@bash "$(CURDIR)/scripts/build_image.sh" "dev" ${arch} ${agent}

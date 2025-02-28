@@ -1,0 +1,35 @@
+categories:
+  - containers
+  - IaC
+tools:
+  - terrascan
+  - tfsec
+  - checkov
+analysis_config:
+  terrascan:
+    tool:
+      name: "Terrascan"
+      version: "Latest"
+    arguments:
+      scan: "scan"
+      outputType: "sarif"
+      output: "/home/runner/work/rover/rover/.gdn/sarif/terrascan.sarif"
+      severity: "CRITICAL,HIGH"
+      iacDir: "$(WorkingDirectory)"
+      iacType: "all"
+      logLevel: "error"
+      logType: "json"
+      useColors: "auto"
+      showPassed: "false"
+      configPath: "/home/runner/work/rover/rover/.gdn/terrascan-linux.yaml"
+      categories: "iac,containers"
+  tfsec:
+    config: /home/runner/work/rover/rover/.gdn/tfsec-linux.yaml
+  checkov:
+    config: /home/runner/work/rover/rover/.gdn/checkov-linux.yaml
+analysis_type: IaC
+platform: linux
+sarif:
+  enabled: true
+  directory: /home/runner/work/rover/rover/.gdn/sarif
+  file: msdo.sarif

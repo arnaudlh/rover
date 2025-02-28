@@ -1,73 +1,76 @@
-ARG versionRover=${versionRover}
-FROM ${versionRover}
+ARG REGISTRY
+ARG GITHUB_REPOSITORY
+ARG GITHUB_SHA
+ARG TARGETARCH
 
-ARG AGENT_KEYVAULT_NAME
-ARG MSI_ID
-ARG SECRET_NAME
-ARG SUBSCRIPTION_ID
+FROM ${REGISTRY}/${GITHUB_REPOSITORY}/rover:pr-latest-${TARGETARCH}
+
 ARG TARGETARCH
 ARG TARGETOS
-ARG USERNAME
+ARG USERNAME=vscode
 ARG versionAzdo
-ARG VSTS_AGENT_INPUT_AGENT
-ARG VSTS_AGENT_INPUT_AUTH="pat"
-ARG VSTS_AGENT_INPUT_POOL
-ARG VSTS_AGENT_INPUT_SECRET
-ARG VSTS_AGENT_INPUT_TOKEN
-ARG VSTS_AGENT_INPUT_URL
-ARG VSTS_AGENT_KEYVAULT_NAME
-ARG versionNode="20"
 
-ENV AGENT_KEYVAULT_NAME=${AGENT_KEYVAULT_NAME} \
-    DEBIAN_FRONTEND=noninteractive \
-    MSI_ID=${MSI_ID} \
+ENV AGENT_NAME="" \
+    AGENT_TOKEN="" \
+    LABELS="" \
+    MSI_ID="" \
     ROVER_RUNNER=true \
-    SECRET_NAME=${SECRET_NAME} \
-    SUBSCRIPTION_ID=${SUBSCRIPTION_ID} \
-    TARGETARCH=${TARGETARCH} \
-    TARGETOS=${TARGETOS} \
-    USERNAME=${USERNAME} \
-    versionAzdo=${versionAzdo} \
-    versionNode=${versionNode} \
-    VSTS_AGENT_INPUT_AGENT=${VSTS_AGENT_INPUT_AGENT} \
-    VSTS_AGENT_INPUT_AUTH=${VSTS_AGENT_INPUT_AUTH} \
-    VSTS_AGENT_INPUT_POOL=${VSTS_AGENT_INPUT_POOL} \
-    VSTS_AGENT_INPUT_SECRET=${VSTS_AGENT_INPUT_SECRET} \
-    VSTS_AGENT_INPUT_TOKEN=${VSTS_AGENT_INPUT_TOKEN} \
-    VSTS_AGENT_INPUT_URL=${VSTS_AGENT_INPUT_URL} \
-    VSTS_AGENT_KEYVAULT_NAME=${VSTS_AGENT_KEYVAULT_NAME}
-    # https://github.com/microsoft/azure-pipelines-agent/issues/3599#issuecomment-1083564092
+    VSTS_AGENT_INPUT_URL="" \
+    VSTS_AGENT_INPUT_AUTH="pat" \
+    VSTS_AGENT_INPUT_TOKEN="" \
+    VSTS_AGENT_INPUT_POOL=""
 
-RUN mkdir /home/${USERNAME}/agent
+USER root
 
-WORKDIR /home/${USERNAME}/agent
+USER root
 
-COPY ./agents/azure_devops/azdo.sh .
-
-RUN echo "versionRover=${versionRover}" && \
-    echo "CAF Rover Agent for Azure Devops" && \
-    latestAzdo="$(curl -s https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases/latest | grep -oP '"tag_name": "v\K(.*)(?=")')" && \
-    echo "Info - Release "${latestAzdo}" appears to be latest" && \
-    #
-    echo "Downloading Azure devops agent version ${versionAzdo} for architecture ${TARGETARCH}..." && \
-    #
-    if [ ${TARGETARCH} == "amd64" ]; then \
-        AGENTURL="https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-x64-${versionAzdo}.tar.gz" ; \
-    else  \
-        AGENTURL="https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-arm64-${versionAzdo}.tar.gz" ; \
-    fi \
-    && curl -s ${AGENTURL} -o /tmp/agent_package.tar.gz && \
-    tar zxvf /tmp/agent_package.tar.gz && \
-    sudo chmod +x ./azdo.sh && \
-    #
+RUN set -ex && \
+    # Install required dependencies first
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        curl \
+        tar \
+        ca-certificates \
+        sudo && \
+    # Create agent directory with proper permissions
+    mkdir -p /home/${USERNAME}/agent && \
+    cd /home/${USERNAME}/agent && \
+    # Download and install agent with retries
+    for i in $(seq 1 3); do \
+        echo "Attempt $i: Installing Azure DevOps agent..." && \
+        if [ "${TARGETARCH}" = "amd64" ]; then \
+            curl -L --retry 3 --retry-delay 5 -o /tmp/agent_package.tar.gz https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-x64-${versionAzdo}.tar.gz; \
+        else \
+            curl -L --retry 3 --retry-delay 5 -o /tmp/agent_package.tar.gz https://vstsagentpackage.azureedge.net/agent/${versionAzdo}/vsts-agent-linux-arm64-${versionAzdo}.tar.gz; \
+        fi && \
+        tar xzf /tmp/agent_package.tar.gz && \
+        rm /tmp/agent_package.tar.gz && \
+        DEBIAN_FRONTEND=noninteractive ./bin/installdependencies.sh && \
+        chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent && \
+        chmod -R 755 /home/${USERNAME}/agent && \
+        echo "Azure DevOps agent installed successfully" && \
+        break || { \
+            echo "Attempt $i failed, retrying in 5 seconds..." && \
+            if [ $i -eq 3 ]; then \
+                echo "Failed to install Azure DevOps agent after 3 attempts" && \
+                exit 1; \
+            fi && \
+            sleep 5; \
+        }; \
+    done && \
     # Cleanup
-    #
-    rm -rf /tmp/* && \
-    #
-    # install node # https://github.com/microsoft/azure-pipelines-agent/pull/4240
-    #
-    curl -sL https://deb.nodesource.com/setup_${versionNode}.x | sudo -E bash - && \
-    sudo apt-get install -y nodejs && \
-    node --version
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-CMD /bin/bash -c ./azdo.sh
+USER ${USERNAME}
+
+USER ${USERNAME}
+
+COPY ./agents/azure_devops/azdo.sh /home/${USERNAME}/agent/
+USER root
+RUN chmod +x /home/${USERNAME}/agent/azdo.sh && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/agent
+
+USER ${USERNAME}
+
+ENTRYPOINT ["/home/vscode/agent/azdo.sh"]

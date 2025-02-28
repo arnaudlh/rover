@@ -1,60 +1,81 @@
-#-------------------------------------------------------------------------------------------------------------
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
-#-------------------------------------------------------------------------------------------------------------
-
-#
-# make is calling the ./scripts/build_images.sh who calls docker buildx bake
-#
-
-group "default" {
-  targets = ["rover_local", "rover_agents"]
-}
-
-target "rover_local" {
-  dockerfile = "./Dockerfile"
-  tags = ["${tag}"]
-  args = {
-    extensionsAzureCli   = extensionsAzureCli
-    versionDockerCompose = versionDockerCompose
-    versionGolang        = versionGolang
-    versionKubectl       = versionKubectl
-    versionKubelogin     = versionKubelogin
-    versionPacker        = versionPacker
-    versionPowershell    = versionPowershell
-    versionRover         = versionRover
-    versionTerraform     = versionTerraform
-    versionTerraformDocs = versionTerraformDocs
-    versionVault         = versionVault
-    versionAnsible       = versionAnsible
-    versionTerrascan     = versionTerrascan
-    versionTfupdate      = versionTfupdate
-  }
-  platforms = ["linux/amd64","linux/arm64" ]
-  cache-to = ["type=local,dest=/tmp/.buildx-cache,mode=max"]
-  cache-from = ["type=local,src=/tmp/.buildx-cache"]
-}
-
-target "rover_registry" {
-  inherits = ["rover_local"]
-  tags = ["${versionRover}"]
-  args = {
-    image     = versionRover
-  }
+# Version variables
+variable "versionTerraform" {
+  default = ""
 }
 
 variable "registry" {
-    default = ""
-}
-
-variable "tag" {
-    default = "latest"
+  default = ""
 }
 
 variable "versionRover" {
-    default = ""
+  default = ""
 }
 
-variable "versionTerraform" {
-    default = ""
+group "default" {
+  targets = ["local-tf"]
+}
+
+group "pr" {
+  targets = ["local-tf", "registry-tf"]
+}
+
+group "release" {
+  targets = ["registry-tf"]
+}
+
+# Common target configuration
+target "common" {
+  dockerfile = "./Dockerfile"
+  context = "."
+  args = {
+    TARGETARCH = "${TARGETARCH}"
+    TARGETOS = "${TARGETOS}"
+    USER_UID = "${USER_UID}"
+    USER_GID = "${USER_GID}"
+    USERNAME = "${USERNAME}"
+  }
+  cache-from = ["type=gha,scope=pr-${TARGETARCH}"]
+  cache-to = ["type=gha,mode=max,scope=pr-${TARGETARCH}"]
+  network = "host"
+  allow = "network.host,security.insecure"
+}
+
+target "local-tf" {
+  inherits = ["common"]
+  platforms = ["linux/amd64"]
+  tags = ["rover:local"]
+  output = ["type=docker"]
+  no-cache = false
+}
+
+target "registry-tf" {
+  inherits = ["common"]
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["${registry}rover:${versionRover}"]
+  output = ["type=registry"]
+}
+
+# Build configuration variables
+variable "TARGETARCH" {
+  default = "amd64"
+}
+
+variable "TARGETOS" {
+  default = "linux"
+}
+
+variable "USER_UID" {
+  default = "1000"
+}
+
+variable "USER_GID" {
+  default = "1000"
+}
+
+variable "USERNAME" {
+  default = "vscode"
+}
+
+variable "tag" {
+  default = "latest"
 }

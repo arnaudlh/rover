@@ -14,3 +14,14 @@ updates:
   directory: "/"
   schedule:
     interval: "daily"
+- package-ecosystem: "custom"
+  directory: "/versions"
+  schedule:
+    interval: "weekly"
+  target-branch: "main"
+  custom-configuration:
+    - file: "manifest.json"
+      type: "json"
+      update-types:
+        - "version-update:semver-patch"
+        - "version-update:semver-minor"
