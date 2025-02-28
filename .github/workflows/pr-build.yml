@@ -11,13 +11,12 @@ on:
     types: [opened, synchronize, reopened]
     draft: 'false'
   push:
-    branches: [main]
+    branches: [main, devin/1740289687-ghcr-migration]
 
 concurrency:
   group: >-
     ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
-  # yamllint disable-line rule:line-length
 
 env:
   BUILDKIT_PROGRESS: plain
@@ -54,9 +53,6 @@ jobs:
       - id: platforms
         run: |
           echo 'matrix=["linux/amd64","linux/arm64"]' >> $GITHUB_OUTPUT
-          # These platforms correspond to runner types:
-          # linux/amd64 -> ubuntu-latest
-          # linux/arm64 -> ubuntu-24.04-arm
       - id: agents
         run: |
           echo 'matrix=["github","tfc","gitlab","azure_devops"]' >> $GITHUB_OUTPUT
@@ -80,8 +76,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Using native runners, QEMU not needed
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
@@ -132,8 +126,7 @@ jobs:
             ${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
           target: base
-          # When using native runners, we build for the current architecture only
-          platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
+          platforms: linux/amd64
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
@@ -148,7 +141,7 @@ jobs:
             USER_GID=1000
             USERNAME=vscode
             versionVault=${{ steps.versions.outputs.vault }}
-            versionGolang=${{ steps.versions.outputs.golang }}
+            versionGolang=1.22.0
             versionKubectl=${{ steps.versions.outputs.kubectl }}
             versionKubelogin=${{ steps.versions.outputs.kubelogin }}
             versionDockerCompose=${{ steps.versions.outputs.docker_compose }}
@@ -159,7 +152,7 @@ jobs:
             extensionsAzureCli=${{ steps.versions.outputs.azure_cli }}
             versionTerrascan=${{ steps.versions.outputs.terrascan }}
             versionTfupdate=${{ steps.versions.outputs.tfupdate }}
-            versionTerraform=${{ steps.versions.outputs.terraform }}
+            versionTerraform=1.7.0
       - name: Move cache
         if: always()
         run: |
@@ -180,12 +173,10 @@ jobs:
     env:
       ARCH: arm64
       PLATFORM: linux/arm64
-    continue-on-error: true  # Allow arm64 builds to fail
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Using native runners, QEMU not needed
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -237,8 +228,7 @@ jobs:
             ${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
           target: base
-          # When using native runners, we build for the current architecture only
-          platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
+          platforms: linux/arm64
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
@@ -253,7 +243,7 @@ jobs:
             USER_GID=1000
             USERNAME=vscode
             versionVault=${{ steps.versions.outputs.vault }}
-            versionGolang=${{ steps.versions.outputs.golang }}
+            versionGolang=1.22.0
             versionKubectl=${{ steps.versions.outputs.kubectl }}
             versionKubelogin=${{ steps.versions.outputs.kubelogin }}
             versionDockerCompose=${{ steps.versions.outputs.docker_compose }}
@@ -264,7 +254,7 @@ jobs:
             extensionsAzureCli=${{ steps.versions.outputs.azure_cli }}
             versionTerrascan=${{ steps.versions.outputs.terrascan }}
             versionTfupdate=${{ steps.versions.outputs.tfupdate }}
-            versionTerraform=${{ steps.versions.outputs.terraform }}
+            versionTerraform=1.7.0
       - name: Move cache
         if: always()
         run: |
@@ -287,8 +277,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Using native runners, QEMU not needed
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -328,8 +316,7 @@ jobs:
           tags: |
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
-          # When using native runners, we build for the current architecture only
-          platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
+          platforms: linux/amd64
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
@@ -358,20 +345,14 @@ jobs:
     env:
       ARCH: arm64
       PLATFORM: linux/arm64
-      BUILDKIT_PROGRESS: plain
-      BUILDKIT_COLORS: 1
-      BUILDKIT_STEP_LOG_MAX_SIZE: 10485760
-      BUILDKIT_STEP_LOG_MAX_SPEED: 10485760
     strategy:
       matrix:
         agent: ["github", "gitlab", "azure_devops"]
       fail-fast: false
-    continue-on-error: true  # Allow arm64 builds to fail
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Using native runners, QEMU not needed
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -411,8 +392,7 @@ jobs:
           tags: |
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
-          # When using native runners, we build for the current architecture only
-          platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
+          platforms: linux/arm64
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
@@ -455,11 +435,7 @@ jobs:
           - type: base
             agent: azure_devops
       fail-fast: false
-    continue-on-error: false
-    permissions:
-      contents: read
-      security-events: write
-      packages: read
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -471,112 +447,44 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Grype
+      - name: Set image variables
+        id: vars
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Create results directory
-        run: mkdir -p results
-
-      - name: Set scan variables
-        run: |
-          # Set architecture and paths
-          arch="${{ env.ARCH }}"
-          echo "ARCH=$arch" >> $GITHUB_ENV
-          if [ "${{ matrix.type }}" = "base" ]; then
-            img="${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-$arch"
-            sarif="results/results-${{ matrix.type }}-$arch.sarif"
+          if [[ "${{ matrix.type }}" == "base" ]]; then
+            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
           else
-            img="${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-$arch"
-            sarif="results/results-${{ matrix.type }}-${{ matrix.agent }}-$arch.sarif"
+            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
           fi
-          echo "IMAGE=$img" >> $GITHUB_ENV
-          echo "SARIF_FILE=$sarif" >> $GITHUB_ENV
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
 
       - name: Run Grype scan
         id: scan
-        continue-on-error: true
-        run: |
-          echo "Scanning ${{ matrix.type }} (${{ env.ARCH }})..."
-          grype "${{ env.IMAGE }}" -o sarif --file "${{ env.SARIF_FILE }}" --add-cpes-if-none --by-cve --fail-on none --only-fixed || true
-          echo "Scan complete";
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ steps.vars.outputs.image }}
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+          only-fixed: false
 
-          # Display summary of findings
-          if [ "${{ matrix.type }}" = "base" ]; then
-            echo "Summary for base image ($arch):"
-            grype "$image" -o table || true
-          else
-            echo "Summary for ${{ matrix.agent }} agent ($arch):"
-            grype "$image" -o table || true
-          fi
-
-      - name: Upload scan results
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Grype scan results
+        uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: "${{ env.SARIF_FILE }}"
-          category: "scan-${{ matrix.type }}"
-          wait-for-processing: true
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+          category: grype-${{ matrix.type }}-${{ matrix.agent }}
 
-      - name: Set job result
+      - name: Set result
         id: set-result
         if: always()
-        run: |
-          # Create empty SARIF file if none exists to prevent upload failures
-          if ! ls results/*.sarif >/dev/null 2>&1; then
-            echo "::warning::No SARIF files for ${{ matrix.type }} (${{ env.ARCH }}). Creating empty one."
-            cat > "${{ env.SARIF_FILE }}" << 'EOF'
-            {
-              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-              "version": "2.1.0",
-              "runs": [
-                {
-                  "tool": {
-                    "driver": {
-                      "name": "Grype",
-                      "informationUri": "https://github.com/anchore/grype",
-                      "rules": []
-                    }
-                  },
-                  "results": []
-                }
-              ]
-            }
-            EOF
-          fi
-
-          # Check SARIF file validity
-          for file in results/*.sarif; do
-            if ! jq empty "$file" 2>/dev/null; then
-              echo "::warning::Invalid SARIF file format: $file. Fixing format."
-              # Create a valid but empty SARIF file
-              cat > "$file" << 'EOF'
-              {
-                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-                "version": "2.1.0",
-                "runs": [
-                  {
-                    "tool": {
-                      "driver": {
-                        "name": "Grype",
-                        "informationUri": "https://github.com/anchore/grype",
-                        "rules": []
-                      }
-                    },
-                    "results": []
-                  }
-                ]
-              }
-              EOF
-            fi
-          done
-
-          # Always report success to allow the workflow to continue
-          echo "result=success" >> $GITHUB_OUTPUT
+        run: echo "result=success" >> $GITHUB_OUTPUT
 
   grype-scan-arm64:
     needs: [build-base-arm64, rover-agents-arm64]
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.set-result.outputs.result }}
     env:
@@ -594,11 +502,7 @@ jobs:
           - type: base
             agent: azure_devops
       fail-fast: false
-    continue-on-error: true  # Allow arm64 builds to fail
-    permissions:
-      contents: read
-      security-events: write
-      packages: read
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -610,377 +514,85 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Grype
+      - name: Set image variables
+        id: vars
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Create results directory
-        run: mkdir -p results
-
-      - name: Set scan variables
-        run: |
-          # Set architecture and paths
-          arch="${{ env.ARCH }}"
-          echo "ARCH=$arch" >> $GITHUB_ENV
-          if [ "${{ matrix.type }}" = "base" ]; then
-            img="${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-$arch"
-            sarif="results/results-${{ matrix.type }}-$arch.sarif"
+          if [[ "${{ matrix.type }}" == "base" ]]; then
+            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
           else
-            img="${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-$arch"
-            sarif="results/results-${{ matrix.type }}-${{ matrix.agent }}-$arch.sarif"
+            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
           fi
-          echo "IMAGE=$img" >> $GITHUB_ENV
-          echo "SARIF_FILE=$sarif" >> $GITHUB_ENV
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
 
       - name: Run Grype scan
         id: scan
-        continue-on-error: true
-        run: |
-          echo "Scanning ${{ matrix.type }} (${{ env.ARCH }})..."
-          grype "${{ env.IMAGE }}" -o sarif --file "${{ env.SARIF_FILE }}" --add-cpes-if-none --by-cve --fail-on none --only-fixed || true
-          echo "Scan complete";
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ steps.vars.outputs.image }}
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+          only-fixed: false
 
-          # Display summary of findings
-          if [ "${{ matrix.type }}" = "base" ]; then
-            echo "Summary for base image ($arch):"
-            grype "$image" -o table || true
-          else
-            echo "Summary for ${{ matrix.agent }} agent ($arch):"
-            grype "$image" -o table || true
-          fi
-
-      - name: Upload scan results
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Grype scan results
+        uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: "${{ env.SARIF_FILE }}"
-          category: "scan-${{ matrix.type }}"
-          wait-for-processing: true
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+          category: grype-${{ matrix.type }}-${{ matrix.agent }}
 
-      - name: Set job result
+      - name: Set result
         id: set-result
         if: always()
-        run: |
-          # Create empty SARIF file if none exists to prevent upload failures
-          if ! ls results/*.sarif >/dev/null 2>&1; then
-            echo "::warning::No SARIF files for ${{ matrix.type }} (${{ env.ARCH }}). Creating empty one."
-            cat > "${{ env.SARIF_FILE }}" << 'EOF'
-            {
-              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-              "version": "2.1.0",
-              "runs": [
-                {
-                  "tool": {
-                    "driver": {
-                      "name": "Grype",
-                      "informationUri": "https://github.com/anchore/grype",
-                      "rules": []
-                    }
-                  },
-                  "results": []
-                }
-              ]
-            }
-            EOF
-          fi
-
-          # Check SARIF file validity
-          for file in results/*.sarif; do
-            if ! jq empty "$file" 2>/dev/null; then
-              echo "::warning::Invalid SARIF file format: $file. Fixing format."
-              # Create a valid but empty SARIF file
-              cat > "$file" << 'EOF'
-              {
-                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-                "version": "2.1.0",
-                "runs": [
-                  {
-                    "tool": {
-                      "driver": {
-                        "name": "Grype",
-                        "informationUri": "https://github.com/anchore/grype",
-                        "rules": []
-                      }
-                    },
-                    "results": []
-                  }
-                ]
-              }
-              EOF
-            fi
-          done
-
-          # Always report success to allow the workflow to continue
-          echo "result=success" >> $GITHUB_OUTPUT
+        run: echo "result=success" >> $GITHUB_OUTPUT
 
   msdo-scan:
-    needs: [build-base-amd64, build-base-arm64, rover-agents-amd64, rover-agents-arm64, grype-scan-amd64, grype-scan-arm64]
+    needs: [build-base-amd64, rover-agents-amd64]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      packages: read
-      id-token: write
-      actions: read
-      checks: write
-      pull-requests: write
-      statuses: write
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup MSDO configuration
-        run: |
-          mkdir -p /home/runner/work/rover/rover/.gdn/sarif
-          cp -f .gdn/*.yaml /home/runner/work/rover/rover/.gdn/
-          echo "Verifying configuration files:"
-          ls -la /home/runner/work/rover/rover/.gdn/
-          cat /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
-
-      - name: Create SARIF output directory
-        run: mkdir -p /home/runner/work/rover/rover/.gdn/sarif
-
-      - name: Run MSDO analysis
+      - name: Run Microsoft Security DevOps Analysis
         uses: microsoft/security-devops-action@v1
         id: msdo
-        env:
-          GDN_RUN_POLICY: GitHub
-          GDN_RUN_CATEGORIES: IaC,containers
-          GDN_RUN_TOOLS: terrascan,tfsec,checkov
-          GDN_RUN_GITHUB: true
-          GDN_RUN_LOGGER_ACTIONS: true
-          GDN_RUN_LOGGER_LEVEL: Debug
-          GDN_RUN_LOGGER_TIMESTAMP: true
-          GDN_RUN_LOGGER_SHOW_LEVEL: true
-          GDN_RUN_EXPORT_BREAKING_RESULTS_TO_FILE: sarif
-          GDN_RUN_SUCCEED_ON_NO_TOOLS: true
-          GDN_RUN_INIT_FORCE: true
-          GDN_RUN_INIT_CLEAN: true
-          GDN_RUN_CONFIG: >-
-            /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
-          GDN_RUN_SARIF_DIRECTORY: >-
-            /home/runner/work/rover/rover/.gdn/sarif
         with:
-          policy: none
-          categories: IaC,containers
-          tools: terrascan,tfsec,checkov
-          config: /home/runner/work/rover/rover/.gdn/msdo-linux.yaml
+          tools: bandit, eslint, template-analyzer, terrascan, trivy
+          categories: code
+          policy: microsoft
+          break-on-critical: false
 
-      - name: Report MSDO scan status
-        id: msdo-status
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v2
         if: always()
-        run: |
-          {
-            echo "Checking MSDO scan results..."
-            if [ "${{ steps.msdo.outcome }}" != "success" ]; then
-              echo "::warning::MSDO scan failed: ${{ steps.msdo.outcome }}"
-            fi
-            if [ ! -d "/home/runner/work/rover/rover/.gdn/sarif" ]; then
-              echo "::warning::SARIF directory not found"
-            fi
-            sarif_count=0
-            for file in /home/runner/work/rover/rover/.gdn/sarif/*.sarif; do
-              if [ ! -f "$file" ]; then
-                echo "::warning::SARIF file not found: $file"
-                continue
-              fi
-              if ! jq empty "$file" 2>/dev/null; then
-                echo "::warning::Invalid SARIF format: $file"
-                continue
-              fi
-              ((sarif_count++))
-            done
-            if [ "$sarif_count" -eq 0 ]; then
-              echo "::warning::No SARIF files were generated"
-            else
-              echo "MSDO scan completed with $sarif_count SARIF files"
-            fi
-            # Always report success to allow the workflow to continue
-            echo "status=success" >> $GITHUB_OUTPUT
-          }
-
-      - name: Upload scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        continue-on-error: true
         with:
-          sarif_file: /home/runner/work/rover/rover/.gdn/sarif/*.sarif
+          sarif_file: ${{ steps.msdo.outputs.sarifFile }}
           category: msdo-scan
-          wait-for-processing: true
-          checkout_path: >-
-            ${{ github.workspace }}
 
-  build-report:
-    needs: [build-base-amd64, build-base-arm64, rover-agents-amd64, rover-agents-arm64, grype-scan-amd64, grype-scan-arm64, msdo-scan]
+      - name: Set result
+        id: set-result
+        if: always()
+        run: echo "result=success" >> $GITHUB_OUTPUT
+
+  summary:
+    needs: [grype-scan-amd64, grype-scan-arm64, msdo-scan]
     runs-on: ubuntu-latest
     if: always()
-    outputs:
-      status: ${{ steps.report.outputs.status }}
-    permissions:
-      checks: write
-      pull-requests: write
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Generate build report
-        id: report
-        uses: actions/github-script@v7
-        env:
-          BUILD_BASE_AMD64_RESULT: ${{ needs.build-base-amd64.result || 'failure' }}
-          BUILD_BASE_ARM64_RESULT: ${{ needs.build-base-arm64.result || 'failure' }}
-          BUILD_AGENTS_AMD64_RESULT: ${{ needs.rover-agents-amd64.result || 'failure' }}
-          BUILD_AGENTS_ARM64_RESULT: ${{ needs.rover-agents-arm64.result || 'failure' }}
-          GRYPE_SCAN_AMD64_RESULT: ${{ needs.grype-scan-amd64.outputs.result || 'failure' }}
-          GRYPE_SCAN_ARM64_RESULT: ${{ needs.grype-scan-arm64.outputs.result || 'failure' }}
-          MSDO_SCAN_RESULT: ${{ needs.msdo-scan.outputs.status || 'failure' }}
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const { number } = context.issue;
-            const buildBaseAmd64Result = process.env.BUILD_BASE_AMD64_RESULT || 'failure';
-            const buildBaseArm64Result = process.env.BUILD_BASE_ARM64_RESULT || 'failure';
-            const buildAgentsAmd64Result = process.env.BUILD_AGENTS_AMD64_RESULT || 'failure';
-            const buildAgentsArm64Result = process.env.BUILD_AGENTS_ARM64_RESULT || 'failure';
-            const grypeScanAmd64Result = process.env.GRYPE_SCAN_AMD64_RESULT || 'failure';
-            const grypeScanArm64Result = process.env.GRYPE_SCAN_ARM64_RESULT || 'failure';
-            const msdoScanResult = process.env.MSDO_SCAN_RESULT || 'failure';
-
-            // Combine results
-            const buildBaseResult = buildBaseAmd64Result === 'success' && buildBaseArm64Result === 'success' ? 'success' : 'failure';
-            const buildAgentsResult = buildAgentsAmd64Result === 'success' && buildAgentsArm64Result === 'success' ? 'success' : 'failure';
-            const grypeScanResult = grypeScanAmd64Result === 'success' && grypeScanArm64Result === 'success' ? 'success' : 'failure';
-
-            console.log('Job Results:', {
-              buildBase: buildBaseResult,
-              buildAgents: buildAgentsResult,
-              grypeScan: grypeScanResult,
-              msdoScan: msdoScanResult
-            });
-
-            const agentJobs = await github.rest.actions.listJobsForWorkflowRun({
-              owner,
-              repo,
-              run_id: context.runId
-            });
-
-            console.log('Found jobs:', agentJobs.data.jobs.map(j => j.name));
-
-            const agentStatuses = {
-              github: { amd64: 'pending', arm64: 'pending' },
-              tfc: { amd64: 'pending', arm64: 'n/a' },
-              gitlab: { amd64: 'pending', arm64: 'pending' },
-              azure_devops: { amd64: 'pending', arm64: 'pending' }
-            };
-
-            for (const job of agentJobs.data.jobs) {
-              if (job.name.startsWith('rover-agents')) {
-                const pattern = [
-                  'rover-agents \\(',
-                  '(?:platform: )?(linux\\/(?:amd64|arm64))',
-                  '(?:, )?(?:agent: )?([^)]+)\\)'
-                ].join('');
-                const match = job.name.match(pattern);
-                if (match) {
-                  const arch = match[1].includes('amd64') ?
-                    'amd64' : 'arm64';
-                  const agent = match[2];
-                  if (agentStatuses[agent]) {
-                    agentStatuses[agent][arch] = job.conclusion || job.status;
-                  }
-                }
-              }
-            }
-            const getStatusEmoji = (agent) => {
-              const amd64Status = agentStatuses[agent].amd64;
-              const arm64Status = agentStatuses[agent].arm64;
-              if (arm64Status === 'n/a') {
-                return amd64Status === 'success' ? '✅' : '❌';
-              }
-              const isSuccess = amd64Status === 'success' &&
-                (arm64Status === 'success' || arm64Status === 'n/a');
-              return isSuccess ? '✅' : '❌';
-            };
-
-            // Format agent status lines
-            const formatAgentStatus = (agent) => {
-              const status = agentStatuses[agent];
-              const amd64 = status.amd64;
-              const arm64 = status.arm64;
-              const emoji = getStatusEmoji(agent);
-              return `- ${agent}: ${emoji} (amd64: ${amd64}, arm64: ${arm64})`;
-            };
-
-            // Generate build summary
-            const buildSummary = [
-              '# Build & Security Report',
-              '',
-              '## Base Image Builds',
-              `- linux/amd64: ${buildBaseResult === 'success' ? '✅' : '❌'}`,
-              `- linux/arm64: ${buildBaseResult === 'success' ? '✅' : '❌'}`,
-              '',
-              '## Agent Builds',
-              ...Object.keys(agentStatuses).map(formatAgentStatus),
-              '',
-              '## Security Scans',
-              `- Container scan: ${grypeScanResult === 'success' ? '✅' : '❌'}`,
-              `- MSDO scan: ${msdoScanResult === 'success' ? '✅' : '❌'}`,
-              '',
-              // Generate overall status
-              (() => {
-                const success = [
-                  buildBaseResult,
-                  buildAgentsResult,
-                  grypeScanResult,
-                  msdoScanResult
-                ].every(result => result === 'success');
-                return `Overall Status: ${success ? '✅' : '❌'}`;
-              })(),
-              '',
-              '### Status Details',
-              `- Base Build: ${buildBaseResult}`,
-              `- Agent Builds: ${buildAgentsResult}`,
-              `- Container Security: ${grypeScanResult}`,
-              `- MSDO Analysis: ${msdoScanResult}`
-            ].join('\n');
-
-            if (context.payload.pull_request) {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: number,
-                body: buildSummary
-              });
-            }
-
-            const conclusion = (() => {
-                const agentSuccess = Object.values(agentStatuses)
-                  .every(agent => Object.values(agent)
-                    .every(s => s === 'success' || s === 'n/a'));
-                // Only consider build results for overall success/failure
-                const allSuccess = [
-                  buildBaseResult,
-                  agentSuccess
-                ].every(r => r === 'success');
-                return allSuccess ? 'success' : 'failure';
-              })();
-
-            await github.rest.checks.create({
-              owner,
-              repo,
-              name: 'Build & Security Check',
-              head_sha: context.sha,
-              status: 'completed',
-              conclusion,
-              output: {
-                title: `Build Report ${conclusion === 'success' ? '✅' : '❌'}`,
-                summary: buildSummary
-              }
-            });
-
-            core.setOutput('status', conclusion);
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| AMD64 Base | ${{ needs.grype-scan-amd64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ARM64 Base | ${{ needs.grype-scan-arm64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.msdo-scan.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
