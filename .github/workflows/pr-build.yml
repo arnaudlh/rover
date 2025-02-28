@@ -128,9 +128,9 @@ jobs:
           target: base
           platforms: linux/amd64
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
           outputs: type=registry,compression=gzip,compression-level=9
           provenance: false
           sbom: false
@@ -230,9 +230,9 @@ jobs:
           target: base
           platforms: linux/arm64
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
           outputs: type=registry,compression=gzip,compression-level=9
           provenance: false
           sbom: false
@@ -318,9 +318,9 @@ jobs:
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: linux/amd64
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
           outputs: type=registry,compression=gzip,compression-level=9
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
@@ -394,9 +394,9 @@ jobs:
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
           platforms: linux/arm64
           cache-from: |
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
-            type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
-          cache-to: type=gha,mode=max,scope=pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.base_ref }}
+            type=gha,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
+          cache-to: type=gha,mode=max,scope=base-${{ env.ARCH }}-pr-${{ github.event.pull_request.number }}-${{ env.PLATFORM }}-${{ github.sha }}
           outputs: type=registry,compression=gzip,compression-level=9
           build-contexts: |
             base=docker-image://${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
@@ -425,15 +425,9 @@ jobs:
       matrix:
         type: [base, agent]
         agent: [github, tfc, gitlab, azure_devops]
-        exclude:
+        include:
           - type: base
-            agent: github
-          - type: base
-            agent: tfc
-          - type: base
-            agent: gitlab
-          - type: base
-            agent: azure_devops
+            agent: base
       fail-fast: false
     continue-on-error: true
     steps:
@@ -494,13 +488,9 @@ jobs:
       matrix:
         type: [base, agent]
         agent: [github, gitlab, azure_devops]
-        exclude:
+        include:
           - type: base
-            agent: github
-          - type: base
-            agent: gitlab
-          - type: base
-            agent: azure_devops
+            agent: base
       fail-fast: false
     continue-on-error: true
     steps:
