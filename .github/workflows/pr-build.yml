@@ -850,12 +850,12 @@ jobs:
             const grypeScanAmd64Result = process.env.GRYPE_SCAN_AMD64_RESULT || 'failure';
             const grypeScanArm64Result = process.env.GRYPE_SCAN_ARM64_RESULT || 'failure';
             const msdoScanResult = process.env.MSDO_SCAN_RESULT || 'failure';
-          
+
             // Combine results
             const buildBaseResult = buildBaseAmd64Result === 'success' && buildBaseArm64Result === 'success' ? 'success' : 'failure';
             const buildAgentsResult = buildAgentsAmd64Result === 'success' && buildAgentsArm64Result === 'success' ? 'success' : 'failure';
             const grypeScanResult = grypeScanAmd64Result === 'success' && grypeScanArm64Result === 'success' ? 'success' : 'failure';
-          
+
             console.log('Job Results:', {
               buildBase: buildBaseResult,
               buildAgents: buildAgentsResult,
