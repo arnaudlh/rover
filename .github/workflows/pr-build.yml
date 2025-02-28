@@ -1,6 +1,9 @@
 ---
 name: PR Build & Test
 
+# This workflow uses native ARM64 runners (ubuntu-24.04-arm64) for ARM64 builds
+# instead of QEMU emulation for better performance and compatibility
+
 on:
   pull_request:
     branches: [main]
@@ -50,13 +53,16 @@ jobs:
       - id: platforms
         run: |
           echo 'matrix=["linux/amd64","linux/arm64"]' >> $GITHUB_OUTPUT
+          # These platforms correspond to runner types:
+          # linux/amd64 -> ubuntu-latest
+          # linux/arm64 -> ubuntu-24.04-arm64
       - id: agents
         run: |
           echo 'matrix=["github","tfc","gitlab","azure_devops"]' >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm64' || 'ubuntu-latest' }}
     outputs:
       github_runner: ${{ steps.versions.outputs.github_runner }}
       azdo: ${{ steps.versions.outputs.azdo }}
@@ -77,10 +83,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64
+      # Using native runners, QEMU not needed
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -135,7 +138,8 @@ jobs:
             ${{ env.IMAGE_PREFIX }}:pr-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.IMAGE_PREFIX }}:pr-latest-${{ env.ARCH }}
           target: base
-          platforms: ${{ matrix.platform }}
+          # When using native runners, we build for the current architecture only
+          platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
@@ -170,7 +174,7 @@ jobs:
 
   rover-agents:
     needs: [build-base, matrix-prep]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm64' || 'ubuntu-latest' }}
     outputs:
       result: success
     strategy:
@@ -203,10 +207,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64
+      # Using native runners, QEMU not needed
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -249,7 +250,8 @@ jobs:
           tags: |
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}
             ${{ env.AGENT_PREFIX }}:pr-${{ matrix.agent }}-latest-${{ env.ARCH }}
-          platforms: ${{ matrix.platform }}
+          # When using native runners, we build for the current architecture only
+          platforms: ${{ env.ARCH == 'amd64' && 'linux/amd64' || 'linux/arm64' }}
           cache-from: |
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.base_ref }}
             type=gha,scope=pr-${{ github.event.pull_request.number }}-${{ matrix.platform }}-${{ github.sha }}
@@ -272,7 +274,7 @@ jobs:
 
   grype-scan:
     needs: [build-base, rover-agents]
-    runs-on: ubuntu-latest
+    runs-on: ${{ contains(matrix.platform, 'arm64') && 'ubuntu-24.04-arm64' || 'ubuntu-latest' }}
     outputs:
       result: ${{ steps.set-result.outputs.result }}
     strategy:
