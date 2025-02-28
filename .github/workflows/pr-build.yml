@@ -661,9 +661,6 @@ jobs:
           tools: bandit, terrascan, trivy
           categories: code
           policy: microsoft
-          disable-telemetry: true
-          disable-template-analyzer: true
-          image: ${{ steps.vars.outputs.image }}
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
@@ -713,9 +710,6 @@ jobs:
           tools: bandit, terrascan, trivy
           categories: code
           policy: microsoft
-          disable-telemetry: true
-          disable-template-analyzer: true
-          image: ${{ steps.vars.outputs.image }}
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
@@ -769,9 +763,6 @@ jobs:
           tools: bandit, terrascan, trivy
           categories: code
           policy: microsoft
-          disable-telemetry: true
-          disable-template-analyzer: true
-          image: ${{ steps.vars.outputs.image }}
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
@@ -825,9 +816,6 @@ jobs:
           tools: bandit, terrascan, trivy
           categories: code
           policy: microsoft
-          disable-telemetry: true
-          disable-template-analyzer: true
-          image: ${{ steps.vars.outputs.image }}
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
