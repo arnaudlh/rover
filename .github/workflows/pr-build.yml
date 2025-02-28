@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-    draft: false
+    draft: 'false'
   push:
     branches: [main]
 
