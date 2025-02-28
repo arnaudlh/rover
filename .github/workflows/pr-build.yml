@@ -563,10 +563,10 @@ jobs:
         uses: microsoft/security-devops-action@v1
         id: msdo
         with:
-          tools: bandit, eslint, template-analyzer, terrascan, trivy
+          tools: bandit, eslint, terrascan, trivy
           categories: code
           policy: microsoft
-          # Removed invalid break-on-critical parameter
+          # Removed template-analyzer as it's not supported on Linux
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
