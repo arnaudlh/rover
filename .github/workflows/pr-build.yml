@@ -3,6 +3,7 @@ name: PR Build & Test
 
 # This workflow uses native ARM64 runners (ubuntu-24.04-arm64) for ARM64 builds
 # instead of QEMU emulation for better performance and compatibility
+# Updated to use gzip compression for better compatibility with ARM64 runners
 
 on:
   pull_request:
