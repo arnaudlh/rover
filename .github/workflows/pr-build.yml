@@ -413,8 +413,110 @@ jobs:
             versionAzdo=${{ steps.versions.outputs.azdo }}
             versionTfc=${{ steps.versions.outputs.tfc }}
 
-  grype-scan-amd64:
-    needs: [build-base-amd64, rover-agents-amd64]
+  grype-scan-base-amd64:
+    needs: [build-base-amd64]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    env:
+      ARCH: amd64
+      PLATFORM: linux/amd64
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image variables
+        id: vars
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
+
+      - name: Run Grype scan
+        id: scan
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ steps.vars.outputs.image }}
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+          only-fixed: false
+
+      - name: Upload Grype scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+          category: grype-base-${{ env.ARCH }}
+
+      - name: Set result
+        id: set-result
+        if: always()
+        run: echo "result=success" >> $GITHUB_OUTPUT
+
+  grype-scan-base-arm64:
+    needs: [build-base-arm64]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.set-result.outputs.result }}
+    env:
+      ARCH: arm64
+      PLATFORM: linux/arm64
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image variables
+        id: vars
+        run: |
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
+
+      - name: Pull image
+        run: |
+          docker pull ${{ steps.vars.outputs.image }}
+
+      - name: Run Grype scan
+        id: scan
+        uses: anchore/scan-action@v3
+        with:
+          image: ${{ steps.vars.outputs.image }}
+          fail-build: false
+          severity-cutoff: high
+          output-format: sarif
+          only-fixed: false
+
+      - name: Upload Grype scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+          category: grype-base-${{ env.ARCH }}
+
+      - name: Set result
+        id: set-result
+        if: always()
+        run: echo "result=success" >> $GITHUB_OUTPUT
+
+  grype-scan-agents-amd64:
+    needs: [rover-agents-amd64]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.set-result.outputs.result }}
@@ -423,11 +525,7 @@ jobs:
       PLATFORM: linux/amd64
     strategy:
       matrix:
-        type: [base, agent]
         agent: [github, tfc, gitlab, azure_devops]
-        include:
-          - type: base
-            agent: base
       fail-fast: false
     continue-on-error: true
     steps:
@@ -444,11 +542,7 @@ jobs:
       - name: Set image variables
         id: vars
         run: |
-          if [[ "${{ matrix.type }}" == "base" ]]; then
-            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
-          else
-            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
-          fi
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
 
       - name: Pull image
         run: |
@@ -469,15 +563,15 @@ jobs:
         if: always()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-          category: grype-${{ matrix.type }}-${{ matrix.agent }}
+          category: grype-agent-${{ matrix.agent }}-${{ env.ARCH }}
 
       - name: Set result
         id: set-result
         if: always()
         run: echo "result=success" >> $GITHUB_OUTPUT
 
-  grype-scan-arm64:
-    needs: [build-base-arm64, rover-agents-arm64]
+  grype-scan-agents-arm64:
+    needs: [rover-agents-arm64]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.set-result.outputs.result }}
@@ -486,11 +580,7 @@ jobs:
       PLATFORM: linux/arm64
     strategy:
       matrix:
-        type: [base, agent]
         agent: [github, gitlab, azure_devops]
-        include:
-          - type: base
-            agent: base
       fail-fast: false
     continue-on-error: true
     steps:
@@ -507,11 +597,7 @@ jobs:
       - name: Set image variables
         id: vars
         run: |
-          if [[ "${{ matrix.type }}" == "base" ]]; then
-            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover:pr-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
-          else
-            echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
-          fi
+          echo "image=${{ env.REGISTRY }}/${{ github.repository }}/rover-agent:pr-${{ matrix.agent }}-${{ github.sha }}-${{ env.ARCH }}" >> $GITHUB_OUTPUT
 
       - name: Pull image
         run: |
@@ -532,7 +618,7 @@ jobs:
         if: always()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-          category: grype-${{ matrix.type }}-${{ matrix.agent }}
+          category: grype-agent-${{ matrix.agent }}-${{ env.ARCH }}
 
       - name: Set result
         id: set-result
@@ -572,7 +658,7 @@ jobs:
         run: echo "result=success" >> $GITHUB_OUTPUT
 
   summary:
-    needs: [grype-scan-amd64, grype-scan-arm64, msdo-scan]
+    needs: [grype-scan-base-amd64, grype-scan-base-arm64, grype-scan-agents-amd64, grype-scan-agents-arm64, msdo-scan]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -584,6 +670,8 @@ jobs:
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| AMD64 Base | ${{ needs.grype-scan-amd64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| ARM64 Base | ${{ needs.grype-scan-arm64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AMD64 Base | ${{ needs.grype-scan-base-amd64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ARM64 Base | ${{ needs.grype-scan-base-arm64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AMD64 Agents | ${{ needs.grype-scan-agents-amd64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ARM64 Agents | ${{ needs.grype-scan-agents-arm64.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security Scan | ${{ needs.msdo-scan.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
