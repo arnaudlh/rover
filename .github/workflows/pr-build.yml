@@ -471,7 +471,7 @@ jobs:
           only-fixed: false
 
       - name: Upload Grype scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
@@ -538,7 +538,7 @@ jobs:
           only-fixed: false
 
       - name: Upload Grype scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
@@ -566,10 +566,10 @@ jobs:
           tools: bandit, eslint, template-analyzer, terrascan, trivy
           categories: code
           policy: microsoft
-          break-on-critical: false
+          # Removed invalid break-on-critical parameter
 
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: ${{ steps.msdo.outputs.sarifFile }}
