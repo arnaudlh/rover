@@ -1,7 +1,7 @@
 ---
 name: PR Build & Test
 
-# This workflow uses native ARM64 runners (ubuntu-24.04-arm64) for ARM64 builds
+# This workflow uses native ARM64 runners (ubuntu-24.04-arm) for ARM64 builds
 # instead of QEMU emulation for better performance and compatibility
 # Updated to use gzip compression for better compatibility with ARM64 runners
 
@@ -56,14 +56,14 @@ jobs:
           echo 'matrix=["linux/amd64","linux/arm64"]' >> $GITHUB_OUTPUT
           # These platforms correspond to runner types:
           # linux/amd64 -> ubuntu-latest
-          # linux/arm64 -> ubuntu-24.04-arm64
+          # linux/arm64 -> ubuntu-24.04-arm
       - id: agents
         run: |
           echo 'matrix=["github","tfc","gitlab","azure_devops"]' >> $GITHUB_OUTPUT
 
   build-base:
     needs: matrix-prep
-    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     outputs:
       github_runner: ${{ steps.versions.outputs.github_runner }}
       azdo: ${{ steps.versions.outputs.azdo }}
@@ -175,7 +175,7 @@ jobs:
 
   rover-agents:
     needs: [build-base, matrix-prep]
-    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     outputs:
       result: success
     strategy:
@@ -275,7 +275,7 @@ jobs:
 
   grype-scan:
     needs: [build-base, rover-agents]
-    runs-on: ${{ contains(matrix.platform, 'arm64') && 'ubuntu-24.04-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ contains(matrix.platform, 'arm64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     outputs:
       result: ${{ steps.set-result.outputs.result }}
     strategy:
