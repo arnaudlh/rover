@@ -496,7 +496,7 @@ RUN set -ex && \
     for i in $(seq 1 3); do \
         echo "Attempt $i: Installing Terraform..." && \
         if curl -sSL --retry 3 --retry-delay 5 -o /tmp/terraform.zip \
-            "https://releases.hashicorp.com/terraform/$(./scripts/parse_versions.sh tool terraform)/terraform_$(./scripts/parse_versions.sh tool terraform)_${TARGETOS}_${TARGETARCH}.zip" && \
+            "https://releases.hashicorp.com/terraform/1.7.0/terraform_1.7.0_${TARGETOS}_${TARGETARCH}.zip" && \
            unzip -o -d /usr/bin /tmp/terraform.zip && \
            chmod +x /usr/bin/terraform && \
            rm /tmp/terraform.zip && \
