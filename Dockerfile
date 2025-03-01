@@ -12,14 +12,15 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     LANGUAGE=C.UTF-8 \
     LC_ALL=C.UTF-8 \
-    PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin" \
+    PATH="${PATH}:/opt/mssql-tools/bin:/home/vscode/.local/lib/shellspec/bin:/home/vscode/go/bin:/usr/local/go/bin:/opt/venv/bin" \
     TF_DATA_DIR="/home/${USERNAME}/.terraform.cache" \
     TF_PLUGIN_CACHE_DIR="${TF_PLUGIN_CACHE_DIR}" \
     TF_REGISTRY_DISCOVERY_RETRY=5 \
     TF_REGISTRY_CLIENT_TIMEOUT=15 \
     ARM_USE_MSGRAPH=true \
     BUILDKIT_STEP_LOG_MAX_SIZE=10485760 \
-    BUILDKIT_STEP_LOG_MAX_SPEED=10485760
+    BUILDKIT_STEP_LOG_MAX_SPEED=10485760 \
+    ROVER_RUNNER=true
 
 ARG versionVault
 ARG versionGolang
@@ -285,6 +286,9 @@ RUN set -ex && \
     done && \
     # Add venv to PATH
     echo 'PATH=/opt/venv/bin:$PATH' >> /etc/profile.d/venv.sh && \
+    # Create symlinks for az and yq commands
+    ln -sf /opt/venv/bin/az /usr/local/bin/az && \
+    ln -sf /opt/venv/bin/yq /usr/local/bin/yq && \
     # Verify Python package installations
     pip list | grep -E "pre-commit|yq|azure-cli|checkov|pywinrm|ansible-core" && \
     # Cleanup
@@ -743,6 +747,14 @@ RUN set -ex && \
         fi; \
         sleep 5; \
     done
+
+# Create placeholder files for version verification
+RUN set -ex && \
+    mkdir -p /tf/caf/.devcontainer && \
+    touch /tf/caf/.devcontainer/docker-compose.yml && \
+    echo "local build" > /tf/rover/scripts/version.txt && \
+    echo "export ROVER_RUNNER=true" > /etc/profile.d/rover.sh && \
+    chmod +x /etc/profile.d/rover.sh
 
 # Clean up with retries and improved verification
 RUN set -ex && \
