@@ -40,7 +40,7 @@ WORKDIR /tf/rover
 COPY ./scripts/.kubectl_aliases .
 COPY ./scripts/zsh-autosuggestions.zsh .
 
-# Install base packages with retries
+# Install base packages with retries and perform full OS update
 RUN set -ex && \
     mkdir -p /var/lib/apt/lists/partial /etc/apt/trusted.gpg.d /etc/apt/keyrings && \
     # Update package lists with retries and better error handling
@@ -51,6 +51,16 @@ RUN set -ex && \
         fi; \
         echo "Attempt $i to update package lists failed, retrying in 5 seconds..." && \
         if [ $i -eq 3 ]; then echo "Failed to update package lists" && exit 1; fi; \
+        sleep 5; \
+    done && \
+    # Perform full system upgrade to reduce vulnerabilities
+    for i in $(seq 1 3); do \
+        if DEBIAN_FRONTEND=noninteractive apt-get upgrade -y; then \
+            echo "System packages upgraded successfully" && \
+            break; \
+        fi; \
+        echo "Attempt $i to upgrade system packages failed, retrying in 5 seconds..." && \
+        if [ $i -eq 3 ]; then echo "Failed to upgrade system packages" && exit 1; fi; \
         sleep 5; \
     done && \
     # Install core packages with retries
