@@ -265,7 +265,7 @@ RUN set -ex && \
     # Install pip packages with retries and better error handling
     for i in $(seq 1 5); do \
         echo "Attempt $i: Installing Python packages..." && \
-        if pip install --upgrade pip setuptools wheel && \
+        if pip install --no-cache-dir --upgrade pip setuptools wheel && \
            pip install --no-cache-dir --timeout 60 --retries 3 \
             'pre-commit' \
             'yq' \
