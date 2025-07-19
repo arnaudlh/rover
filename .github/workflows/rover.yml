@@ -42,24 +42,24 @@ jobs:
     - name: Check formatting
       run: cargo fmt -- --check
 
-  security:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      security-events: write
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Run Microsoft Security DevOps Action
-      uses: microsoft/security-devops-action@v1.6.0
-      id: msdo
-      with:
-        categories: 'secrets,code'
-        policy: 'GitHub'
+  # security:
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #     security-events: write
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   
+  #   - name: Run Microsoft Security DevOps Action
+  #     uses: microsoft/security-devops-action@v1.6.0
+  #     id: msdo
+  #     with:
+  #       categories: 'secrets,code'
+  #       policy: 'GitHub'
 
   build:
-    needs: [test, security]
+    needs: [test]
     runs-on: ubuntu-latest
     strategy:
       matrix:

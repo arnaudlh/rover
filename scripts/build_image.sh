@@ -123,6 +123,7 @@ function build_base_rover_image {
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake.hcl \
                 -f docker-bake.override.hcl \
                 --set *.platform=${os}/${architecture} \
@@ -137,6 +138,7 @@ function build_base_rover_image {
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake.hcl \
                 -f docker-bake.override.hcl \
                 --set *.platform=${os}/${architecture} \
@@ -149,6 +151,7 @@ function build_base_rover_image {
             versionTerraform=${versionTerraform} \
             tag="${rover}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake.hcl \
                 -f docker-bake.override.hcl \
                 --push rover_registry
@@ -196,6 +199,7 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake-agents.hcl \
                 -f docker-bake.override.hcl \
                 --set *.platform=${os}/${platform} \
@@ -213,6 +217,7 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake-agents.hcl \
                 -f docker-bake.override.hcl \
                 --push rover_agents
@@ -227,6 +232,7 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake-agents.hcl \
                 -f docker-bake.override.hcl \
                 --push gitlab
@@ -241,6 +247,7 @@ function build_rover_agents {
             versionTerraform=${versionTerraform} \
             tag="${tag}" \
             docker buildx bake \
+                --allow=fs=/tmp \
                 -f docker-bake-agents.hcl \
                 -f docker-bake.override.hcl \
                 --push rover_agents
