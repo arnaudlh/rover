@@ -1,4 +1,4 @@
-# Continuous Integration
+# 🔄 Continuous Integration
 
 Rover ci invokes a set of predefined tools to ensure code quality. These tools are defined via yaml files in [scripts/ci_tasks](../scripts/ci_tasks)
 

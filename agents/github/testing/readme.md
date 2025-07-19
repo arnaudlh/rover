@@ -1,16 +1,16 @@
-# Building the rover agent for Github and testing locally
+# 🧪 Building the rover agent for Github and testing locally
 
-## Clone
+## 📥 Clone
 
 Clone the rover repository
 
-## Create a local build
+## 🔨 Create a local build
 
 ```
 make local
 ```
 
-## Docker images
+## 🐳 Docker images
 
 You can see the local images that have been created on your local machine
 
@@ -40,13 +40,13 @@ localhost:5000/rover-local         1.1.9-2208.170329                            
 localhost:5000/rover-local         1.2.7-2208.170329                              6bc9c449f8bc   58 minutes ago      3.31GB
 ```
 
-## Create a PAT token
+## 🔑 Create a PAT token
 
 Under your Github profile, developer section, create a PAT token and give the following permissions:
 - repo
 - read:org
 
-## Update docker-compose image and variables.env
+## ⚙️ Update docker-compose image and variables.env
 
 docker-compose.yml
 ```yaml
@@ -74,7 +74,7 @@ EPHEMERAL=true
 
 Adjust the other variables
 
-## Test the agent is working
+## 🧪 Test the agent is working
 
 ```
 cd agents/github/testing
@@ -140,7 +140,7 @@ From another terminal **docker-compose down** to clean up and de-register the co
 docker-compose down 
 ```
 
-## Test the agent is working in auto-scaling mode
+## 📈 Test the agent is working in auto-scaling mode
 
 
 ```
@@ -163,7 +163,7 @@ You can adjust the number of runners
 docker-compose up --scale rover-agent=1 -d
 ```
 
-## Stop all agents
+## 🛑 Stop all agents
 
 ```
 % docker-compose down

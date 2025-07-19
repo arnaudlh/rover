@@ -8,7 +8,7 @@ pub async fn execute(
     _gitops_agent_pool_execution_mode: &Option<String>,
     bootstrap_script: &Option<String>,
 ) -> Result<()> {
-    tracing::info!("Starting bootstrap process");
+    tracing::info!("🚀 Starting bootstrap process");
 
     let azure_auth = AzureAuth::new(config)?;
 

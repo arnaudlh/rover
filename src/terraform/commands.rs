@@ -4,7 +4,7 @@ use std::path::Path;
 use tokio::process::Command;
 
 pub async fn terraform_init(_config: &Config, landingzone_path: &str) -> Result<()> {
-    tracing::info!("Initializing Terraform in: {}", landingzone_path);
+    tracing::info!("🏗️ Initializing Terraform in: {}", landingzone_path);
 
     let mut cmd = Command::new("terraform");
     cmd.arg("init").current_dir(landingzone_path);
@@ -20,7 +20,7 @@ pub async fn terraform_init(_config: &Config, landingzone_path: &str) -> Result<
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    tracing::info!("Terraform init completed: {}", stdout);
+    tracing::info!("✅ Terraform init completed: {}", stdout);
 
     Ok(())
 }
@@ -34,7 +34,7 @@ pub async fn terraform_plan(
     parallelism: Option<u32>,
     compact_warnings: bool,
 ) -> Result<()> {
-    tracing::info!("Running Terraform plan in: {}", landingzone_path);
+    tracing::info!("📋 Running Terraform plan in: {}", landingzone_path);
 
     let tf_data_dir = config.get_tf_data_dir();
     let workspace = config.get_workspace();
@@ -94,15 +94,15 @@ pub async fn terraform_plan(
 
     match output.status.code() {
         Some(0) => {
-            tracing::info!("Terraform plan succeeded");
+            tracing::info!("✅ Terraform plan succeeded");
             println!("{}", stdout);
         }
         Some(1) => {
-            tracing::error!("Terraform plan failed: {}", stderr);
+            tracing::error!("❌ Terraform plan failed: {}", stderr);
             anyhow::bail!("Terraform plan failed: {}", stderr);
         }
         Some(2) => {
-            tracing::info!("Terraform plan succeeded with non-empty diff");
+            tracing::info!("✅ Terraform plan succeeded with non-empty diff");
             println!("{}", stdout);
         }
         _ => {
@@ -125,7 +125,7 @@ pub async fn terraform_apply(
     landingzone_path: &str,
     plan_file: &Option<String>,
 ) -> Result<()> {
-    tracing::info!("Running Terraform apply in: {}", landingzone_path);
+    tracing::info!("🚀 Running Terraform apply in: {}", landingzone_path);
 
     let tf_data_dir = config.get_tf_data_dir();
     let workspace = config.get_workspace();

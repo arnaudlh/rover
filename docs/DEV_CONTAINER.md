@@ -1,10 +1,10 @@
-# Updating the Dev Container
+# 🐳 Updating the Dev Container
 
 The dev container in this repo uses docker compose and an image hosted on dockerhub (aztfmod/rover:tag).
 
 If you would like to make changes to the base image used by the dev container, you need to build the image then update the docker-compose.yml file to point to the newly created local image.
 
-## 1) Build the local image
+## 🔨 1) Build the local image
 
 * Modify [Dockerfile](../Dockerfile) with the desired changed.
 * From the root of the repository execute `make dev`
@@ -15,7 +15,7 @@ If you would like to make changes to the base image used by the dev container, y
   Pushing rover_registry (aztfmod/rover-preview:0.13.6-2103.211716)...
   ```
 
-## 2) Update the Docker Compose File
+## 📝 2) Update the Docker Compose File
 
 * Copy the name and tag in parenthesis (in this case aztfmod/rover-preview:0.13.6-2103.211716)
 * Open [.devcontainer/docker-compose.yml](../.devcontainer/docker-compose.yml) and update the image property to the value from the log (note your version will be different from below).
@@ -29,7 +29,7 @@ If you would like to make changes to the base image used by the dev container, y
       image: rover-preview:0.13.6-2103.211716
   ```
 
-## 3) Delete the rover volume.
+## 🗑️ 3) Delete the rover volume.
 
 If you have previously launched the devconatiner, your home folder will be mapped to a docker volume. This will ovewrite any changes made to the home folder in the Dockerfile. As such, if you need to update the home folder in the dev container, then you need to delete the rover volume.
 
@@ -54,7 +54,7 @@ If you have previously launched the devconatiner, your home folder will be mappe
   docker rm -f 528ecf0f993339e4f1b53082caf1dd81dc01e433f98fab98f7aac5a08a6c4fff
   ```
 
-## 4) Restart Dev Container.
+## 🔄 4) Restart Dev Container.
 
 * Open the repo in VS Code.
 * Using the keyboard shortcut ctl-shit-p, select Rebuild and Reopen in Container.

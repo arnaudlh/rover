@@ -1,24 +1,24 @@
-Rover CLI Commands & Flags
+🛸 Rover CLI Commands & Flags
 
 ---
 
-## SYNOPSIS
+## 📖 SYNOPSIS
 
 ```shell
 Usage: rover <command> <switches>
   commands:
-    login         Start the interactive login process to get access to your azure subscription. Performs an az login.
-    logout        Clear out login information related to the azure subscription. Performs an az logout.
-    ci            Invoke the continuous integration workflow.
-    cd            Invoke the continuous deployment workflow.
-    landingzone   Commands for managing landing zones.
-      list        Lists out all landing zones ( rover landingzone list)
-    workspace     Commands for managing workspaces.
-      list        List workspaces
-      create      Create a new workspace
-      delete      Delete a workspace
+    🔐 login         Start the interactive login process to get access to your azure subscription. Performs an az login.
+    🚪 logout        Clear out login information related to the azure subscription. Performs an az logout.
+    🔄 ci            Invoke the continuous integration workflow.
+    🚀 cd            Invoke the continuous deployment workflow.
+    🏗️ landingzone   Commands for managing landing zones.
+      📋 list        Lists out all landing zones ( rover landingzone list)
+    💼 workspace     Commands for managing workspaces.
+      📋 list        List workspaces
+      ➕ create      Create a new workspace
+      🗑️ delete      Delete a workspace
 
-  switches:
+  🔧 switches:
     -sc | --symphony-config   <path>        (ci workflow) Path to a symphony.yml file.
     -ct | --ci-task-name      <task name>   (ci workflow) CI Tool to invoke. If omitted all tools are run, if provided only that tool is run.
      -b | --base-dir                        (ci workflow) Base directory for paths in symphony.yml.

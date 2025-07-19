@@ -6,7 +6,7 @@ pub async fn execute(
     tenant: &Option<String>,
     subscription: &Option<String>,
 ) -> Result<()> {
-    tracing::info!("Logging into Azure");
+    tracing::info!("☁️ Logging into Azure");
 
     let azure_auth = AzureAuth::new(config)?;
 
@@ -14,6 +14,6 @@ pub async fn execute(
         .login(tenant.as_deref(), subscription.as_deref())
         .await?;
 
-    tracing::info!("Azure login completed");
+    tracing::info!("✅ Azure login completed");
     Ok(())
 }

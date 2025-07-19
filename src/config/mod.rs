@@ -6,7 +6,7 @@ use crate::commands::Commands;
 
 #[derive(Parser, Debug, Clone)]
 #[command(name = "rover")]
-#[command(about = "Terraform wrapper for Azure state management and CI/CD integration")]
+#[command(about = "🚀 Terraform wrapper for Azure state management and CI/CD integration")]
 #[command(version)]
 pub struct Config {
     #[command(subcommand)]

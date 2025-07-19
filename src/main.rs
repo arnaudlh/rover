@@ -8,13 +8,13 @@ async fn main() -> Result<()> {
 
     logging::init(&config)?;
 
-    tracing::info!("Starting rover v{}", env!("CARGO_PKG_VERSION"));
+    tracing::info!("🚀 Starting rover v{}", env!("CARGO_PKG_VERSION"));
 
     match &config.command {
         Some(cmd) => cmd.execute(&config).await,
         None => {
-            println!("Rover - Terraform wrapper for Azure state management");
-            println!("Use --help for available commands");
+            println!("🛸 Rover - Terraform wrapper for Azure state management");
+            println!("💡 Use --help for available commands");
             Ok(())
         }
     }
