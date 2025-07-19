@@ -1,0 +1,40 @@
+default: build
+
+build:
+	cargo build --release
+
+test:
+	cargo test
+
+lint:
+	cargo clippy -- -D warnings
+
+format:
+	cargo fmt
+
+github: build
+	@bash "$(CURDIR)/scripts/build_image.sh" "github"
+
+#
+# To build local images in a different platform architecture (from a macos m1 processor). (used to generate the azdo agent on macos)
+# make local arch=Linux/amd64
+#
+# To build local images
+# make local
+local: build
+	echo ${arch}
+	@bash "$(CURDIR)/scripts/build_image.sh" "local" ${arch} ${agent}
+
+dev: build
+	@bash "$(CURDIR)/scripts/build_image.sh" "dev" ${arch} ${agent}
+
+ci: build
+	@bash "$(CURDIR)/scripts/build_image.sh" "ci"
+
+alpha: build
+	@bash "$(CURDIR)/scripts/build_image.sh" "alpha"
+
+clean:
+	cargo clean
+
+.PHONY: build test lint format github local dev ci alpha clean

@@ -39,6 +39,11 @@ get_arch() {
 set -ETe
 trap 'error ${LINENO}' ERR 1 2 3 6
 
+if [ -f "Cargo.toml" ]; then
+    echo "Building Rust binary..."
+    cargo build --release
+fi
+
 ./scripts/pre_requisites.sh
 
 params=$@
