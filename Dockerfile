@@ -1,6 +1,20 @@
 ###########################################################
 # base tools and dependencies
 ###########################################################
+FROM rust:1.82-slim AS builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+
+RUN cargo build --release
+
 FROM ubuntu:22.04 AS base
 
 SHELL ["/bin/bash", "-c"]
@@ -368,8 +382,10 @@ RUN echo "Setting up OMZ environment" && \
     curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash -s -- --unattended && \
     chmod 700 -R /home/${USERNAME}/.oh-my-zsh && \
     echo "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"" >> /home/${USERNAME}/.zshrc && \
-    echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.bashrc && \
-    echo "alias rover=/tf/rover/rover.sh" >> /home/${USERNAME}/.zshrc && \
+    echo "alias rover=/usr/local/bin/rover" >> /home/${USERNAME}/.bashrc && \
+    echo "alias rover=/usr/local/bin/rover" >> /home/${USERNAME}/.zshrc && \
+    echo "alias rover-legacy=/usr/local/bin/rover-legacy" >> /home/${USERNAME}/.bashrc && \
+    echo "alias rover-legacy=/usr/local/bin/rover-legacy" >> /home/${USERNAME}/.zshrc && \
     echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.bashrc && \
     echo "alias t=/usr/bin/terraform" >> /home/${USERNAME}/.zshrc && \
     echo "alias k=/usr/bin/kubectl" >> /home/${USERNAME}/.zshrc && \
@@ -405,7 +421,13 @@ RUN echo "Set rover version to ${versionRover}..." && echo "Installing Terraform
 
 RUN az config set core.login_experience_v2=false
 
-COPY ./scripts/rover.sh ./scripts/tfstate.sh ./scripts/functions.sh ./scripts/remote.sh ./scripts/parse_command.sh ./scripts/banner.sh ./scripts/clone.sh ./scripts/walkthrough.sh ./scripts/sshd.sh ./scripts/backend.hcl.tf ./scripts/backend.azurerm.tf ./scripts/ci.sh ./scripts/cd.sh ./scripts/task.sh ./scripts/symphony_yaml.sh ./scripts/test_runner.sh ./
-COPY ./scripts/ci_tasks/* ./ci_tasks/
-COPY ./scripts/lib/* ./lib/
-COPY ./scripts/tfcloud/* ./tfcloud/
+COPY --from=builder /build/target/release/rover /usr/local/bin/rover
+COPY ./scripts/rover-rust.sh /usr/local/bin/rover-legacy
+COPY ./scripts/backend.hcl.tf ./
+COPY ./scripts/backend.azurerm.tf ./
+COPY ./scripts/sshd_config /etc/ssh/sshd_config
+COPY ./scripts/.kubectl_aliases .
+COPY ./scripts/zsh-autosuggestions.zsh .
+
+RUN chmod +x /usr/local/bin/rover && \
+    chmod +x /usr/local/bin/rover-legacy
