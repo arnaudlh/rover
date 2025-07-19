@@ -1,5 +1,5 @@
 {
-    "name": "Azure CAF rover",
+    "name": "Azure CAF rover (Rust)",
     // Update the 'dockerComposeFile' list if you have more compose files or use different names.
     "dockerComposeFile": "docker-compose.yml",
     // Container user to use in VSCode Online and GitHub Codespaces
@@ -17,20 +17,28 @@
         "terminal.integrated.defaultProfile.linux": "zsh",
         "editor.tabSize": 2,
         "terminal.integrated.scrollback": 64000,
+        "rust-analyzer.checkOnSave.command": "clippy",
+        "rust-analyzer.cargo.features": "all",
+        "rust-analyzer.procMacro.enable": true
     },
     // Uncomment the next line if you want start specific services in your Docker Compose config.
     // "runServices": [],
     // Uncomment this like if you want to keep your containers running after VS Code shuts down.
     // "shutdownAction": "none",
     // Uncomment the next line to run commands after the container is created.
-    //"postCreateCommand": "cp -R /tmp/.ssh-localhost/* ~/.ssh && sudo chmod 600 ~/.ssh/* && sudo chown -R $(whoami) /tf/caf && git config --global core.editor vim && pre-commit install && pre-commit autoupdate",
-    "postCreateCommand": "sudo cp -R /tmp/.ssh-localhost/* ~/.ssh && sudo chown -R $(whoami):$(whoami) /tf/caf ~/.ssh && sudo chmod 400 ~/.ssh/* && git config --global core.editor vi && pre-commit install && pre-commit autoupdate",
+    "postCreateCommand": "sudo cp -R /tmp/.ssh-localhost/* ~/.ssh && sudo chown -R $(whoami):$(whoami) /tf/caf ~/.ssh && sudo chmod 400 ~/.ssh/* && git config --global core.editor vi && pre-commit install && pre-commit autoupdate && cargo build --release",
     "postStartCommand": "sudo chmod 666 /var/run/docker.sock",
     // Add the IDs of extensions you want installed when the container is created in the array below.
     "extensions": [
         "4ops.terraform",
         "mutantdino.resourcemonitor",
         "eamodio.gitlens",
-        "golang.go"
+        "rust-lang.rust-analyzer",
+        "vadimcn.vscode-lldb",
+        "serayuzgur.crates",
+        "tamasfe.even-better-toml",
+        "ms-azuretools.vscode-azurecli",
+        "ms-vscode.azure-account",
+        "devin-ai.devin"
     ]
 }
