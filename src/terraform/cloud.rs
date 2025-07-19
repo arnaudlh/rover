@@ -1,8 +1,8 @@
+use crate::config::Config;
 use anyhow::{Context, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::config::Config;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Workspace {
@@ -35,7 +35,10 @@ pub struct WorkspaceAttributes {
     pub structured_run_output_enabled: bool,
     #[serde(rename = "agent-pool-id", skip_serializing_if = "Option::is_none")]
     pub agent_pool_id: Option<String>,
-    #[serde(rename = "assessments-enabled", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "assessments-enabled",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub assessments_enabled: Option<bool>,
 }
 
@@ -63,12 +66,14 @@ pub struct TerraformCloud {
 
 impl TerraformCloud {
     pub fn new(config: &Config) -> Result<Self> {
-        let hostname = config.tf_cloud_hostname
+        let hostname = config
+            .tf_cloud_hostname
             .as_ref()
             .context("Terraform Cloud hostname not configured")?
             .clone();
-        
-        let organization = config.tf_cloud_organization
+
+        let organization = config
+            .tf_cloud_organization
             .as_ref()
             .context("Terraform Cloud organization not configured")?
             .clone();
@@ -86,14 +91,14 @@ impl TerraformCloud {
     fn get_token(hostname: &str) -> Result<String> {
         let home_dir = dirs::home_dir().context("Could not find home directory")?;
         let credentials_path = home_dir.join(".terraform.d").join("credentials.tfrc.json");
-        
+
         if !credentials_path.exists() {
             anyhow::bail!("Terraform credentials not found. Run 'terraform login' first.");
         }
 
         let credentials_content = std::fs::read_to_string(&credentials_path)
             .context("Failed to read Terraform credentials")?;
-        
+
         let credentials: Value = serde_json::from_str(&credentials_content)
             .context("Failed to parse Terraform credentials")?;
 
@@ -105,10 +110,13 @@ impl TerraformCloud {
     }
 
     pub async fn list_workspaces(&self) -> Result<Vec<String>> {
-        let url = format!("https://{}/api/v2/organizations/{}/workspaces", 
-                         self.hostname, self.organization);
+        let url = format!(
+            "https://{}/api/v2/organizations/{}/workspaces",
+            self.hostname, self.organization
+        );
 
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.token))
             .header("Content-Type", "application/vnd.api+json")
@@ -120,7 +128,9 @@ impl TerraformCloud {
             anyhow::bail!("Terraform Cloud API error: {}", response.status());
         }
 
-        let body: Value = response.json().await
+        let body: Value = response
+            .json()
+            .await
             .context("Failed to parse response JSON")?;
 
         let workspaces = body["data"]
@@ -135,8 +145,10 @@ impl TerraformCloud {
     }
 
     pub async fn create_workspace(&self, name: &str) -> Result<()> {
-        let url = format!("https://{}/api/v2/organizations/{}/workspaces", 
-                         self.hostname, self.organization);
+        let url = format!(
+            "https://{}/api/v2/organizations/{}/workspaces",
+            self.hostname, self.organization
+        );
 
         let workspace_request = WorkspaceCreateRequest {
             data: WorkspaceData {
@@ -153,7 +165,8 @@ impl TerraformCloud {
             },
         };
 
-        let response = self.client
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.token))
             .header("Content-Type", "application/vnd.api+json")
@@ -173,10 +186,13 @@ impl TerraformCloud {
     }
 
     pub async fn delete_workspace(&self, name: &str) -> Result<()> {
-        let url = format!("https://{}/api/v2/organizations/{}/workspaces/{}", 
-                         self.hostname, self.organization, name);
+        let url = format!(
+            "https://{}/api/v2/organizations/{}/workspaces/{}",
+            self.hostname, self.organization, name
+        );
 
-        let response = self.client
+        let response = self
+            .client
             .delete(&url)
             .header("Authorization", format!("Bearer {}", self.token))
             .header("Content-Type", "application/vnd.api+json")
@@ -195,10 +211,13 @@ impl TerraformCloud {
     }
 
     pub async fn get_workspace(&self, name: &str) -> Result<Option<Workspace>> {
-        let url = format!("https://{}/api/v2/organizations/{}/workspaces/{}", 
-                         self.hostname, self.organization, name);
+        let url = format!(
+            "https://{}/api/v2/organizations/{}/workspaces/{}",
+            self.hostname, self.organization, name
+        );
 
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.token))
             .header("Content-Type", "application/vnd.api+json")
@@ -216,14 +235,25 @@ impl TerraformCloud {
             anyhow::bail!("Failed to get workspace: {} - {}", status, error_text);
         }
 
-        let body: Value = response.json().await
+        let body: Value = response
+            .json()
+            .await
             .context("Failed to parse response JSON")?;
 
         let workspace_data = &body["data"];
         let workspace = Workspace {
-            id: workspace_data["id"].as_str().unwrap_or_default().to_string(),
-            name: workspace_data["attributes"]["name"].as_str().unwrap_or_default().to_string(),
-            execution_mode: workspace_data["attributes"]["execution-mode"].as_str().unwrap_or_default().to_string(),
+            id: workspace_data["id"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string(),
+            name: workspace_data["attributes"]["name"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string(),
+            execution_mode: workspace_data["attributes"]["execution-mode"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string(),
         };
 
         Ok(Some(workspace))

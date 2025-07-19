@@ -1,5 +1,5 @@
+use crate::{commands::LandingzoneAction, config::Config};
 use anyhow::Result;
-use crate::{config::Config, commands::LandingzoneAction};
 
 pub async fn execute(_config: &Config, action: &Option<LandingzoneAction>) -> Result<()> {
     match action {

@@ -5,11 +5,11 @@ use rover::{config::Config, logging};
 #[tokio::main]
 async fn main() -> Result<()> {
     let config = Config::parse();
-    
+
     logging::init(&config)?;
-    
+
     tracing::info!("Starting rover v{}", env!("CARGO_PKG_VERSION"));
-    
+
     match &config.command {
         Some(cmd) => cmd.execute(&config).await,
         None => {

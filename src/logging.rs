@@ -1,11 +1,11 @@
+use crate::config::Config;
 use anyhow::Result;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
-use crate::config::Config;
 
 pub fn init(config: &Config) -> Result<()> {
     let log_level = match config.log_severity.to_uppercase().as_str() {
         "VERBOSE" => "trace",
-        "DEBUG" => "debug", 
+        "DEBUG" => "debug",
         "INFO" => "info",
         "WARN" => "warn",
         "ERROR" => "error",

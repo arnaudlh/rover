@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::{config::Config, terraform::TerraformManager};
+use anyhow::Result;
 
 #[allow(clippy::too_many_arguments)]
 pub async fn execute(
@@ -27,16 +27,28 @@ pub async fn execute(
     compact_warnings: bool,
     _launchpad: bool,
 ) -> Result<()> {
-    tracing::info!("Initializing Terraform configuration at: {}", landingzone_path);
+    tracing::info!(
+        "Initializing Terraform configuration at: {}",
+        landingzone_path
+    );
 
     let terraform = TerraformManager::new(config)?;
-    
+
     terraform.configure_state().await?;
-    
+
     terraform.init(landingzone_path).await?;
 
     if plan {
-        terraform.plan(landingzone_path, plan_file, var_file, var_folder, parallelism, compact_warnings).await?;
+        terraform
+            .plan(
+                landingzone_path,
+                plan_file,
+                var_file,
+                var_folder,
+                parallelism,
+                compact_warnings,
+            )
+            .await?;
     }
 
     if apply {
@@ -44,7 +56,9 @@ pub async fn execute(
     }
 
     if destroy {
-        terraform.destroy(landingzone_path, var_file, var_folder, parallelism).await?;
+        terraform
+            .destroy(landingzone_path, var_file, var_folder, parallelism)
+            .await?;
     }
 
     if validate {
@@ -52,7 +66,9 @@ pub async fn execute(
     }
 
     if refresh {
-        terraform.refresh(landingzone_path, var_file, var_folder).await?;
+        terraform
+            .refresh(landingzone_path, var_file, var_folder)
+            .await?;
     }
 
     if graph {

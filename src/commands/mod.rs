@@ -111,82 +111,86 @@ pub enum WorkspaceAction {
 impl Commands {
     pub async fn execute(&self, config: &Config) -> Result<()> {
         match self {
-            Commands::Bootstrap { 
-                aad_app_name, 
-                gitops_pipelines, 
-                gitops_agent_pool_execution_mode, 
-                bootstrap_script 
+            Commands::Bootstrap {
+                aad_app_name,
+                gitops_pipelines,
+                gitops_agent_pool_execution_mode,
+                bootstrap_script,
             } => {
-                bootstrap::execute(config, aad_app_name, gitops_pipelines, gitops_agent_pool_execution_mode, bootstrap_script).await
+                bootstrap::execute(
+                    config,
+                    aad_app_name,
+                    gitops_pipelines,
+                    gitops_agent_pool_execution_mode,
+                    bootstrap_script,
+                )
+                .await
             }
-            Commands::Init { 
-                landingzone_path, 
-                plan, 
-                apply, 
-                destroy, 
-                validate, 
-                refresh, 
-                graph, 
-                import, 
-                output, 
-                taint, 
-                untaint, 
-                state_list, 
-                state_rm, 
-                state_show, 
-                show, 
-                migrate, 
-                plan_file, 
-                var_file, 
-                var_folder, 
-                parallelism, 
-                compact_warnings, 
-                launchpad 
+            Commands::Init {
+                landingzone_path,
+                plan,
+                apply,
+                destroy,
+                validate,
+                refresh,
+                graph,
+                import,
+                output,
+                taint,
+                untaint,
+                state_list,
+                state_rm,
+                state_show,
+                show,
+                migrate,
+                plan_file,
+                var_file,
+                var_folder,
+                parallelism,
+                compact_warnings,
+                launchpad,
             } => {
                 init::execute(
-                    config, 
-                    landingzone_path, 
-                    *plan, 
-                    *apply, 
-                    *destroy, 
-                    *validate, 
-                    *refresh, 
-                    *graph, 
-                    *import, 
-                    *output, 
-                    *taint, 
-                    *untaint, 
-                    *state_list, 
-                    *state_rm, 
-                    *state_show, 
-                    *show, 
-                    *migrate, 
-                    plan_file, 
-                    var_file, 
-                    var_folder, 
-                    *parallelism, 
-                    *compact_warnings, 
-                    *launchpad
-                ).await
+                    config,
+                    landingzone_path,
+                    *plan,
+                    *apply,
+                    *destroy,
+                    *validate,
+                    *refresh,
+                    *graph,
+                    *import,
+                    *output,
+                    *taint,
+                    *untaint,
+                    *state_list,
+                    *state_rm,
+                    *state_show,
+                    *show,
+                    *migrate,
+                    plan_file,
+                    var_file,
+                    var_folder,
+                    *parallelism,
+                    *compact_warnings,
+                    *launchpad,
+                )
+                .await
             }
-            Commands::Landingzone { action } => {
-                landingzone::execute(config, action).await
-            }
-            Commands::Launchpad { landingzone_path, plan, apply, destroy } => {
-                launchpad::execute(config, landingzone_path, *plan, *apply, *destroy).await
-            }
-            Commands::Login { tenant, subscription } => {
-                login::execute(config, tenant, subscription).await
-            }
-            Commands::Logout => {
-                logout::execute(config).await
-            }
-            Commands::Purge => {
-                purge::execute(config).await
-            }
-            Commands::Workspace { action } => {
-                workspace::execute(config, action).await
-            }
+            Commands::Landingzone { action } => landingzone::execute(config, action).await,
+            Commands::Launchpad {
+                landingzone_path,
+                plan,
+                apply,
+                destroy,
+            } => launchpad::execute(config, landingzone_path, *plan, *apply, *destroy).await,
+            Commands::Login {
+                tenant,
+                subscription,
+            } => login::execute(config, tenant, subscription).await,
+            Commands::Logout => logout::execute(config).await,
+            Commands::Purge => purge::execute(config).await,
+            Commands::Workspace { action } => workspace::execute(config, action).await,
         }
     }
 }

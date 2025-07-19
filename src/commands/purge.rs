@@ -1,6 +1,6 @@
+use crate::config::Config;
 use anyhow::Result;
 use std::fs;
-use crate::config::Config;
 
 pub async fn execute(config: &Config) -> Result<()> {
     tracing::info!("Purging cache folders");
@@ -20,7 +20,7 @@ pub async fn execute(config: &Config) -> Result<()> {
 
     let home_dir = dirs::home_dir().unwrap_or_default();
     let tmp_pattern = format!("{}/*.tmp", home_dir.display());
-    
+
     if let Ok(entries) = glob::glob(&tmp_pattern) {
         for entry in entries.flatten() {
             if entry.exists() {

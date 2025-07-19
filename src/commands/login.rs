@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::{auth::azure::AzureAuth, config::Config};
+use anyhow::Result;
 
 pub async fn execute(
     config: &Config,
@@ -9,9 +9,11 @@ pub async fn execute(
     tracing::info!("Logging into Azure");
 
     let azure_auth = AzureAuth::new(config)?;
-    
-    azure_auth.login(tenant.as_deref(), subscription.as_deref()).await?;
-    
+
+    azure_auth
+        .login(tenant.as_deref(), subscription.as_deref())
+        .await?;
+
     tracing::info!("Azure login completed");
     Ok(())
 }

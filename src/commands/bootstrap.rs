@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::{auth::azure::AzureAuth, config::Config};
+use anyhow::Result;
 
 pub async fn execute(
     config: &Config,
@@ -11,7 +11,7 @@ pub async fn execute(
     tracing::info!("Starting bootstrap process");
 
     let azure_auth = AzureAuth::new(config)?;
-    
+
     if let Some(app_name) = aad_app_name {
         tracing::info!("Creating federated identity for app: {}", app_name);
         azure_auth.create_federated_identity(app_name).await?;

@@ -19,9 +19,13 @@ where
             Ok(result) => return Ok(result),
             Err(error) => {
                 last_error = Some(error);
-                
+
                 if attempt < max_retries {
-                    tracing::warn!("Operation failed on attempt {}, retrying in {:?}", attempt + 1, delay);
+                    tracing::warn!(
+                        "Operation failed on attempt {}, retrying in {:?}",
+                        attempt + 1,
+                        delay
+                    );
                     sleep(delay).await;
                     delay *= 2;
                 }
@@ -33,15 +37,13 @@ where
 }
 
 pub fn expand_path(path: &str) -> Result<String> {
-    let expanded = shellexpand::full(path)
-        .context("Failed to expand shell variables in path")?;
+    let expanded = shellexpand::full(path).context("Failed to expand shell variables in path")?;
     Ok(expanded.to_string())
 }
 
 pub fn ensure_directory_exists(path: &Path) -> Result<()> {
     if !path.exists() {
-        std::fs::create_dir_all(path)
-            .context(format!("Failed to create directory: {:?}", path))?;
+        std::fs::create_dir_all(path).context(format!("Failed to create directory: {:?}", path))?;
     }
     Ok(())
 }
@@ -49,7 +51,16 @@ pub fn ensure_directory_exists(path: &Path) -> Result<()> {
 pub fn generate_job_id() -> String {
     use chrono::Utc;
     let now = Utc::now();
-    format!("{}{}", now.format("%Y%m%d%H%M%S"), uuid::Uuid::new_v4().simple().to_string().chars().take(8).collect::<String>())
+    format!(
+        "{}{}",
+        now.format("%Y%m%d%H%M%S"),
+        uuid::Uuid::new_v4()
+            .simple()
+            .to_string()
+            .chars()
+            .take(8)
+            .collect::<String>()
+    )
 }
 
 pub fn get_rover_version() -> String {

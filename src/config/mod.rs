@@ -90,25 +90,33 @@ pub struct Config {
 
 impl Config {
     pub fn get_tf_data_dir(&self) -> PathBuf {
-        self.tf_data_dir
-            .clone()
-            .unwrap_or_else(|| dirs::cache_dir().unwrap_or_else(|| PathBuf::from("/tmp")).join("terraform"))
+        self.tf_data_dir.clone().unwrap_or_else(|| {
+            dirs::cache_dir()
+                .unwrap_or_else(|| PathBuf::from("/tmp"))
+                .join("terraform")
+        })
     }
 
     pub fn get_tf_cache_folder(&self) -> PathBuf {
-        self.tf_cache_folder
-            .clone()
-            .unwrap_or_else(|| dirs::cache_dir().unwrap_or_else(|| PathBuf::from("/tmp")).join("terraform_cache"))
+        self.tf_cache_folder.clone().unwrap_or_else(|| {
+            dirs::cache_dir()
+                .unwrap_or_else(|| PathBuf::from("/tmp"))
+                .join("terraform_cache")
+        })
     }
 
     pub fn get_log_folder_path(&self) -> PathBuf {
-        self.log_folder_path
-            .clone()
-            .unwrap_or_else(|| dirs::cache_dir().unwrap_or_else(|| PathBuf::from("/tmp")).join("rover_logs"))
+        self.log_folder_path.clone().unwrap_or_else(|| {
+            dirs::cache_dir()
+                .unwrap_or_else(|| PathBuf::from("/tmp"))
+                .join("rover_logs")
+        })
     }
 
     pub fn get_workspace(&self) -> String {
-        self.workspace.clone().unwrap_or_else(|| "default".to_string())
+        self.workspace
+            .clone()
+            .unwrap_or_else(|| "default".to_string())
     }
 
     pub fn get_level(&self) -> String {
@@ -116,11 +124,15 @@ impl Config {
     }
 
     pub fn get_tf_name(&self) -> String {
-        self.tf_name.clone().unwrap_or_else(|| "terraform.tfstate".to_string())
+        self.tf_name
+            .clone()
+            .unwrap_or_else(|| "terraform.tfstate".to_string())
     }
 
     pub fn get_tf_plan(&self) -> String {
-        self.tf_plan.clone().unwrap_or_else(|| "terraform.tfplan".to_string())
+        self.tf_plan
+            .clone()
+            .unwrap_or_else(|| "terraform.tfplan".to_string())
     }
 }
 

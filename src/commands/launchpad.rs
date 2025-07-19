@@ -1,5 +1,5 @@
-use anyhow::Result;
 use crate::{config::Config, terraform::TerraformManager};
+use anyhow::Result;
 
 pub async fn execute(
     config: &Config,
@@ -11,13 +11,15 @@ pub async fn execute(
     tracing::info!("Managing launchpad at: {}", landingzone_path);
 
     let terraform = TerraformManager::new(config)?;
-    
+
     terraform.configure_state().await?;
-    
+
     terraform.init(landingzone_path).await?;
 
     if plan {
-        terraform.plan(landingzone_path, &None, &[], &None, None, false).await?;
+        terraform
+            .plan(landingzone_path, &None, &[], &None, None, false)
+            .await?;
     }
 
     if apply {
@@ -25,7 +27,9 @@ pub async fn execute(
     }
 
     if destroy {
-        terraform.destroy(landingzone_path, &[], &None, None).await?;
+        terraform
+            .destroy(landingzone_path, &[], &None, None)
+            .await?;
     }
 
     Ok(())

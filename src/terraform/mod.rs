@@ -2,8 +2,8 @@ pub mod cloud;
 pub mod commands;
 pub mod state;
 
-use anyhow::Result;
 use crate::config::Config;
+use anyhow::Result;
 
 pub struct TerraformManager {
     config: Config,
@@ -18,12 +18,8 @@ impl TerraformManager {
 
     pub async fn configure_state(&self) -> Result<()> {
         match self.config.backend_type.as_str() {
-            "azurerm" => {
-                state::configure_azurerm_backend(&self.config).await
-            }
-            "remote" => {
-                state::configure_remote_backend(&self.config).await
-            }
+            "azurerm" => state::configure_azurerm_backend(&self.config).await,
+            "remote" => state::configure_remote_backend(&self.config).await,
             _ => {
                 anyhow::bail!("Unsupported backend type: {}", self.config.backend_type);
             }
@@ -43,7 +39,16 @@ impl TerraformManager {
         parallelism: Option<u32>,
         compact_warnings: bool,
     ) -> Result<()> {
-        commands::terraform_plan(&self.config, landingzone_path, plan_file, var_files, var_folder, parallelism, compact_warnings).await
+        commands::terraform_plan(
+            &self.config,
+            landingzone_path,
+            plan_file,
+            var_files,
+            var_folder,
+            parallelism,
+            compact_warnings,
+        )
+        .await
     }
 
     pub async fn apply(&self, landingzone_path: &str, plan_file: &Option<String>) -> Result<()> {
@@ -57,7 +62,14 @@ impl TerraformManager {
         var_folder: &Option<String>,
         parallelism: Option<u32>,
     ) -> Result<()> {
-        commands::terraform_destroy(&self.config, landingzone_path, var_files, var_folder, parallelism).await
+        commands::terraform_destroy(
+            &self.config,
+            landingzone_path,
+            var_files,
+            var_folder,
+            parallelism,
+        )
+        .await
     }
 
     pub async fn validate(&self, landingzone_path: &str) -> Result<()> {
