@@ -99,7 +99,7 @@ export LANG=en_US.UTF-8
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias rover=/tf/rover/rover.sh
+alias rover=/usr/local/bin/rover
 alias t=/usr/bin/terraform
 alias k=/usr/bin/kubectl
 cd /tf/caf || true
