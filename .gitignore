@@ -1,16 +1,67 @@
+# Rust build artifacts
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Cargo cache
+.cargo/
+**/.cargo/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Terraform files
 **/.terraform
-**/*.azure
 **/*.tfstate
 **/*.tfplan
-.DS_Store
 **/terraform.tfstate.d
 **/terraform.tfstate.backup
 **/.terraform.tfstate.lock.info
-**/~*.*
-**/*.log
+
+# Azure and cloud files
+**/*.azure
+*.log
+.azure/
+
+# Docker build cache
+.docker/
+**/.buildx-cache
+
+# Development and testing
+.env
+.env.local
+.env.*.local
 version.txt
+.data
 landingzones
 aztfmod
 public/
 walkthrough/
-.data
+
+# DevContainer and VSCode
+.devcontainer/.env
+**/.vscode/settings.json
+
+# Guardian/Security scanning
+.gdn/*
+!.gdn/.gdnsuppress
+*.sarif
+
+# Temporary files
+**/~*.*
+**/*.tmp
+**/*.temp

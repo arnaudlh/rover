@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "suppressions": [
+    {
+      "tool": "credscan",
+      "justification": "Test files and documentation examples",
+      "file": "README*.md"
+    }
+  ]
+}
